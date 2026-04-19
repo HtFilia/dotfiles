@@ -19,15 +19,18 @@ readonly BOLD=$'\033[1m'
 readonly RESET=$'\033[0m'
 
 # --- Logging helpers ---
-log()     { printf "%s==>%s %s\n"   "${BLUE}${BOLD}"   "${RESET}" "$*"; }
-info()    { printf "%s  i%s %s\n"   "${CYAN}"          "${RESET}" "$*"; }
-success() { printf "%s  ✓%s %s\n"   "${GREEN}"         "${RESET}" "$*"; }
-warn()    { printf "%s  ⚠%s %s\n"   "${YELLOW}"        "${RESET}" "$*"; }
-error()   { printf "%s  ✗%s %s\n"   "${RED}"           "${RESET}" "$*" >&2; }
-fatal()   { error "$*"; exit 1; }
+log() { printf "%s==>%s %s\n" "${BLUE}${BOLD}" "${RESET}" "$*"; }
+info() { printf "%s  i%s %s\n" "${CYAN}" "${RESET}" "$*"; }
+success() { printf "%s  ✓%s %s\n" "${GREEN}" "${RESET}" "$*"; }
+warn() { printf "%s  ⚠%s %s\n" "${YELLOW}" "${RESET}" "$*"; }
+error() { printf "%s  ✗%s %s\n" "${RED}" "${RESET}" "$*" >&2; }
+fatal() {
+  error "$*"
+  exit 1
+}
 
 # --- Paths ---
-readonly DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/YOUR_USERNAME/dotfiles.git}"
+readonly DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/HtFilia/dotfiles.git}"
 readonly DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -37,27 +40,27 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 detect_os() {
   local os distro
   case "$(uname -s)" in
-    Darwin)
-      os="macos"
-      ;;
-    Linux)
-      if grep -qi microsoft /proc/version 2>/dev/null || \
-         grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
-        os="wsl"
-      else
-        os="linux"
+  Darwin)
+    os="macos"
+    ;;
+  Linux)
+    if grep -qi microsoft /proc/version 2>/dev/null ||
+      grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
+      os="wsl"
+    else
+      os="linux"
+    fi
+    if [[ -f /etc/os-release ]]; then
+      # shellcheck disable=SC1091
+      distro=$(. /etc/os-release && echo "$ID")
+      if [[ "$distro" != "debian" && "$distro" != "ubuntu" ]]; then
+        warn "Detected distro: $distro (only Debian/Ubuntu are officially supported)"
       fi
-      if [[ -f /etc/os-release ]]; then
-        # shellcheck disable=SC1091
-        distro=$(. /etc/os-release && echo "$ID")
-        if [[ "$distro" != "debian" && "$distro" != "ubuntu" ]]; then
-          warn "Detected distro: $distro (only Debian/Ubuntu are officially supported)"
-        fi
-      fi
-      ;;
-    *)
-      fatal "Unsupported OS: $(uname -s)"
-      ;;
+    fi
+    ;;
+  *)
+    fatal "Unsupported OS: $(uname -s)"
+    ;;
   esac
   echo "$os"
 }
@@ -137,10 +140,17 @@ main() {
   local mode="${DOTFILES_MODE:-full}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --restricted)  mode="restricted" ;;
-      -y|--yes)      export DOTFILES_ASSUME_YES=1 ;;
-      -h|--help)     usage; exit 0 ;;
-      *)             error "Unknown flag: $1"; usage; exit 1 ;;
+    --restricted) mode="restricted" ;;
+    -y | --yes) export DOTFILES_ASSUME_YES=1 ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      error "Unknown flag: $1"
+      usage
+      exit 1
+      ;;
     esac
     shift
   done
@@ -164,16 +174,16 @@ main() {
   # ---- Run the OS-specific installer ----
   log "Running system-level installer for ${os} (mode: ${mode})..."
   case "$os" in
-    macos)
-      bash "${SCRIPT_DIR}/install-macos.sh"
-      ;;
-    linux|wsl)
-      if [[ "$mode" == "restricted" ]]; then
-        bash "${SCRIPT_DIR}/install-debian-restricted.sh"
-      else
-        bash "${SCRIPT_DIR}/install-debian.sh" "$os"
-      fi
-      ;;
+  macos)
+    bash "${SCRIPT_DIR}/install-macos.sh"
+    ;;
+  linux | wsl)
+    if [[ "$mode" == "restricted" ]]; then
+      bash "${SCRIPT_DIR}/install-debian-restricted.sh"
+    else
+      bash "${SCRIPT_DIR}/install-debian.sh" "$os"
+    fi
+    ;;
   esac
   success "System packages installed."
   echo
