@@ -39,8 +39,6 @@ sudo apt install -y \
   ca-certificates \
   gnupg \
   lsb-release \
-  software-properties-common \
-  apt-transport-https \
   pkg-config \
   libssl-dev \
   python3 \
