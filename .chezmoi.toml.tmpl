@@ -1,0 +1,23 @@
+{{/* Prompt for user info on first `chezmoi init` */ -}}
+{{- $name := promptStringOnce . "name" "Your full name" -}}
+{{- $email := promptStringOnce . "email" "Your email address" -}}
+{{- $machineType := promptChoiceOnce . "machineType" "Machine type" (list "personal" "work") -}}
+{{- $hostname := promptStringOnce . "hostname" "Machine identifier (short name)" -}}
+
+[data]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
+    machineType = {{ $machineType | quote }}
+    hostname = {{ $hostname | quote }}
+
+[git]
+    autoCommit = false
+    autoPush = false
+
+[diff]
+    command = "delta"
+    args = ["--paging", "never"]
+
+[merge]
+    command = "nvim"
+    args = ["-d"]
