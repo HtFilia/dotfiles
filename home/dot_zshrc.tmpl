@@ -1,0 +1,350 @@
+#!/usr/bin/env zsh
+# ~/.zshrc — managed by chezmoi
+# shellcheck disable=all
+
+# ============================================================================
+# OS DETECTION (available to the rest of the file)
+# ============================================================================
+{{- if eq .chezmoi.os "darwin" }}
+export DOTFILES_OS="macos"
+{{- else if eq .chezmoi.os "linux" }}
+{{- if .chezmoi.kernel.osrelease }}
+{{-   if contains "microsoft" (lower .chezmoi.kernel.osrelease) }}
+export DOTFILES_OS="wsl"
+{{-   else }}
+export DOTFILES_OS="linux"
+{{-   end }}
+{{- else }}
+export DOTFILES_OS="linux"
+{{- end }}
+{{- end }}
+
+# ============================================================================
+# PATH (prepend, in order of priority)
+# ============================================================================
+typeset -U path PATH  # deduplicate
+path=(
+  "$HOME/.local/bin"
+  "$HOME/.cargo/bin"
+  "$HOME/go/bin"
+  $path
+)
+
+{{- if eq .chezmoi.os "darwin" }}
+# Homebrew (Apple Silicon first, then Intel fallback)
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+{{- else }}
+# Linuxbrew (optional — only if installed)
+if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+{{- end }}
+
+export PATH
+
+# ============================================================================
+# EDITOR & LOCALE
+# ============================================================================
+export EDITOR="nvim"
+export VISUAL="nvim"
+export PAGER="less"
+export LESS="-R --mouse --wheel-lines=3"
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+# Colored man pages via bat
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
+# ============================================================================
+# HISTORY
+# ============================================================================
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
+setopt EXTENDED_HISTORY
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_VERIFY
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+
+# ============================================================================
+# ZSH OPTIONS
+# ============================================================================
+setopt AUTO_CD
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_SILENT
+setopt INTERACTIVE_COMMENTS
+setopt NO_BEEP
+setopt PROMPT_SUBST
+
+# ============================================================================
+# COMPLETION
+# ============================================================================
+autoload -Uz compinit
+# Only regenerate dump once per day for speed
+if [[ -n "$HOME/.zcompdump"(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
+zstyle ':completion:*:warnings' format '%F{red}No matches for:%f %d'
+
+# ============================================================================
+# PLUGINS (loaded manually — no framework overhead)
+# ============================================================================
+ZSH_PLUGIN_DIR="$HOME/.local/share/zsh/plugins"
+
+# zsh-autosuggestions
+if [[ -f "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#565f89"
+fi
+
+# zsh-syntax-highlighting (must be loaded LAST)
+if [[ -f "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
+  source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+
+# ============================================================================
+# MODERN CLI TOOLS
+# ============================================================================
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+  eval "$(starship init zsh)"
+fi
+
+# zoxide (smart cd)
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
+# fzf
+if command -v fzf &>/dev/null; then
+  source <(fzf --zsh) 2>/dev/null || true
+  export FZF_DEFAULT_OPTS="
+    --height 40% --layout=reverse --border=rounded
+    --color=bg+:#283457,bg:#1a1b26,spinner:#ff9e64,hl:#7aa2f7
+    --color=fg:#c0caf5,header:#7aa2f7,info:#7dcfff,pointer:#ff9e64
+    --color=marker:#ff9e64,fg+:#c0caf5,prompt:#7dcfff,hl+:#7aa2f7
+  "
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+fi
+
+# atuin (shell history)
+if command -v atuin &>/dev/null; then
+  eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
+# direnv
+if command -v direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
+# ============================================================================
+# ALIASES — Modern CLI replacements
+# ============================================================================
+if command -v eza &>/dev/null; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -l --icons --group-directories-first --git'
+  alias la='eza -la --icons --group-directories-first --git'
+  alias lt='eza --tree --icons --level=2'
+  alias ltt='eza --tree --icons --level=3'
+fi
+
+if command -v bat &>/dev/null; then
+  alias cat='bat --paging=never'
+  alias less='bat'
+fi
+
+command -v rg &>/dev/null && alias grep='rg'
+command -v fd &>/dev/null && alias find='fd'
+command -v lazygit &>/dev/null && alias lg='lazygit'
+
+# ============================================================================
+# ALIASES — Git
+# ============================================================================
+alias g='git'
+alias gs='git status -sb'
+alias ga='git add'
+alias gaa='git add --all'
+alias gc='git commit'
+alias gcm='git commit -m'
+alias gca='git commit --amend'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gb='git branch'
+alias gp='git push'
+alias gpl='git pull'
+alias gl='git log --oneline --graph --decorate'
+alias gll='git log --oneline --graph --decorate --all'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias gst='git stash'
+alias gstp='git stash pop'
+
+# ============================================================================
+# ALIASES — Docker / Podman
+# ============================================================================
+if command -v docker &>/dev/null; then
+  alias d='docker'
+  alias dc='docker compose'
+  alias dps='docker ps --format "table {{`{{.Names}}`}}\t{{`{{.Image}}`}}\t{{`{{.Status}}`}}\t{{`{{.Ports}}`}}"'
+  alias dpsa='docker ps -a --format "table {{`{{.Names}}`}}\t{{`{{.Image}}`}}\t{{`{{.Status}}`}}"'
+  alias di='docker images'
+  alias dex='docker exec -it'
+  alias dlog='docker logs -f'
+  alias dprune='docker system prune -af --volumes'
+elif command -v podman &>/dev/null; then
+  alias d='podman'
+  alias dc='podman compose'
+  alias dps='podman ps'
+  alias di='podman images'
+fi
+
+# ============================================================================
+# ALIASES — Navigation & shortcuts
+# ============================================================================
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias -- -='cd -'
+
+alias mkdir='mkdir -p'
+alias df='df -h'
+alias du='du -h'
+alias free='free -h'
+alias ports='ss -tulpn'
+
+alias reload='source ~/.zshrc'
+alias zshconfig='$EDITOR ~/.zshrc'
+alias nvimconfig='$EDITOR ~/.config/nvim'
+alias dotfiles='chezmoi cd'
+
+# ============================================================================
+# OS-SPECIFIC ALIASES
+# ============================================================================
+{{- if eq .chezmoi.os "darwin" }}
+# macOS
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
+alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
+alias brewup='brew update && brew upgrade && brew cleanup'
+{{- else }}
+# Linux / WSL
+alias aptup='sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
+alias open='xdg-open'
+{{- end }}
+
+{{- if and (eq .chezmoi.os "linux") .chezmoi.kernel.osrelease (contains "microsoft" (lower .chezmoi.kernel.osrelease)) }}
+# WSL-specific
+alias pbcopy='clip.exe'
+alias pbpaste='powershell.exe -command "Get-Clipboard" | sed "s/\r//"'
+alias explorer='explorer.exe'
+alias winhome='cd "/mnt/c/Users/$USER"'
+{{- end }}
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
+# mkdir + cd
+mkcd() { mkdir -p "$1" && cd "$1" || return; }
+
+# Extract any archive
+extract() {
+  if [[ -f "$1" ]]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"     ;;
+      *.tar.gz)    tar xzf "$1"     ;;
+      *.tar.xz)    tar xJf "$1"     ;;
+      *.bz2)       bunzip2 "$1"     ;;
+      *.rar)       unrar x "$1"     ;;
+      *.gz)        gunzip "$1"      ;;
+      *.tar)       tar xf "$1"      ;;
+      *.tbz2)      tar xjf "$1"     ;;
+      *.tgz)       tar xzf "$1"     ;;
+      *.zip)       unzip "$1"       ;;
+      *.Z)         uncompress "$1"  ;;
+      *.7z)        7z x "$1"        ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# Fuzzy find + edit
+fe() {
+  local file
+  file=$(fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}') && \
+    "${EDITOR:-nvim}" "$file"
+}
+
+# Fuzzy cd into directory
+fcd() {
+  local dir
+  dir=$(fd --type d --hidden --exclude .git | fzf --preview 'eza --tree --level=2 --color=always {}') && \
+    cd "$dir" || return
+}
+
+# Git commit with fzf-selected files
+fga() {
+  git status -s | fzf -m --preview 'git diff --color=always {2}' | awk '{print $2}' | xargs git add
+}
+
+# Kill process with fzf
+fkill() {
+  local pid
+  pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
+  [[ -n "$pid" ]] && echo "$pid" | xargs kill -"${1:-9}"
+}
+
+# ============================================================================
+# LANGUAGE RUNTIMES
+# ============================================================================
+
+# Python — uv (modern pip/venv/python manager)
+if command -v uv &>/dev/null; then
+  eval "$(uv generate-shell-completion zsh 2>/dev/null)"
+fi
+
+# Node — fnm (fast node manager)
+if command -v fnm &>/dev/null; then
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi
+
+# Rust
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# Go
+export GOPATH="${GOPATH:-$HOME/go}"
+export GOBIN="$GOPATH/bin"
+[[ -d "$GOBIN" ]] && path+=("$GOBIN")
+
+# ============================================================================
+# CLAUDE CODE (AI assistant)
+# ============================================================================
+alias cc='claude'
+alias ccr='claude --resume'
+
+# ============================================================================
+# LOCAL OVERRIDES (not tracked in git)
+# ============================================================================
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

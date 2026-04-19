@@ -1,0 +1,12 @@
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Local overrides
+*.local
+.env
+.env.local
+
+# chezmoi state
+.chezmoistate

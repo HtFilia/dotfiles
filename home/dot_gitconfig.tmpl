@@ -1,0 +1,108 @@
+[user]
+    name = {{ .name }}
+    email = {{ .email }}
+
+[init]
+    defaultBranch = main
+
+[core]
+    editor = nvim
+    autocrlf = input
+    pager = delta
+    excludesfile = ~/.config/git/ignore
+    attributesfile = ~/.config/git/attributes
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    line-numbers = true
+    side-by-side = false
+    syntax-theme = "Tokyo Night"
+    features = decorations
+
+[delta "decorations"]
+    commit-decoration-style = "#7aa2f7 box ul"
+    file-style = bold "#c0caf5"
+    file-decoration-style = "#7aa2f7 ul"
+    hunk-header-decoration-style = "#7aa2f7 box"
+
+[merge]
+    conflictstyle = diff3
+    tool = nvim
+
+[mergetool "nvim"]
+    cmd = nvim -d $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+
+[diff]
+    colorMoved = default
+    algorithm = histogram
+
+[pull]
+    rebase = true
+
+[push]
+    default = current
+    autoSetupRemote = true
+    followTags = true
+
+[rebase]
+    autoStash = true
+    autoSquash = true
+
+[fetch]
+    prune = true
+    pruneTags = true
+
+[color]
+    ui = auto
+
+[column]
+    ui = auto
+
+[branch]
+    sort = -committerdate
+
+[tag]
+    sort = version:refname
+
+[help]
+    autocorrect = prompt
+
+[rerere]
+    enabled = true
+
+[commit]
+    verbose = true
+
+[log]
+    date = iso
+
+[alias]
+    # Concise status
+    s = status -sb
+    # Pretty log
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    lga = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --all
+    # Last commit
+    last = log -1 HEAD --stat
+    # Undo last commit (keep changes)
+    undo = reset --soft HEAD^
+    # Amend without editing message
+    amend = commit --amend --no-edit
+    # Branch list sorted by date
+    br = branch --sort=-committerdate
+    # Cleanup merged branches
+    cleanup = "!git branch --merged | grep -vE '^\\*|main$|master$|develop$' | xargs -r git branch -d"
+    # Show aliases
+    aliases = config --get-regexp alias
+
+{{- if eq .machineType "work" }}
+
+# --- Work machine overrides ---
+# Set work-specific signing key, etc. in ~/.gitconfig.local if needed
+{{- end }}
+
+[include]
+    path = ~/.gitconfig.local

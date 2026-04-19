@@ -1,0 +1,24 @@
+# Force LF line endings for shell scripts
+*.sh text eol=lf
+*.zsh text eol=lf
+*.bash text eol=lf
+
+# Source code
+*.py text
+*.js text
+*.ts text
+*.rs text
+*.go text
+*.toml text
+*.yaml text
+*.yml text
+*.md text
+*.json text
+
+# Binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
