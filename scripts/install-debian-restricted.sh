@@ -165,53 +165,179 @@ fi
 success "Base apt packages installed."
 
 # ============================================================================
-# 2. RUST — apt works on Debian 13; Debian 12 needs a newer toolchain
+# 2. RUST — backports-first strategy
 # ============================================================================
-# Many modern Rust tools (starship, eza, uv) now require rustc ≥ 1.74.
-# Debian 12 ships 1.63. If we're on that, we bootstrap rustup.
-
+# Debian 12 ships rustc 1.63, too old for starship/eza/uv/zoxide/delta.
+# Strategy:
+#   1. Check if bookworm-backports is enabled & reachable → install Rust 1.78+ from there.
+#   2. Else try rustup (only useful if IT gave you a mirror; default rustup
+#      uses static.rust-lang.org which is often blocked).
+#   3. Else keep the system rustc and let each tool build_or_warn decide
+#      whether it can still compile (most modern tools won't).
+# ============================================================================
 log "Setting up Rust toolchain..."
 
 RUST_MIN="1.74"
 
-# Install apt's rustc/cargo first — it's needed to bootstrap rustup anyway
-sudo apt install -y rustc cargo
+# --- Helpers shared by Rust + Go sections ----------------------------------
+CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+BACKPORTS_SUITE="${CODENAME}-backports"
 
-current_rustc=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
-info "System rustc: $current_rustc (minimum required: $RUST_MIN)"
+backports_available() {
+  [[ -n "${BACKPORTS_SUITE:-}" ]] || return 1
+  apt-cache policy 2>/dev/null | grep -q " ${BACKPORTS_SUITE}/" || return 1
+  apt-cache show -t "$BACKPORTS_SUITE" rustc 2>/dev/null | grep -q '^Package:'
+}
 
-if version_ge "$current_rustc" "$RUST_MIN"; then
-  success "System rustc is recent enough."
-elif [[ "${SKIP_RUSTUP:-0}" == "1" ]]; then
-  warn "SKIP_RUSTUP=1 and system rustc is too old — some builds will fail."
-else
-  warn "System rustc < $RUST_MIN — bootstrapping rustup from GitHub source..."
-  warn "NOTE: rustup itself needs static.rust-lang.org to download toolchains."
-  warn "If that host is blocked, ask IT for a mirror and set RUSTUP_DIST_SERVER."
-
-  # Build rustup-init from source using the apt rustc we just installed
-  src=$(git_clone_or_update rust-lang/rustup)
-  if (cd "$src" && cargo build --release --bin rustup-init); then
-    install -m 755 "$src/target/release/rustup-init" "$LOCAL_BIN/rustup-init"
-    if "$LOCAL_BIN/rustup-init" -y --no-modify-path --default-toolchain stable; then
-      # shellcheck disable=SC1091
-      [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
-      success "rustup installed; using stable toolchain."
-    else
-      warn "rustup-init couldn't fetch stable toolchain — staying on system rustc."
-    fi
+try_enable_backports() {
+  if backports_available; then
+    return 0
+  fi
+  if curl -fsI --max-time 5 "http://deb.debian.org/debian/dists/${BACKPORTS_SUITE}/Release" \
+     >/dev/null 2>&1; then
+    info "Trying to enable ${BACKPORTS_SUITE}..."
+    echo "deb http://deb.debian.org/debian ${BACKPORTS_SUITE} main" | \
+      sudo tee "/etc/apt/sources.list.d/${BACKPORTS_SUITE}.list" >/dev/null
+    sudo apt update 2>/dev/null || true
+    backports_available
   else
-    warn "Failed to build rustup-init — staying on system rustc."
+    return 1
+  fi
+}
+# ---------------------------------------------------------------------------
+
+# Check what's already available BEFORE touching apt
+current_rustc=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
+info "Current rustc on PATH: $current_rustc (minimum for modern tools: $RUST_MIN)"
+
+# If user already has a recent Rust (via rustc-web + update-alternatives,
+# rustup, or whatever), don't touch anything — installing 'rustc' from
+# the main repo would pull libstd-rust-dev, which conflicts with
+# libstd-rust-web-dev that rustc-web installs.
+if version_ge "$current_rustc" "$RUST_MIN"; then
+  success "Rust is already recent enough — leaving toolchain alone."
+else
+  # Install apt's baseline only if we have nothing usable
+  if ! command_exists rustc; then
+    info "No rustc found — installing baseline rustc/cargo from main repo."
+    sudo apt install -y rustc cargo 2>/dev/null || true
+  fi
+
+  # --- Attempt 1: Debian 12's rustc-web (Rust 1.85, in main repo!) ---
+  # rustc-web exists for building Debian's web tools (cargo, etc.).
+  # It installs as /usr/bin/rustc-1.85 + /usr/bin/cargo-1.85, and we wire
+  # them as the default via update-alternatives.
+  if apt-cache show rustc-web 2>/dev/null | grep -q '^Package:'; then
+    log "Found 'rustc-web' in apt — installing it for a modern Rust toolchain."
+    if sudo apt install -y rustc-web cargo-web; then
+      # Find the suffixed binary (e.g. rustc-1.85) and wire it up.
+      rustc_bin=$(dpkg -L rustc-web | grep -E '^/usr/bin/rustc-[0-9]+\.[0-9]+$' | head -1)
+      cargo_bin=$(dpkg -L cargo-web | grep -E '^/usr/bin/cargo-[0-9]+\.[0-9]+$' | head -1)
+      if [[ -x "$rustc_bin" && -x "$cargo_bin" ]]; then
+        sudo update-alternatives --install /usr/bin/rustc rustc "$rustc_bin" 200
+        sudo update-alternatives --install /usr/bin/cargo cargo "$cargo_bin" 200
+        hash -r
+        success "Wired $rustc_bin and $cargo_bin as default rustc/cargo."
+      else
+        warn "rustc-web installed but suffixed binaries not found at expected path."
+      fi
+    fi
+  fi
+
+  current_rustc=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
+
+  # --- Attempt 2: backports (only if rustc-web didn't help) ---
+  if ! version_ge "$current_rustc" "$RUST_MIN" && try_enable_backports; then
+    log "Installing Rust toolchain from ${BACKPORTS_SUITE}..."
+    if sudo apt install -y -t "$BACKPORTS_SUITE" rustc cargo; then
+      current_rustc=$(rustc --version | awk '{print $2}')
+      success "Installed rustc $current_rustc from backports."
+    else
+      warn "apt install from backports failed."
+    fi
+  fi
+
+  # --- Attempt 3: rustup (network-dependent; usually blocked in corp) ---
+  if ! version_ge "$(rustc --version 2>/dev/null | awk '{print $2}' || echo 0)" "$RUST_MIN" \
+      && [[ "${SKIP_RUSTUP:-0}" != "1" ]]; then
+    warn "Attempting rustup bootstrap (requires static.rust-lang.org or a mirror)..."
+    if [[ -z "${RUSTUP_DIST_SERVER:-}" ]]; then
+      warn "RUSTUP_DIST_SERVER not set — default static.rust-lang.org is often blocked in corp."
+    fi
+    src=$(git_clone_or_update rust-lang/rustup)
+    if (cd "$src" && cargo build --release --bin rustup-init 2>/dev/null); then
+      install -m 755 "$src/target/release/rustup-init" "$LOCAL_BIN/rustup-init"
+      if "$LOCAL_BIN/rustup-init" -y --no-modify-path --default-toolchain stable 2>/dev/null; then
+        [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+        success "rustup succeeded; using stable toolchain."
+      else
+        warn "rustup couldn't fetch stable toolchain (likely network-blocked)."
+      fi
+    else
+      warn "Failed to build rustup-init."
+    fi
+  fi
+
+  # --- Final state ---
+  final_rustc=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
+  if version_ge "$final_rustc" "$RUST_MIN"; then
+    success "Rust OK: rustc $final_rustc"
+  else
+    warn "Staying on rustc $final_rustc. Rust-based tools that need ≥ $RUST_MIN will be skipped."
+    warn "Workarounds:"
+    warn "  (1) sudo apt install rustc-web cargo-web (Debian 12 — uses /usr/bin/rustc-1.85)"
+    warn "  (2) Enable bookworm-backports"
+    warn "  (3) Ask IT for RUSTUP_DIST_SERVER mirror"
   fi
 fi
 
-# Make sure ~/.cargo/bin is on PATH for later builds
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # ============================================================================
-# 3. GITHUB BUILDS — Tools not in Debian (or too old)
+# 3. GO — also needs a recent version for chezmoi (≥ 1.23) and lazygit
 # ============================================================================
-# Each tool in its own function, so one failure doesn't abort the script.
+# Debian 12's golang-go is 1.19. chezmoi's go.mod requires Go 1.23+, and the
+# 'toolchain' directive in modern go.mod files triggers the error:
+#   "invalid go version 1.25.7 must match format 1.23"
+# on older Go. Same backports-first strategy as Rust.
+# ============================================================================
+log "Setting up Go toolchain..."
+
+GO_MIN="1.23"
+go_version() { go version 2>/dev/null | grep -oE 'go[0-9]+\.[0-9]+(\.[0-9]+)?' | sed 's/^go//'; }
+
+current_go=$(go_version)
+current_go="${current_go:-0.0.0}"
+info "System Go: $current_go (minimum for modern tools: $GO_MIN)"
+
+if ! version_ge "$current_go" "$GO_MIN"; then
+  # Try backports
+  if try_enable_backports && apt-cache show -t "$BACKPORTS_SUITE" golang-go &>/dev/null; then
+    log "Installing Go from ${BACKPORTS_SUITE}..."
+    sudo apt install -y -t "$BACKPORTS_SUITE" golang-go || warn "golang-go from backports failed."
+    current_go="$(go_version)"
+    current_go="${current_go:-0.0.0}"
+  fi
+
+  if version_ge "$current_go" "$GO_MIN"; then
+    success "Go OK: $current_go"
+  else
+    warn "Go $current_go is < $GO_MIN. Go-based tools (chezmoi, lazygit) will be skipped."
+    warn "Workaround: enable bookworm-backports, or install Go manually from go.dev/dl."
+  fi
+fi
+
+# Important for chezmoi: even if Go is recent enough, tell it NOT to try
+# downloading a newer toolchain when a go.mod requests it.
+export GOTOOLCHAIN=local
+export GOFLAGS="${GOFLAGS:-} -mod=mod"
+
+# ============================================================================
+# 4. GITHUB BUILDS — Tools not in Debian (or too old)
+# ============================================================================
+# Each tool in its own function. build_or_warn skips on failure and keeps going.
+# A build_rust_if_ok / build_go_if_ok wrapper also checks toolchain version
+# BEFORE attempting, so we don't burn 10 min compiling only to fail at link time.
 
 build_or_warn() {
   local name="$1" fn="$2"
@@ -226,8 +352,36 @@ build_or_warn() {
   fi
 }
 
+# Pre-flight check: skip Rust builds if toolchain is too old
+_rust_ok() {
+  local min="${1:-$RUST_MIN}"
+  local v
+  v=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
+  if version_ge "$v" "$min"; then
+    return 0
+  else
+    skip "Skipping Rust build (need rustc ≥ $min, got $v)"
+    return 1
+  fi
+}
+
+# Pre-flight check: skip Go builds if toolchain is too old
+_go_ok() {
+  local min="${1:-$GO_MIN}"
+  local v
+  v=$(go_version)
+  v="${v:-0.0.0}"
+  if version_ge "$v" "$min"; then
+    return 0
+  else
+    skip "Skipping Go build (need go ≥ $min, got $v)"
+    return 1
+  fi
+}
+
 # ---- Starship prompt ------------------------------------------------------
 build_starship() {
+  _rust_ok || return 1
   log "Building Starship..."
   local src; src=$(git_clone_or_update starship/starship)
   (cd "$src" && cargo build --release --locked) || return 1
@@ -237,6 +391,7 @@ build_or_warn starship build_starship
 
 # ---- eza ------------------------------------------------------------------
 build_eza() {
+  _rust_ok || return 1
   log "Building eza..."
   local src; src=$(git_clone_or_update eza-community/eza)
   (cd "$src" && cargo build --release --locked) || return 1
@@ -246,6 +401,7 @@ build_or_warn eza build_eza
 
 # ---- zoxide ---------------------------------------------------------------
 build_zoxide() {
+  _rust_ok || return 1
   log "Building zoxide..."
   local src; src=$(git_clone_or_update ajeetdsouza/zoxide)
   (cd "$src" && cargo build --release --locked) || return 1
@@ -255,6 +411,7 @@ build_or_warn zoxide build_zoxide
 
 # ---- git-delta ------------------------------------------------------------
 build_delta() {
+  _rust_ok || return 1
   log "Building git-delta..."
   local src; src=$(git_clone_or_update dandavison/delta)
   (cd "$src" && cargo build --release --locked) || return 1
@@ -264,9 +421,10 @@ build_or_warn delta build_delta
 
 # ---- lazygit (Go) ---------------------------------------------------------
 build_lazygit() {
+  _go_ok || return 1
   log "Building lazygit..."
   local src; src=$(git_clone_or_update jesseduffield/lazygit)
-  (cd "$src" && go build -o lazygit .) || return 1
+  (cd "$src" && GOTOOLCHAIN=local go build -o lazygit .) || return 1
   install -m 755 "$src/lazygit" "$LOCAL_BIN/lazygit"
 }
 build_or_warn lazygit build_lazygit
@@ -289,7 +447,9 @@ else
 fi
 
 # ---- Python uv ------------------------------------------------------------
+# uv requires a pretty recent Rust; bump the minimum for just this build.
 build_uv() {
+  _rust_ok "1.85" || return 1
   log "Building uv..."
   local src; src=$(git_clone_or_update astral-sh/uv)
   (cd "$src" && cargo build --release --locked --bin uv) || return 1
@@ -299,6 +459,7 @@ build_or_warn uv build_uv
 
 # ---- fnm ------------------------------------------------------------------
 build_fnm() {
+  _rust_ok || return 1
   log "Building fnm..."
   local src; src=$(git_clone_or_update Schniz/fnm)
   (cd "$src" && cargo build --release --locked) || return 1
@@ -308,9 +469,13 @@ build_or_warn fnm build_fnm
 
 # ---- chezmoi --------------------------------------------------------------
 build_chezmoi() {
+  _go_ok || return 1
   log "Building chezmoi..."
   local src; src=$(git_clone_or_update twpayne/chezmoi)
-  (cd "$src" && go build -o chezmoi .) || return 1
+  # GOTOOLCHAIN=local tells Go: do NOT try to download a newer toolchain
+  # just because go.mod has a 'toolchain' directive. Fixes:
+  #   "invalid go version 1.25.7 must match format 1.23"
+  (cd "$src" && GOTOOLCHAIN=local go build -o chezmoi .) || return 1
   install -m 755 "$src/chezmoi" "$LOCAL_BIN/chezmoi"
 }
 build_or_warn chezmoi build_chezmoi
@@ -372,7 +537,18 @@ fi
 # ============================================================================
 # 7. FINAL REPORT
 # ============================================================================
+# ============================================================================
+# 7. FINAL REPORT
+# ============================================================================
+final_rustc=$(rustc --version 2>/dev/null | awk '{print $2}' || echo "unknown")
+final_go=$(go_version)
+final_go="${final_go:-unknown}"
+
 cat <<EOF
+
+${CYAN}${BOLD}Toolchain summary:${RESET}
+  rustc: ${BOLD}${final_rustc}${RESET}   (needed ≥ $RUST_MIN for most Rust tools, ≥ 1.85 for uv)
+  go:    ${BOLD}${final_go}${RESET}   (needed ≥ $GO_MIN for chezmoi / lazygit)
 
 ${YELLOW}${BOLD}Skipped in restricted mode:${RESET}
 
@@ -393,19 +569,32 @@ ${YELLOW}${BOLD}Skipped in restricted mode:${RESET}
   ${PURPLE}⊘${RESET} ${BOLD}Claude Code${RESET}  — npm-based. If npm registry is reachable:
                      npm install -g @anthropic-ai/claude-code
 
-${YELLOW}${BOLD}If any cargo/go build above failed:${RESET}
-  It likely couldn't reach ${BOLD}crates.io${RESET} (Rust) or ${BOLD}proxy.golang.org${RESET} (Go).
-  Ask your IT for internal mirrors and configure:
+${YELLOW}${BOLD}If Rust/Go tools were skipped due to old toolchain:${RESET}
 
-    ${CYAN}# ~/.cargo/config.toml${RESET}
-    [source.crates-io]
-    replace-with = "corporate"
-    [source.corporate]
-    registry = "sparse+https://your-internal-mirror/cargo/"
+  1. ${BOLD}Enable bookworm-backports${RESET} (the easiest fix on Debian 12):
+     ${CYAN}echo 'deb http://deb.debian.org/debian bookworm-backports main' | \\
+         sudo tee /etc/apt/sources.list.d/bookworm-backports.list${RESET}
+     ${CYAN}sudo apt update${RESET}
+     ${CYAN}sudo apt install -t bookworm-backports rustc cargo golang-go${RESET}
+     Then re-run this installer.
 
-    ${CYAN}# In ~/.zshrc.local${RESET}
-    export GOPROXY=https://your-internal-mirror/goproxy,direct
-    export GOSUMDB=off
+  2. ${BOLD}Ask IT for a Rust mirror${RESET} (bypasses static.rust-lang.org block):
+     ${CYAN}export RUSTUP_DIST_SERVER=https://your-internal-rust-mirror${RESET}
+     ${CYAN}export RUSTUP_UPDATE_ROOT=\$RUSTUP_DIST_SERVER/rustup${RESET}
+     Then re-run this installer.
+
+  3. ${BOLD}Ask IT for cargo/go registry mirrors${RESET} if cargo/go builds themselves
+     can't fetch deps (separate from toolchain — these mirrors bypass
+     crates.io and proxy.golang.org):
+     ${CYAN}# ~/.cargo/config.toml${RESET}
+     [source.crates-io]
+     replace-with = "corporate"
+     [source.corporate]
+     registry = "sparse+https://your-internal-mirror/cargo/"
+
+     ${CYAN}# In ~/.zshrc.local${RESET}
+     export GOPROXY=https://your-internal-mirror/goproxy,direct
+     export GOSUMDB=off
 
 ${YELLOW}${BOLD}Next:${RESET} run ${CYAN}./scripts/verify.sh${RESET} to check what got installed.
 
