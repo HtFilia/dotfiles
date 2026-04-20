@@ -87,17 +87,14 @@ The bootstrap script will:
 .
 ├── home/                      # Files managed by chezmoi (source state)
 │   ├── dot_config/
+│   │   ├── Code/User/        # VS Code settings + keybindings
 │   │   ├── ghostty/          # Terminal config
-│   │   ├── starship/         # Prompt config
-│   │   ├── nvim/             # Neovim + LazyVim
-│   │   ├── tmux/             # tmux config
 │   │   ├── git/              # Git config + global ignore
-│   │   ├── bat/              # bat syntax highlighter
-│   │   ├── zsh/              # Zsh modules
-│   │   └── Code/User/        # VS Code settings + keybindings
-│   ├── dot_zshrc.tmpl        # Main Zsh config (templated per OS)
+│   │   ├── nvim/             # Neovim + LazyVim
+│   │   └── starship.toml     # Prompt config
 │   ├── dot_gitconfig.tmpl    # Git config (templated)
-│   └── dot_tmux.conf         # Tmux config
+│   ├── dot_tmux.conf         # Tmux config
+│   └── dot_zshrc.tmpl        # Main Zsh config (templated per OS)
 ├── scripts/
 │   ├── bootstrap.sh          # One-command installer
 │   ├── install-macos.sh      # macOS-specific installs

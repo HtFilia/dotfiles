@@ -60,9 +60,18 @@ ARCH="$(dpkg --print-architecture)"  # amd64 / arm64
 install_deb_from_github() {
   local repo="$1" pattern="$2" tmpfile
   tmpfile=$(mktemp --suffix=.deb)
-  local url
-  url=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" |
-        grep -oE "https://[^\"]*${pattern}" | head -n1)
+  # Use HTTP redirect to get the latest release tag without hitting API rate limits
+  local latest_url
+  latest_url=$(curl -Ls -o /dev/null -w %{url_effective} "https://github.com/$repo/releases/latest")
+  local tag="${latest_url##*/}"
+  # Replace %20, etc. if needed, but normally tag is just v1.2.3
+  
+  # For the actual asset, we often need to fetch the release page HTML and extract the asset URL
+  url=$(curl -fsSL "https://github.com/$repo/releases/expanded_assets/$tag" | grep -oE "href=\"/[^\"]*${pattern}\"" | head -n1 | sed 's/href=\"//' | sed 's/\"//')
+  
+  if [[ -n "$url" ]]; then
+    url="https://github.com${url}"
+  fi
   if [[ -z "$url" ]]; then
     warn "Could not find download URL for $repo (pattern: $pattern)"
     return 1
@@ -137,7 +146,9 @@ fi
 # lazygit
 if ! command -v lazygit &>/dev/null; then
   log "Installing lazygit..."
-  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+  local latest_url
+  latest_url=$(curl -Ls -o /dev/null -w %{url_effective} "https://github.com/jesseduffield/lazygit/releases/latest")
+  LAZYGIT_VERSION="${latest_url##*/v}"
   case "$ARCH" in
     amd64) LZ_ARCH="x86_64" ;;
     arm64) LZ_ARCH="arm64" ;;
