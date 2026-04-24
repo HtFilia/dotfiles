@@ -1,158 +1,152 @@
-# 🔒 Restricted mode (corporate / locked-down machines)
+# 🔒 Restricted mode (locked-down corporate workstation)
 
-For machines where only **apt (official Debian repos)** and **github.com** are reachable through the corporate firewall.
+This mode targets a **Debian 12 (bookworm)** machine where the corporate
+firewall only lets you reach:
 
-## How to bootstrap
+- official Debian apt repositories (`deb.debian.org`) + `bookworm-backports`
+- `github.com` for `git clone` (https or ssh)
 
-```bash
-# Clone the repo (only github.com is needed)
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+Every other egress is blocked — GitHub Release downloads
+(`objects.githubusercontent.com`), crates.io, proxy.golang.org, PyPI, npm,
+Docker Hub, Microsoft apt repo, Ghostty builds, etc.
 
-# Run bootstrap with --restricted flag
-./scripts/bootstrap.sh --restricted
-```
+## Two-step workflow
 
-Or via env var:
+Because you can't fetch pre-built binaries directly, a few tools must come
+from an internet-connected machine (typically your Windows laptop).
 
-```bash
-DOTFILES_MODE=restricted ./scripts/bootstrap.sh
-```
+### 1. On a machine with internet access (e.g. Windows)
 
-### Cloning via SSH instead of HTTPS
+Follow [`scripts/offline-manifest.md`](../scripts/offline-manifest.md) — it
+lists the 7 URLs to download, plus a PowerShell one-liner that fetches them
+all into `.\dotfiles-offline-assets\`.
 
-If your corporate firewall allows GitHub SSH (`git@github.com`) but not HTTPS:
+Transfer the resulting folder to the workstation at `~/dotfiles-offline-assets/`
+via WinSCP, scp from WSL, or whatever file-transfer channel IT allows.
 
-```bash
-# Pass --ssh through to the installer
-./scripts/install-debian-restricted.sh --ssh
+### 2. On the restricted workstation
 
-# Or set the base URL yourself
-GITHUB_BASE="git@github.com:" ./scripts/bootstrap.sh --restricted
-```
-
-### Verify what actually got installed
+Clone the dotfiles repo (`git clone` is reachable) and run the installer:
 
 ```bash
-./scripts/verify.sh
+git clone https://github.com/HtFilia/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./scripts/install-debian-restricted.sh --enable-backports
 ```
 
-Prints a per-tool status line (✓ installed / ✗ missing / ○ optional).
+First run: everything that can be installed from apt and offline assets
+lands immediately. If any offline archive is missing, the script prints a
+clear manifest at the end telling you exactly what to download and where
+to put it.
 
-## What's different from the normal mode
+Re-run the script after placing any missing archive — it's idempotent.
 
-| Tool | Normal mode | Restricted mode |
-|---|---|---|
-| Zsh, tmux, ripgrep, fd, bat, fzf, Python, Go, Rust, Docker | apt | apt (same) |
-| Starship, eza, zoxide, git-delta | custom repo / `curl \| sh` | **built from GitHub with `cargo`** |
-| lazygit, chezmoi | custom repo / `curl \| sh` | **built from GitHub with `go`** |
-| Neovim | curl GitHub release | **built from GitHub source** |
-| uv, fnm | `curl \| sh` from astral.sh / vercel.app | **built from GitHub with `cargo`** |
-| FiraCode Nerd Font | GitHub release archive | **sparse git clone of nerd-fonts repo** |
-| Ghostty | brew cask / official build | ⊘ **skipped** (uses GNOME Terminal) |
-| VS Code | Microsoft apt repo | ⊘ **skipped** (uses nvim only) |
-| GitHub CLI (gh) | cli.github.com apt repo | ⊘ skipped (build manually if needed) |
-| atuin | `curl \| sh` | ⊘ skipped |
-| Claude Code | `claude.ai/install.sh` | ⊘ skipped (install only if npm allowed) |
+## Flags
 
-Everything else works identically — same dotfiles, same theme, same keybindings.
-
-## ⚠️ Registry gotchas
-
-When you run `cargo build` or `go build`, those toolchains will try to download dependencies from **crates.io** and **proxy.golang.org** respectively. If those are blocked too, you need to configure your IT's internal mirror:
-
-### Rust (crates.io)
-
-```bash
-# In ~/.cargo/config.toml
-[source.crates-io]
-replace-with = "corporate"
-
-[source.corporate]
-registry = "sparse+https://your-internal-mirror/cargo/"
+```text
+--enable-backports    Add bookworm-backports sources, install Neovim from them
+--assets-dir PATH     Override $OFFLINE_ASSETS_DIR (default ~/dotfiles-offline-assets)
+--skip-docker         Don't install docker.io
+--skip-fonts          Don't install FiraCode Nerd Font
+--pull-latest         Re-install even if a binary already exists
+--dry-run             Print actions, don't execute them
+-h, --help            Show the header
 ```
 
-### Go (proxy.golang.org)
+## What lands from where
 
-```bash
-export GOPROXY=https://your-internal-mirror/goproxy,direct
-export GOSUMDB=off   # or point to your internal sum DB
-```
+| Tool | Source on the restricted machine |
+|---|---|
+| zsh, tmux, git, ripgrep, fd-find, bat, fzf, direnv, docker.io | **apt (main)** |
+| **zoxide**, **git-delta** | **apt (main)** (used to be built from source) |
+| **rust-analyzer, gopls, python3-pylsp, shellcheck** | **apt (main)** — LSPs for LazyVim |
+| python3, python3-jinja2, python3-yaml | **apt (main)** — used by `render-dotfiles.py` |
+| Neovim | **apt (bookworm-backports)** with `--enable-backports`, else offline tarball |
+| starship, eza, fnm, uv, lazygit, FiraCode Nerd Font | **offline SCP** (`~/dotfiles-offline-assets/`) |
+| zsh-autosuggestions, zsh-syntax-highlighting, tmux TPM | **git clone** |
+| Dotfiles (zshrc, tmux, nvim, starship.toml, …) | rendered by `scripts/render-dotfiles.py` and symlinked |
 
-### Python (PyPI)
+## Intentionally excluded
 
-```bash
-# In ~/.pip/pip.conf
-[global]
-index-url = https://your-internal-mirror/pypi/simple/
-```
+These don't work in restricted mode and are not in the manifest:
 
-### npm (if needed for Claude Code, Copilot, etc.)
+- **chezmoi** — replaced by `scripts/render-dotfiles.py`. The chezmoi
+  templates in `home/` remain intact so your personal machine keeps using
+  chezmoi normally. See [the renderer notes](#dotfile-rendering-without-chezmoi)
+  below.
+- **VS Code** — Microsoft apt repo unreachable (use `nvim`).
+- **GitHub CLI** — `cli.github.com` apt repo unreachable.
+- **atuin** — needs an external sync server.
+- **Claude Code** — npm registry unreachable.
+- **Ghostty** — no Debian package, requires Zig.
 
-```bash
-npm config set registry https://your-internal-mirror/npm/
-```
+## Dotfile rendering without chezmoi
 
-Ask your IT / DevOps team whether they have these mirrors — most large companies do. If not, **the restricted bootstrap will fail during `cargo build` / `go build`** because it can't fetch dependencies.
+`scripts/render-dotfiles.py` is a ~350-line Python script using only the
+stdlib plus `python3-yaml` (apt). It implements the small subset of Go
+template syntax your dotfiles actually use (`{{ .chezmoi.os }}`,
+`{{- if eq … }}`, `{{- else if … }}`, `{{- end }}`, `contains`, `lower`,
+plus the `{{` `...` `}}` raw-string escape for Docker alias formatting).
 
-## LazyVim + Mason caveat
+On first run it prompts for:
 
-LazyVim uses `mason.nvim` to install LSP servers. Mason downloads binaries from various sources (npm, pip, GitHub releases, custom URLs). Many of these will be **blocked** in a corporate environment.
+- `name`, `email` — written to `[user]` in `~/.gitconfig`
+- `machineType` — `work` or `personal`
+- `hostname` — free-form label
 
-**Two options:**
+These are persisted in `~/.config/dotfiles/machine.yaml`. Re-runs are
+non-interactive and idempotent.
 
-1. **Install LSPs via apt where possible** (recommended):
-   ```bash
-   sudo apt install \
-     python3-lsp-server \
-     gopls \
-     rust-analyzer \
-     nodejs npm   # for typescript-language-server, via npm
-   ```
-   Then configure LazyVim to *not* auto-install via Mason (add to `~/.config/nvim/lua/plugins/`):
-   ```lua
-   return {
-     { "williamboman/mason.nvim", enabled = false },
-     { "williamboman/mason-lspconfig.nvim", enabled = false },
-   }
-   ```
+Rendered files live at `~/.config/dotfiles/rendered/`; `$HOME` contains
+symlinks pointing at them (for templated files) or directly at the repo
+(for non-templated ones). Check `./scripts/verify.sh` after every install.
 
-2. **Use Mason through an internal mirror** — unlikely unless your company has a GitHub Releases proxy.
+## LazyVim / Mason caveat
 
-## Treesitter parsers
+Mason downloads LSP binaries from many upstreams (npm, pip, GitHub
+Releases) that are blocked here. The installer copies
+`home/dot_config/nvim/lua/plugins/mason-disabled.lua.example` →
+`~/.config/nvim/lua/plugins/mason-disabled.lua`, which disables Mason and
+`mason-lspconfig`.
 
-LazyVim bundles `nvim-treesitter`, which downloads parser grammars from GitHub (✅ allowed) and compiles them locally with `gcc`/`cc` (✅ available from `build-essential`). So **treesitter works fine** in restricted mode.
+LSPs already installed via apt cover the main languages:
 
-## Font on restricted WSL Windows host
+- Rust: `rust-analyzer`
+- Go: `gopls`
+- Python: `python3-pylsp`
+- Shell: `shellcheck`
 
-If your Windows host also can't reach GitHub releases directly:
+TypeScript / Lua / other LSPs aren't covered — add them manually if you
+need them (not in the manifest).
 
-1. On a machine with free access, download `FiraCode.zip` from `github.com/ryanoasis/nerd-fonts/releases/latest`
-2. Transfer via corporate file-sharing
-3. Double-click each `.ttf` → "Install for all users"
+## Treesitter
+
+`nvim-treesitter` clones parser grammars from GitHub (`git` — allowed)
+and compiles them locally with `cc` (from `build-essential`). No network
+beyond `github.com` is needed, so treesitter works fine.
 
 ## Verifying the install
 
-After `./scripts/bootstrap.sh --restricted` completes, run:
-
 ```bash
 ./scripts/verify.sh
 ```
 
-It checks every tool (required + optional) and prints a version per line.
+Prints per-tool status. After SCP'ing all assets, every required tool
+should be `✓`. `chezmoi`, `atuin`, `claude`, `code`, and `fnm` are
+optional (`○` if missing).
 
-## Troubleshooting
+## Re-running
 
-### `cargo build` fails with "failed to fetch crate X"
-→ crates.io is blocked. See the "Registry gotchas" section above.
+The installer is idempotent:
 
-### `go build` fails with "dial tcp: lookup proxy.golang.org: no such host"
-→ Set `GOPROXY` (see above) or use `GOFLAGS=-mod=vendor` if the repo vendors its deps.
+- apt is a no-op once packages are up to date.
+- Offline assets are skipped if the binary already exists on `$PATH`;
+  pass `--pull-latest` to force reinstall.
+- Zsh plugins and TPM are checked for `.git` and skipped if already cloned.
+- The dotfiles renderer recreates symlinks only when their targets differ.
 
-### Building Neovim fails with "LuaJIT not found"
-```bash
-sudo apt install luajit libluajit-5.1-dev
-```
+## Bumping pins
 
-### `pip install ...` fails
-PyPI is blocked. Use your internal mirror or `uv` with a vendored package set.
+Edit the `*_REF` defaults at the top of `scripts/install-debian-restricted.sh`
+and update the URLs/filenames in `scripts/offline-manifest.md` to match.
+Re-download on the connected machine, transfer across, re-run. Done.
