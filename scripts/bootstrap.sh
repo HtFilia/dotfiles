@@ -117,9 +117,10 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --restricted       Use GitHub-only build-from-source mode (for locked-down
-                     corporate machines where only apt + github.com are
-                     reachable). Linux only.
+  --restricted       Locked-down corporate Debian 12 mode. Installs from apt
+                     + bookworm-backports; everything else comes from
+                     pre-built binaries placed in ~/dotfiles-offline-assets/
+                     (see scripts/offline-manifest.md). Linux only.
   -y, --yes          Assume 'yes' to all prompts.
   -h, --help         Show this help.
 
@@ -179,7 +180,12 @@ main() {
     ;;
   linux | wsl)
     if [[ "$mode" == "restricted" ]]; then
+      # In restricted mode the installer is self-contained: it handles apt,
+      # offline assets, zsh plugins, tmux TPM, dotfiles rendering (no
+      # chezmoi), Mason disable, and the default-shell switch. Nothing else
+      # to do here.
       bash "${SCRIPT_DIR}/install-debian-restricted.sh"
+      exit $?
     else
       bash "${SCRIPT_DIR}/install-debian.sh" "$os"
     fi
@@ -189,18 +195,15 @@ main() {
   echo
 
   # ---- Install Nerd Font (skip on WSL — handled by Windows host) ----
-  # In restricted mode, the font is installed by install-debian-restricted.sh itself.
-  if [[ "$mode" != "restricted" ]]; then
-    if [[ "$os" != "wsl" ]]; then
-      log "Installing FiraCode Nerd Font..."
-      bash "${SCRIPT_DIR}/install-fonts.sh"
-      success "Font installed."
-    else
-      warn "On WSL, install FiraCode Nerd Font on the Windows host instead."
-      warn "  → https://github.com/ryanoasis/nerd-fonts/releases"
-    fi
-    echo
+  if [[ "$os" != "wsl" ]]; then
+    log "Installing FiraCode Nerd Font..."
+    bash "${SCRIPT_DIR}/install-fonts.sh"
+    success "Font installed."
+  else
+    warn "On WSL, install FiraCode Nerd Font on the Windows host instead."
+    warn "  → https://github.com/ryanoasis/nerd-fonts/releases"
   fi
+  echo
 
   # ---- Install Zsh plugins manually (no framework) ----
   log "Installing Zsh plugins..."
@@ -232,19 +235,7 @@ main() {
   log "Installing chezmoi..."
   if ! command_exists chezmoi; then
     export PATH="$HOME/.local/bin:$PATH"
-    if [[ "$mode" == "restricted" ]]; then
-      # Build from source (requires `go` from apt)
-      log "Building chezmoi from source (restricted mode)..."
-      local build_dir="$HOME/.local/src/chezmoi"
-      if [[ ! -d "$build_dir/.git" ]]; then
-        git clone --depth=1 https://github.com/twpayne/chezmoi.git "$build_dir"
-      fi
-      (cd "$build_dir" && go build -o chezmoi .)
-      install -m 755 "$build_dir/chezmoi" "$HOME/.local/bin/chezmoi"
-    else
-      # Use the official installer
-      sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-    fi
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
     success "chezmoi installed."
   else
     info "chezmoi already present."

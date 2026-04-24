@@ -73,7 +73,7 @@ check_tool docker-compose --version 1
 check_tool git --version
 
 section "Dotfiles manager"
-check_tool chezmoi --version
+check_tool chezmoi --version 1   # optional — not used in restricted mode
 
 section "AI / Assistant"
 check_tool claude --version 1
