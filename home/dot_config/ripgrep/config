@@ -1,0 +1,10 @@
+--smart-case
+--follow
+--hidden
+--glob=!.git/*
+--glob=!node_modules/*
+--glob=!target/*
+--glob=!dist/*
+--glob=!.venv/*
+--glob=!*.lock
+--glob=!*.min.js

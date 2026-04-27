@@ -58,6 +58,10 @@ export LC_ALL="en_US.UTF-8"
 
 # Colored man pages via bat
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export BAT_THEME="TwoDark"
+
+# Ripgrep config
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 
 # ============================================================================
 # HISTORY
@@ -131,6 +135,7 @@ fi
 # zoxide (smart cd)
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh --cmd cd)"
+  alias zi='cd -i'   # interactive fuzzy jump
 fi
 
 # fzf
@@ -198,6 +203,15 @@ alias gd='git diff'
 alias gds='git diff --staged'
 alias gst='git stash'
 alias gstp='git stash pop'
+alias gstl='git stash list'
+alias gf='git fetch'
+alias gfa='git fetch --all --prune'
+alias grb='git rebase'
+alias grbi='git rebase -i'
+alias gcp='git cherry-pick'
+alias grs='git restore'
+alias grss='git restore --staged'
+alias grt='git rev-parse --show-toplevel'
 
 # ============================================================================
 # ALIASES — Docker / Podman
@@ -235,7 +249,11 @@ alias ports='ss -tulpn'
 alias reload='source ~/.zshrc'
 alias zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
+{{- if eq .machineType "work" }}
+alias dotfiles='cd "$HOME/dotfiles"'
+{{- else }}
 alias dotfiles='chezmoi cd'
+{{- end }}
 
 # ============================================================================
 # OS-SPECIFIC ALIASES
@@ -249,7 +267,17 @@ alias brewup='brew update && brew upgrade && brew cleanup'
 {{- else }}
 # Linux / WSL
 alias aptup='sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
+alias apti='sudo apt install'
+alias apts='apt search'
+alias aptrm='sudo apt remove'
+alias aptshow='apt show'
 alias open='xdg-open'
+# systemd shortcuts
+alias sc='systemctl'
+alias scu='systemctl --user'
+alias jcf='journalctl -fu'
+alias jcu='journalctl -u'
+alias jcb='journalctl -b'
 {{- end }}
 
 {{- if and (eq .chezmoi.os "linux") .chezmoi.kernel.osrelease (contains "microsoft" (lower .chezmoi.kernel.osrelease)) }}
@@ -316,6 +344,63 @@ fkill() {
   [[ -n "$pid" ]] && echo "$pid" | xargs kill -"${1:-9}"
 }
 
+# Interactive ripgrep — live search + bat preview
+frg() {
+  local result
+  result=$(
+    rg --color=always --line-number --no-heading --smart-case "${*:-}" |
+      fzf --ansi \
+          --delimiter ':' \
+          --preview 'bat --color=always --highlight-line {2} {1}' \
+          --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
+          --bind 'change:first'
+  )
+  [[ -n "$result" ]] && ${EDITOR:-nvim} "$(cut -d: -f1 <<<"$result")" +"$(cut -d: -f2 <<<"$result")"
+}
+
+# Fuzzy history search (prints into readline buffer)
+fh() {
+  print -z "$(fc -rln 1 | fzf --no-sort --tac --query="$*")"
+}
+
+# cd to git root
+groot() {
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not in a git repo."; return 1; }
+  cd "$root" || return
+}
+
+# Clone and cd
+gclone() {
+  git clone "$1" "${2}" && cd "${2:-$(basename "$1" .git)}" || return
+}
+
+# WIP commit (save state, push later)
+gwip()   { git add -A && git commit -m "wip: $(date '+%Y-%m-%d %H:%M')"; }
+gunwip() { git log --oneline -1 | grep -q "wip:" && git reset HEAD~1; }
+
+# Quick HTTP server in current directory
+serve() {
+  python3 -m http.server "${1:-8000}"
+}
+
+# Grep running processes
+psg() {
+  ps aux | grep -v grep | grep -i "$@"
+}
+
+# Smart venv activation (.venv first, then venv)
+activate() {
+  if [[ -f .venv/bin/activate ]]; then
+    source .venv/bin/activate
+  elif [[ -f venv/bin/activate ]]; then
+    source venv/bin/activate
+  else
+    echo "No .venv or venv found. Create with: uv venv"
+    return 1
+  fi
+}
+
 # ============================================================================
 # LANGUAGE RUNTIMES
 # ============================================================================
@@ -323,6 +408,12 @@ fkill() {
 # Python — uv (modern pip/venv/python manager)
 if command -v uv &>/dev/null; then
   eval "$(uv generate-shell-completion zsh 2>/dev/null)"
+  alias uvr='uv run'
+  alias uvs='uv sync'
+  alias uva='uv add'
+  alias uvp='uv pip'
+  alias pyi='uv pip install'
+  alias pyls='uv pip list'
 fi
 
 # Node — fnm (fast node manager)
