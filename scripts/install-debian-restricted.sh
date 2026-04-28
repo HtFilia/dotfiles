@@ -78,6 +78,7 @@ EZA_REF="${EZA_REF:-v0.21.5}"
 FNM_REF="${FNM_REF:-v1.38.1}"
 UV_REF="${UV_REF:-0.6.17}"
 LAZYGIT_REF="${LAZYGIT_REF:-v0.48.0}"
+DELTA_REF="${DELTA_REF:-0.18.2}"
 FONT_REF="${FONT_REF:-v3.3.0}"
 NVIM_REF="${NVIM_REF:-stable}"
 
@@ -153,7 +154,7 @@ apt_packages=(
   python3 python3-pip python3-venv python3-dev
   python3-jinja2 python3-yaml
   ripgrep fd-find bat fzf
-  zoxide git-delta
+  zoxide
   jq tree htop
   fontconfig xclip xsel direnv
   rust-analyzer gopls python3-pylsp shellcheck
@@ -324,6 +325,15 @@ if [[ -x "$LOCAL_BIN/uv" && ! -e "$LOCAL_BIN/uvx" ]]; then
   run ln -sf uv "$LOCAL_BIN/uvx"
   info "Linked uv → uvx"
 fi
+
+# --- git-delta --------------------------------------------------------------
+delta_archive="delta-${DELTA_REF}-x86_64-unknown-linux-gnu.tar.gz"
+handle_tool delta \
+  "git-delta ${DELTA_REF}" \
+  "$delta_archive" \
+  "https://github.com/dandavison/delta/releases/download/${DELTA_REF}/${delta_archive}" \
+  "delta" \
+  "delta"
 
 # --- lazygit ----------------------------------------------------------------
 lazygit_archive="lazygit_$(bare_version "$LAZYGIT_REF")_Linux_x86_64.tar.gz"

@@ -13,7 +13,7 @@ channel IT allows.
 ## Workflow
 
 1. On Windows (or any connected machine), create a folder `dotfiles-offline-assets/`.
-2. Download the 7 files listed below into that folder — right-click the URL and
+2. Download the 8 files listed below into that folder — right-click the URL and
    **Save As**, or use the PowerShell snippet at the end of this file.
 3. Transfer the folder to the workstation at `~/dotfiles-offline-assets/`:
    - **WinSCP / FileZilla / VS Code Remote** — drag and drop.
@@ -36,6 +36,7 @@ runtime with env vars if you bump them; keep this file in sync.
 | fnm | `v1.38.1` | `FNM_REF` |
 | uv | `0.6.17` | `UV_REF` |
 | lazygit | `v0.48.0` | `LAZYGIT_REF` |
+| git-delta | `0.18.2` | `DELTA_REF` |
 | FiraCode Nerd Font | `v3.3.0` | `FONT_REF` |
 | neovim *(fallback)* | `stable` | `NVIM_REF` |
 
@@ -75,6 +76,15 @@ pattern-matches on them.
 - **Save as** : `lazygit_0.48.0_Linux_x86_64.tar.gz`
 - **Installs to** : `~/.local/bin/lazygit`
 
+### git-delta
+
+Used by git as pager/diff filter (configured in `~/.gitconfig`). Not available
+in the corporate apt mirror.
+
+- **URL** : https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz
+- **Save as** : `delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz`
+- **Installs to** : `~/.local/bin/delta`
+
 ### FiraCode Nerd Font
 
 - **URL** : https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FiraCode.zip
@@ -103,6 +113,7 @@ $urls = @(
   "https://github.com/Schniz/fnm/releases/download/v1.38.1/fnm-linux.zip",
   "https://github.com/astral-sh/uv/releases/download/0.6.17/uv-x86_64-unknown-linux-gnu.tar.gz",
   "https://github.com/jesseduffield/lazygit/releases/download/v0.48.0/lazygit_0.48.0_Linux_x86_64.tar.gz",
+  "https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz",
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FiraCode.zip",
   "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz"
 )
@@ -114,7 +125,7 @@ foreach ($u in $urls) {
 }
 ```
 
-Result: a `dotfiles-offline-assets/` folder with all 7 files, ready to transfer.
+Result: a `dotfiles-offline-assets/` folder with all 8 files, ready to transfer.
 
 ## Coming from apt (no asset needed)
 
@@ -122,7 +133,7 @@ Everything else is installed by the installer from Debian repositories — no
 SCP transfer required:
 
 - **main** : zsh, tmux, git, git-lfs, ripgrep, fd-find, bat, fzf, **zoxide**,
-  **git-delta**, jq, tree, htop, direnv, python3, python3-pip, python3-venv,
+  jq, tree, htop, direnv, python3, python3-pip, python3-venv,
   python3-jinja2, python3-yaml, docker.io, build-essential, pkg-config,
   fontconfig, xclip, xsel, curl, wget, unzip, rust-analyzer, gopls,
   python3-pylsp, shellcheck
