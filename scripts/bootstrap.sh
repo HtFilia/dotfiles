@@ -231,34 +231,23 @@ main() {
   fi
   echo
 
-  # ---- Install chezmoi & apply dotfiles ----
-  log "Installing chezmoi..."
-  if ! command_exists chezmoi; then
-    export PATH="$HOME/.local/bin:$PATH"
-    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-    success "chezmoi installed."
+  # ---- Apply dotfiles via render-dotfiles.py ----
+  log "Applying dotfiles..."
+  local dotfiles_dir
+  # If bootstrap is run from inside the repo, use it directly; otherwise clone
+  if [[ -f "${SCRIPT_DIR}/../home/dot_zshrc.tmpl" ]]; then
+    dotfiles_dir="$(cd "${SCRIPT_DIR}/.." && pwd)"
+    info "Using local source: $dotfiles_dir"
   else
-    info "chezmoi already present."
+    dotfiles_dir="${DOTFILES_DIR:-$HOME/.dotfiles}"
+    if [[ ! -d "$dotfiles_dir/.git" ]]; then
+      git clone "$DOTFILES_REPO" "$dotfiles_dir"
+      success "Cloned dotfiles to $dotfiles_dir"
+    else
+      info "Dotfiles already cloned at $dotfiles_dir"
+    fi
   fi
-  echo
-
-  log "Applying dotfiles via chezmoi..."
-  # If script is run from inside the repo, use local source; else use remote
-  local source_arg
-  if [[ -f "${SCRIPT_DIR}/../.chezmoi.toml.tmpl" ]]; then
-    source_arg="${SCRIPT_DIR}/.."
-    info "Using local source: $source_arg"
-  else
-    source_arg="$DOTFILES_REPO"
-    info "Using remote source: $source_arg"
-  fi
-
-  if [[ ! -d "$HOME/.local/share/chezmoi" ]]; then
-    chezmoi init --apply "$source_arg"
-  else
-    info "chezmoi source already initialized — running 'chezmoi apply'"
-    chezmoi apply
-  fi
+  python3 "$dotfiles_dir/scripts/render-dotfiles.py" apply
   success "Dotfiles applied."
   echo
 
@@ -294,10 +283,9 @@ ${BOLD}Next steps:${RESET}
 
 ${BOLD}Daily workflow:${RESET}
 
-  • Edit a config:      ${YELLOW}chezmoi edit ~/.zshrc${RESET}
-  • Preview changes:    ${YELLOW}chezmoi diff${RESET}
-  • Apply changes:      ${YELLOW}chezmoi apply${RESET}
-  • Push changes:       ${YELLOW}chezmoi cd${RESET} then git commit/push
+  • Edit a template:    ${YELLOW}dotfiles${RESET}  (cd into the repo)
+  • Apply changes:      ${YELLOW}python3 ~/.dotfiles/scripts/render-dotfiles.py apply${RESET}
+  • Push changes:       ${YELLOW}cd ~/.dotfiles${RESET} then git commit/push
 
 EOF
 }

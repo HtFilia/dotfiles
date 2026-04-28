@@ -65,15 +65,11 @@ check_tool uv --version
 check_tool go version
 check_tool rustc --version
 check_tool cargo --version
-check_tool fnm --version 1
 
 section "DevOps"
 check_tool docker --version
 check_tool docker-compose --version 1
 check_tool git --version
-
-section "Dotfiles manager"
-check_tool chezmoi --version 1   # optional — not used in restricted mode
 
 section "AI / Assistant"
 check_tool claude --version 1
