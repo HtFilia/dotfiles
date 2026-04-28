@@ -146,9 +146,8 @@ fi
 # lazygit
 if ! command -v lazygit &>/dev/null; then
   log "Installing lazygit..."
-  local latest_url
-  latest_url=$(curl -Ls -o /dev/null -w %{url_effective} "https://github.com/jesseduffield/lazygit/releases/latest")
-  LAZYGIT_VERSION="${latest_url##*/v}"
+  _lazygit_url=$(curl -Ls -o /dev/null -w %{url_effective} "https://github.com/jesseduffield/lazygit/releases/latest")
+  LAZYGIT_VERSION="${_lazygit_url##*/v}"
   case "$ARCH" in
     amd64) LZ_ARCH="x86_64" ;;
     arm64) LZ_ARCH="arm64" ;;
