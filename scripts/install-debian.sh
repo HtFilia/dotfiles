@@ -219,12 +219,6 @@ if ! command -v uv &>/dev/null; then
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-# ---- Node via fnm ----
-if ! command -v fnm &>/dev/null; then
-  log "Installing fnm (Node version manager)..."
-  curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
-fi
-
 # ---- Docker ----
 if ! command -v docker &>/dev/null; then
   log "Installing Docker..."

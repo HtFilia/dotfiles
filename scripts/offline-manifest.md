@@ -13,7 +13,7 @@ channel IT allows.
 ## Workflow
 
 1. On Windows (or any connected machine), create a folder `dotfiles-offline-assets/`.
-2. Download the 8 files listed below into that folder — right-click the URL and
+2. Download the 7 files listed below into that folder — right-click the URL and
    **Save As**, or use the PowerShell snippet at the end of this file.
 3. Transfer the folder to the workstation at `~/dotfiles-offline-assets/`:
    - **WinSCP / FileZilla / VS Code Remote** — drag and drop.
@@ -33,7 +33,6 @@ runtime with env vars if you bump them; keep this file in sync.
 |---|---|---|
 | starship | `v1.23.0` | `STARSHIP_REF` |
 | eza | `v0.21.5` | `EZA_REF` |
-| fnm | `v1.38.1` | `FNM_REF` |
 | uv | `0.6.17` | `UV_REF` |
 | lazygit | `v0.48.0` | `LAZYGIT_REF` |
 | git-delta | `0.18.2` | `DELTA_REF` |
@@ -57,12 +56,6 @@ pattern-matches on them.
 - **URL** : https://github.com/eza-community/eza/releases/download/v0.21.5/eza_x86_64-unknown-linux-gnu.tar.gz
 - **Save as** : `eza_x86_64-unknown-linux-gnu.tar.gz`
 - **Installs to** : `~/.local/bin/eza`
-
-### fnm
-
-- **URL** : https://github.com/Schniz/fnm/releases/download/v1.38.1/fnm-linux.zip
-- **Save as** : `fnm-linux.zip`
-- **Installs to** : `~/.local/bin/fnm`
 
 ### uv
 
@@ -110,7 +103,6 @@ Open PowerShell in an empty folder and paste:
 $urls = @(
   "https://github.com/starship/starship/releases/download/v1.23.0/starship-x86_64-unknown-linux-gnu.tar.gz",
   "https://github.com/eza-community/eza/releases/download/v0.21.5/eza_x86_64-unknown-linux-gnu.tar.gz",
-  "https://github.com/Schniz/fnm/releases/download/v1.38.1/fnm-linux.zip",
   "https://github.com/astral-sh/uv/releases/download/0.6.17/uv-x86_64-unknown-linux-gnu.tar.gz",
   "https://github.com/jesseduffield/lazygit/releases/download/v0.48.0/lazygit_0.48.0_Linux_x86_64.tar.gz",
   "https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz",
@@ -125,7 +117,7 @@ foreach ($u in $urls) {
 }
 ```
 
-Result: a `dotfiles-offline-assets/` folder with all 8 files, ready to transfer.
+Result: a `dotfiles-offline-assets/` folder with all 7 files, ready to transfer.
 
 ## Coming from apt (no asset needed)
 

@@ -71,8 +71,6 @@ brew_formulae=(
   uv # Modern Python package manager
   go
   rustup # Rust toolchain installer
-  fnm    # Fast node manager
-
   # Container runtime & CLI
   # (Colima provides the Linux VM that runs the Docker daemon — macOS
   #  cannot run the Docker daemon natively)

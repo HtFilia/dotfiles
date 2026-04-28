@@ -75,7 +75,6 @@ GITHUB_BASE="${GITHUB_BASE:-https://github.com}"
 # Pins — keep in sync with scripts/offline-manifest.md
 STARSHIP_REF="${STARSHIP_REF:-v1.23.0}"
 EZA_REF="${EZA_REF:-v0.21.5}"
-FNM_REF="${FNM_REF:-v1.38.1}"
 UV_REF="${UV_REF:-0.6.17}"
 LAZYGIT_REF="${LAZYGIT_REF:-v0.48.0}"
 DELTA_REF="${DELTA_REF:-0.18.2}"
@@ -305,14 +304,6 @@ handle_tool eza \
   "https://github.com/eza-community/eza/releases/download/${EZA_REF}/eza_x86_64-unknown-linux-gnu.tar.gz" \
   "eza" \
   "eza"
-
-# --- fnm --------------------------------------------------------------------
-handle_tool fnm \
-  "fnm ${FNM_REF}" \
-  "fnm-linux.zip" \
-  "https://github.com/Schniz/fnm/releases/download/${FNM_REF}/fnm-linux.zip" \
-  "fnm" \
-  "fnm"
 
 # --- uv (+ uvx symlink) -----------------------------------------------------
 handle_tool uv \

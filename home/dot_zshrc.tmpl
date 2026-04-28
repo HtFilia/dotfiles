@@ -140,7 +140,17 @@ fi
 
 # fzf
 if command -v fzf &>/dev/null; then
-  source <(fzf --zsh) 2>/dev/null || true
+  # fzf ≥ 0.48 ships `fzf --zsh`; Debian bookworm's package (0.38) ships static files
+  _fzf_init="$(fzf --zsh 2>/dev/null)"
+  if [[ -n "$_fzf_init" ]]; then
+    eval "$_fzf_init"
+  else
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]]   && source /usr/share/doc/fzf/examples/completion.zsh
+    [[ -f ~/.fzf/shell/key-bindings.zsh ]] && source ~/.fzf/shell/key-bindings.zsh
+    [[ -f ~/.fzf/shell/completion.zsh ]]   && source ~/.fzf/shell/completion.zsh
+  fi
+  unset _fzf_init
   export FZF_DEFAULT_OPTS="
     --height 40% --layout=reverse --border=rounded
     --color=bg+:#283457,bg:#1a1b26,spinner:#ff9e64,hl:#7aa2f7
@@ -249,11 +259,7 @@ alias ports='ss -tulpn'
 alias reload='source ~/.zshrc'
 alias zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
-{{- if eq .machineType "work" }}
-alias dotfiles='cd "$HOME/dotfiles"'
-{{- else }}
-alias dotfiles='chezmoi cd'
-{{- end }}
+alias dotfiles='cd "${DOTFILES_DIR:-$HOME/.dotfiles}"'
 
 # ============================================================================
 # OS-SPECIFIC ALIASES
@@ -414,11 +420,6 @@ if command -v uv &>/dev/null; then
   alias uvp='uv pip'
   alias pyi='uv pip install'
   alias pyls='uv pip list'
-fi
-
-# Node — fnm (fast node manager)
-if command -v fnm &>/dev/null; then
-  eval "$(fnm env --use-on-cd --shell zsh)"
 fi
 
 # Rust
