@@ -59,7 +59,7 @@ Re-run the script after placing any missing archive — it's idempotent.
 |---|---|
 | zsh, tmux, git, ripgrep, fd-find, bat, fzf, direnv, docker.io | **apt (main)** |
 | **zoxide**, **git-delta** | **apt (main)** (used to be built from source) |
-| **rust-analyzer, gopls, python3-pylsp, shellcheck** | **apt (main)** — LSPs for LazyVim |
+| **rust-analyzer, gopls, python3-pylsp, shellcheck** | **apt (main)** — LSPs for Neovim |
 | python3, python3-jinja2, python3-yaml | **apt (main)** — used by `render-dotfiles.py` |
 | Neovim | **apt (bookworm-backports)** with `--enable-backports`, else offline tarball |
 | starship, eza, fnm, uv, lazygit, FiraCode Nerd Font | **offline SCP** (`~/dotfiles-offline-assets/`) |
@@ -97,23 +97,17 @@ Rendered files live at `~/.config/dotfiles/rendered/`; `$HOME` contains
 symlinks pointing at them (for templated files) or directly at the repo
 (for non-templated ones). Check `./scripts/verify.sh` after every install.
 
-## LazyVim / Mason caveat
+## Neovim LSP setup
 
-Mason downloads LSP binaries from many upstreams (npm, pip, GitHub
-Releases) that are blocked here. The installer copies
-`home/dot_config/nvim/lua/plugins/mason-disabled.lua.example` →
-`~/.config/nvim/lua/plugins/mason-disabled.lua`, which disables Mason and
-`mason-lspconfig`.
-
-LSPs already installed via apt cover the main languages:
+LSPs are configured directly in `lua/config/lazy.lua` — no Mason required.
+Servers installed via apt:
 
 - Rust: `rust-analyzer`
 - Go: `gopls`
 - Python: `python3-pylsp`
 - Shell: `shellcheck`
 
-TypeScript / Lua / other LSPs aren't covered — add them manually if you
-need them (not in the manifest).
+TypeScript / Lua / other LSPs aren't covered — install them manually if needed.
 
 ## Treesitter
 

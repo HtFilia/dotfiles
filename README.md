@@ -11,7 +11,7 @@ Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
 | **Shell** | Zsh + [Starship](https://starship.rs/) prompt |
 | **Terminal** | [Ghostty](https://ghostty.org/) |
 | **Multiplexer** | [tmux](https://github.com/tmux/tmux) + [TPM](https://github.com/tmux-plugins/tpm) |
-| **Editors** | [Neovim](https://neovim.io/) + [LazyVim](https://www.lazyvim.org/), VS Code |
+| **Editors** | [Neovim](https://neovim.io/) (lazy.nvim), VS Code |
 | **Theme** | Tokyo Night (everywhere) |
 | **Font** | FiraCode Nerd Font |
 | **AI** | Claude Code |
@@ -47,7 +47,7 @@ The bootstrap script will:
 3. Install all the CLI tools listed above
 4. Render and symlink the dotfiles via `scripts/render-dotfiles.py`
 5. Install the FiraCode Nerd Font
-6. Install Neovim + LazyVim bootstrap
+6. Install Neovim + lazy.nvim bootstrap
 7. Install tmux plugin manager (TPM)
 8. Set Zsh as your default shell
 
@@ -79,7 +79,7 @@ See [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) for the full workflow a
 │   │   ├── Code/User/        # VS Code settings + keybindings
 │   │   ├── ghostty/          # Terminal config
 │   │   ├── git/              # Git config + global ignore
-│   │   ├── nvim/             # Neovim + LazyVim
+│   │   ├── nvim/             # Neovim (lazy.nvim, no framework)
 │   │   ├── ripgrep/          # Ripgrep defaults
 │   │   └── starship.toml     # Prompt config
 │   ├── dot_gitconfig.tmpl    # Git config (templated per machine)
