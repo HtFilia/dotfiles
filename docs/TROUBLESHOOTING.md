@@ -84,26 +84,37 @@ If `clip.exe` isn't found, Windows `System32` isn't in your WSL `PATH`.
 sudo hwclock -s
 ```
 
-## chezmoi: "template data not found"
+## render-dotfiles.py: "machine.yaml not found"
 
-You haven't run `chezmoi init` yet, or your `~/.config/chezmoi/chezmoi.toml` is missing.
+The machine config hasn't been created yet. Run the renderer once interactively:
 
 ```bash
-chezmoi init  # re-prompts and regenerates the config
+python3 ~/.dotfiles/scripts/render-dotfiles.py apply
+# → prompts for name, email, machineType, hostname
+# → saves to ~/.config/dotfiles/machine.yaml
 ```
 
-## chezmoi diff shows changes I didn't make
+## Dotfile symlink points to wrong file
 
-Your destination file was edited directly, not through chezmoi. Either:
-
-- Accept the current state back into the source: `chezmoi re-add ~/.zshrc`
-- Overwrite with what's in the repo: `chezmoi apply --force`
-
-## I want to uninstall a machine from this setup
-
-chezmoi makes this clean:
+Preview what will be linked before applying:
 
 ```bash
-chezmoi purge    # Removes source state and the chezmoi binary config
-# Managed target files remain — remove them by hand if needed.
+python3 ~/.dotfiles/scripts/render-dotfiles.py apply --dry-run
+```
+
+Force overwrite existing files:
+
+```bash
+python3 ~/.dotfiles/scripts/render-dotfiles.py apply --force
+```
+
+## I want to uninstall this setup on a machine
+
+Remove the symlinks and the machine config:
+
+```bash
+# Remove symlinked dotfiles (the source files in the repo are untouched)
+python3 ~/.dotfiles/scripts/render-dotfiles.py apply --dry-run  # review first
+rm ~/.zshrc ~/.gitconfig ~/.tmux.conf   # remove whichever you want
+rm ~/.config/dotfiles/machine.yaml      # remove machine config
 ```

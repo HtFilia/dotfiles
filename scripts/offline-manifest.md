@@ -136,7 +136,6 @@ SCP transfer required:
 These are intentionally excluded — they rely on unreachable registries or
 proprietary distribution channels:
 
-- **chezmoi** — replaced by `scripts/render-dotfiles.py`
 - **VS Code** — Microsoft apt repo unreachable; use `nvim`
 - **GitHub CLI (gh)** — `cli.github.com` apt repo unreachable
 - **atuin** — requires an external sync server

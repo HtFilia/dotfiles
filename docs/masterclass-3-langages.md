@@ -644,4 +644,4 @@ EOF
 # L'API est sur http://localhost:8000
 ```
 
-**Prochaine et dernière partie** : chezmoi (comment maintenir tes dotfiles au quotidien), workflows avancés, tricks finaux, et un récap cheat-sheet.
+**Prochaine étape** : workflows avancés, tricks finaux, et un récap cheat-sheet.

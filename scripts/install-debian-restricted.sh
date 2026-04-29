@@ -22,7 +22,6 @@
 #   3. Zsh plugins and tmux TPM still come from git clone (allowed).
 #   4. Dotfiles: rendered by scripts/render-dotfiles.py (stdlib Python + a
 #      small Go-template-subset evaluator), then symlinked into $HOME.
-#      No chezmoi.
 #   5. LazyVim: Mason is disabled; LSPs come from apt.
 #
 # Flags:
@@ -428,7 +427,7 @@ clone_or_pull tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 # ============================================================================
 # 5. DOTFILES — render + symlink via render-dotfiles.py
 # ============================================================================
-log "Deploying dotfiles (Python renderer, no chezmoi)..."
+log "Deploying dotfiles..."
 if [[ "$DRY_RUN" == "1" ]]; then
   info "dry-run: python3 $SCRIPT_DIR/render-dotfiles.py apply --dry-run"
   python3 "$SCRIPT_DIR/render-dotfiles.py" apply --dry-run || true
