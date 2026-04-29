@@ -132,10 +132,10 @@ if command -v starship &>/dev/null; then
   eval "$(starship init zsh)"
 fi
 
-# zoxide (smart cd)
+# zoxide (smart cd) — use `z` to avoid conflicts with the cd builtin
 if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-  alias zi='cd -i'   # interactive fuzzy jump
+  eval "$(zoxide init zsh)"
+  alias cd='z'   # optional convenience; remove if recursion reappears
 fi
 
 # fzf
