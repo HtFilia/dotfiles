@@ -21,7 +21,7 @@ Prefix: **`Ctrl-a`**
 | Install plugins | `prefix` + `I` |
 | Update plugins | `prefix` + `U` |
 
-## Neovim (LazyVim)
+## Neovim
 
 Leader: **`<Space>`**
 

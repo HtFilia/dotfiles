@@ -21,9 +21,9 @@ tmux info | grep Tc
 
 If not, set `TERM=xterm-256color` outside tmux (your terminal), not inside.
 
-## LazyVim shows errors on first launch
+## Neovim shows errors on first launch
 
-On the very first `nvim` run, LazyVim installs all its plugins. This can take a minute. Wait for it to finish, then quit and re-open.
+On the very first `nvim` run, lazy.nvim installs all plugins via git. This takes a minute. Wait for it to finish, then quit and re-open.
 
 If plugins fail to install:
 
@@ -31,7 +31,7 @@ If plugins fail to install:
 nvim --headless "+Lazy! sync" +qa
 ```
 
-Check `:checkhealth` for missing dependencies (node, python, go, rust).
+Check `:checkhealth` for missing dependencies (python, go, rust).
 
 ## `zsh compinit: insecure directories`
 

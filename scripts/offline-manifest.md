@@ -87,7 +87,7 @@ in the corporate apt mirror.
 ### Neovim (fallback)
 
 Only needed if `bookworm-backports` isn't enabled or doesn't ship a
-LazyVim-compatible Neovim (≥ 0.9). The preferred path is
+a recent Neovim (≥ 0.8). The preferred path is
 `./scripts/install-debian-restricted.sh --enable-backports`, which pulls it
 from apt. If that fails, the installer falls back to this tarball.
 

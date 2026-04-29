@@ -77,7 +77,7 @@ ${PURPLE}${BOLD}
 │                                                         │
 │   Shell    :  Zsh + Starship                            │
 │   Terminal :  Ghostty                                   │
-│   Editors  :  Neovim (LazyVim) + VS Code                │
+│   Editors  :  Neovim + VS Code                          │
 │   Theme    :  Tokyo Night                               │
 │   Font     :  FiraCode Nerd Font                        │
 │                                                         │
@@ -181,8 +181,8 @@ main() {
   linux | wsl)
     if [[ "$mode" == "restricted" ]]; then
       # In restricted mode the installer is self-contained: it handles apt,
-      # offline assets, zsh plugins, tmux TPM, dotfiles rendering, Mason
-      # disable, and the default-shell switch. Nothing else to do here.
+      # offline assets, zsh plugins, tmux TPM, dotfiles rendering, and the
+      # default-shell switch. Nothing else to do here.
       bash "${SCRIPT_DIR}/install-debian-restricted.sh"
       exit $?
     else
@@ -275,7 +275,7 @@ ${BOLD}Next steps:${RESET}
 
   1. ${CYAN}Restart your terminal${RESET} (or run ${YELLOW}exec zsh${RESET})
   2. Open tmux and press ${YELLOW}prefix + I${RESET} (Ctrl-a then I) to install tmux plugins
-  3. Open Neovim — LazyVim will install plugins on first launch: ${YELLOW}nvim${RESET}
+  3. Open Neovim — lazy.nvim will install plugins on first launch: ${YELLOW}nvim${RESET}
   4. Configure Ghostty to use "${YELLOW}FiraCode Nerd Font${RESET}" if not auto-applied
   5. In VS Code, install the ${YELLOW}Tokyo Night${RESET} theme + recommended extensions:
      ${CYAN}code --install-extension $(cat "${SCRIPT_DIR}/../extensions.txt" 2>/dev/null | head -1 || echo enkia.tokyo-night)${RESET}

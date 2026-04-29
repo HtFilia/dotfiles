@@ -177,7 +177,7 @@ if ! command -v starship &>/dev/null; then
   curl -sS https://starship.rs/install.sh | sh -s -- --yes
 fi
 
-# ---- Neovim (need a recent version; Debian's is often too old for LazyVim) ----
+# ---- Neovim (Debian's packaged version is often too old) ----
 if ! command -v nvim &>/dev/null || [[ "$(nvim --version | head -1 | grep -oP '\d+\.\d+' | head -1)" < "0.9" ]]; then
   log "Installing Neovim (latest stable)..."
   curl -fsSL -o /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH/amd64/x86_64}.tar.gz"

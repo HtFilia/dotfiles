@@ -22,7 +22,7 @@
 #   3. Zsh plugins and tmux TPM still come from git clone (allowed).
 #   4. Dotfiles: rendered by scripts/render-dotfiles.py (stdlib Python + a
 #      small Go-template-subset evaluator), then symlinked into $HOME.
-#   5. LazyVim: Mason is disabled; LSPs come from apt.
+#   5. Neovim: LSPs come from apt (rust-analyzer, gopls, python3-pylsp, shellcheck).
 #
 # Flags:
 #   --enable-backports      Add bookworm-backports sources and install nvim
@@ -180,7 +180,7 @@ fi
 success "Base apt packages installed."
 
 # ============================================================================
-# 2. BACKPORTS — Neovim ≥ 0.9 for LazyVim
+# 2. BACKPORTS — Neovim (backports ships a newer version)
 # ============================================================================
 backports_enabled() { apt-cache policy 2>/dev/null | grep -q " $BACKPORTS_SUITE/"; }
 
@@ -441,19 +441,11 @@ else
 fi
 
 # ============================================================================
-# 6. LAZYVIM — disable Mason (apt LSPs replace it)
+# 6. NEOVIM CONFIG — no extra setup needed
 # ============================================================================
-log "Disabling Mason in LazyVim (apt LSPs: rust-analyzer, gopls, python3-pylsp, shellcheck)..."
-mason_src="$REPO_ROOT/home/dot_config/nvim/lua/plugins/mason-disabled.lua.example"
-mason_dst="$HOME/.config/nvim/lua/plugins/mason-disabled.lua"
-if [[ -f "$mason_src" ]]; then
-  run mkdir -p "$(dirname "$mason_dst")"
-  run cp -f "$mason_src" "$mason_dst"
-  INSTALLED+=("LazyVim Mason override")
-  success "Mason disabled ($mason_dst)"
-else
-  warn "mason-disabled.lua.example missing at $mason_src"
-fi
+# LSPs are configured directly in lua/config/lazy.lua (no Mason).
+# rust-analyzer, gopls, python3-pylsp, and shellcheck come from apt.
+info "Neovim LSPs: rust-analyzer, gopls, python3-pylsp, shellcheck (all from apt)."
 
 # ============================================================================
 # 7. DEFAULT SHELL
@@ -512,7 +504,7 @@ printf '\n%sNext:%s\n' "$BOLD" "$RESET"
 printf '  1. Run %s./scripts/verify.sh%s to check each tool.\n' "$YELLOW" "$RESET"
 printf '  2. Start a fresh zsh session: %sexec zsh%s\n' "$YELLOW" "$RESET"
 printf '  3. Open tmux, press %sCtrl-a I%s to install tmux plugins.\n' "$YELLOW" "$RESET"
-printf '  4. Open %snvim%s — LazyVim installs plugins on first launch.\n' "$YELLOW" "$RESET"
+printf '  4. Open %snvim%s — lazy.nvim will install plugins on first launch.\n' "$YELLOW" "$RESET"
 
 # Exit 0 unless there were hard failures. Missing assets aren't failures —
 # they're pending user actions that unblock on next run.
