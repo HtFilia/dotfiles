@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Render chezmoi-style .tmpl files and symlink dotfiles into $HOME.
+"""Render .tmpl dotfiles and symlink them into $HOME.
 
-Replaces chezmoi on the restricted Debian workstation where chezmoi cannot
-be reliably installed. Handles exactly the Go-template subset used by the
-templates in this repo: dotted variable lookup, `{{- ... }}` whitespace
-trimming, `if/else if/else/end` with `eq`, `ne`, `and`, `or`, `not`,
-`contains`, `lower`, `upper`, and parenthesized sub-expressions.
+Handles the Go-template subset used by the templates in this repo: dotted
+variable lookup, `{{- ... }}` whitespace trimming, `if/else if/else/end`
+with `eq`, `ne`, `and`, `or`, `not`, `contains`, `lower`, `upper`, and
+parenthesized sub-expressions.
 
 Requires: python3, python3-yaml (both in Debian main).
 """
@@ -405,10 +404,10 @@ def load_machine_data(interactive: bool = True) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# File layout (chezmoi dot_ convention → $HOME)
+# File layout (dot_ prefix convention → $HOME)
 # ---------------------------------------------------------------------------
 
-SKIP_NAMES = {".chezmoiroot", ".chezmoiignore"}
+SKIP_NAMES = {".chezmoiroot", ".chezmoiignore"}  # legacy files, skip if present
 SKIP_SUFFIXES = {".example", ".bak", ".orig", ".swp"}
 
 
@@ -522,7 +521,7 @@ def apply(dry_run: bool, force: bool) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Render and deploy chezmoi-style dotfiles without chezmoi."
+        description="Render .tmpl dotfiles and deploy them via symlinks into $HOME."
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 

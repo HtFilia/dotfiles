@@ -70,21 +70,17 @@ Re-run the script after placing any missing archive — it's idempotent.
 
 These don't work in restricted mode and are not in the manifest:
 
-- **chezmoi** — replaced by `scripts/render-dotfiles.py`. The chezmoi
-  templates in `home/` remain intact so your personal machine keeps using
-  chezmoi normally. See [the renderer notes](#dotfile-rendering-without-chezmoi)
-  below.
 - **VS Code** — Microsoft apt repo unreachable (use `nvim`).
 - **GitHub CLI** — `cli.github.com` apt repo unreachable.
 - **atuin** — needs an external sync server.
 - **Claude Code** — npm registry unreachable.
 - **Ghostty** — no Debian package, requires Zig.
 
-## Dotfile rendering without chezmoi
+## Dotfile rendering
 
 `scripts/render-dotfiles.py` is a ~350-line Python script using only the
 stdlib plus `python3-yaml` (apt). It implements the small subset of Go
-template syntax your dotfiles actually use (`{{ .chezmoi.os }}`,
+template syntax used by the dotfiles (`{{ .chezmoi.os }}`,
 `{{- if eq … }}`, `{{- else if … }}`, `{{- end }}`, `contains`, `lower`,
 plus the `{{` `...` `}}` raw-string escape for Docker alias formatting).
 
@@ -132,8 +128,7 @@ beyond `github.com` is needed, so treesitter works fine.
 ```
 
 Prints per-tool status. After SCP'ing all assets, every required tool
-should be `✓`. `chezmoi`, `atuin`, `claude`, `code`, and `fnm` are
-optional (`○` if missing).
+should be `✓`. `atuin`, `claude`, and `code` are optional (`○` if missing).
 
 ## Re-running
 

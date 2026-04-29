@@ -3,7 +3,7 @@
 # bootstrap.sh — One-command dotfiles installer
 # ----------------------------------------------------------------------------
 # Detects OS (macOS / Debian / WSL), installs all required tools,
-# clones & applies dotfiles via chezmoi.
+# clones the repo and applies dotfiles via render-dotfiles.py.
 # ============================================================================
 
 set -euo pipefail
@@ -181,9 +181,8 @@ main() {
   linux | wsl)
     if [[ "$mode" == "restricted" ]]; then
       # In restricted mode the installer is self-contained: it handles apt,
-      # offline assets, zsh plugins, tmux TPM, dotfiles rendering (no
-      # chezmoi), Mason disable, and the default-shell switch. Nothing else
-      # to do here.
+      # offline assets, zsh plugins, tmux TPM, dotfiles rendering, Mason
+      # disable, and the default-shell switch. Nothing else to do here.
       bash "${SCRIPT_DIR}/install-debian-restricted.sh"
       exit $?
     else

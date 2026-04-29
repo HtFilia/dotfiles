@@ -1,6 +1,6 @@
 # 🚀 Dotfiles
 
-Modern, cross-platform development environment configuration, managed with [chezmoi](https://www.chezmoi.io/).
+Modern, cross-platform development environment configuration.
 
 Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
 
@@ -17,7 +17,6 @@ Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
 | **AI** | Claude Code |
 | **Languages** | Python (uv), Go, Rust (rustup) |
 | **Container** | Docker / Podman aliases |
-| **Dotfiles manager** | [chezmoi](https://www.chezmoi.io/) |
 
 ### Modern CLI tools
 
@@ -29,7 +28,6 @@ Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
 - [`zoxide`](https://github.com/ajeetdsouza/zoxide) — smart `cd`
 - [`lazygit`](https://github.com/jesseduffield/lazygit) — git TUI
 - [`delta`](https://github.com/dandavison/delta) — better git diffs
-- [`atuin`](https://github.com/atuinsh/atuin) — synced shell history
 - [`direnv`](https://direnv.net/) — per-project environments
 
 ## 🚀 Quick start
@@ -37,16 +35,21 @@ Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
 On a fresh machine, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/dotfiles/main/scripts/bootstrap.sh | bash
-```
-
-Or manually:
-
-```bash
 git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/bootstrap.sh
 ```
+
+The bootstrap script will:
+
+1. Detect your OS (macOS / Debian / WSL)
+2. Install [Homebrew](https://brew.sh/) (macOS) or set up `apt` (Debian/WSL)
+3. Install all the CLI tools listed above
+4. Render and symlink the dotfiles via `scripts/render-dotfiles.py`
+5. Install the FiraCode Nerd Font
+6. Install Neovim + LazyVim bootstrap
+7. Install tmux plugin manager (TPM)
+8. Set Zsh as your default shell
 
 ### 🔒 Corporate / locked-down machines (Debian only)
 
@@ -58,95 +61,80 @@ cd ~/.dotfiles
 ./scripts/bootstrap.sh --restricted
 ```
 
-This mode builds all non-apt tools from GitHub sources instead of fetching binaries from third-party domains. See [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) for details and caveats.
+Pre-built binaries for tools not in apt must be placed in `~/dotfiles-offline-assets/` beforehand.
+See [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) for the full workflow and download manifest.
 
 ### ✅ Verify your install
-
-After bootstrap, run:
 
 ```bash
 ./scripts/verify.sh
 ```
 
-to see which tools are installed and their versions (works in both full and restricted modes).
-
-The bootstrap script will:
-
-1. Detect your OS (macOS / Debian / WSL)
-2. Install [Homebrew](https://brew.sh/) (macOS) or set up `apt` (Debian/WSL)
-3. Install all the CLI tools listed above
-4. Install chezmoi and apply the dotfiles
-5. Install the FiraCode Nerd Font
-6. Install Neovim + LazyVim bootstrap
-7. Install tmux plugin manager (TPM)
-8. Set Zsh as your default shell
-
 ## 📁 Repository structure
 
 ```
 .
-├── home/                      # Files managed by chezmoi (source state)
+├── home/                      # Dotfiles source (dot_ prefix → . in $HOME)
 │   ├── dot_config/
 │   │   ├── Code/User/        # VS Code settings + keybindings
 │   │   ├── ghostty/          # Terminal config
 │   │   ├── git/              # Git config + global ignore
 │   │   ├── nvim/             # Neovim + LazyVim
+│   │   ├── ripgrep/          # Ripgrep defaults
 │   │   └── starship.toml     # Prompt config
-│   ├── dot_gitconfig.tmpl    # Git config (templated)
+│   ├── dot_gitconfig.tmpl    # Git config (templated per machine)
 │   ├── dot_tmux.conf         # Tmux config
 │   └── dot_zshrc.tmpl        # Main Zsh config (templated per OS)
 ├── scripts/
 │   ├── bootstrap.sh          # One-command installer
+│   ├── render-dotfiles.py    # Template renderer + symlinker
 │   ├── install-macos.sh      # macOS-specific installs
 │   ├── install-debian.sh     # Debian/WSL installs
+│   ├── install-debian-restricted.sh  # Locked-down Debian installs
+│   ├── offline-manifest.md   # Download links for restricted mode
 │   └── install-fonts.sh      # Nerd Font installer
-├── docs/                      # Extended documentation
-└── .chezmoi.toml.tmpl        # chezmoi config template
+└── docs/                     # Extended documentation
 ```
 
-## 🎨 Chezmoi templating
+## 🎨 Templating
 
-Files ending in `.tmpl` are templated. This lets the same repo work differently on each OS:
+Files ending in `.tmpl` are rendered by `scripts/render-dotfiles.py` using a
+Go-template subset. This lets the same repo produce different output per OS and
+machine type:
 
 - Different paths (e.g. Homebrew at `/opt/homebrew` vs `/home/linuxbrew`)
 - Different aliases (macOS `pbcopy` vs WSL `clip.exe`)
-- Per-machine overrides via `~/.config/chezmoi/chezmoi.toml`
-
-See `docs/CHEZMOI.md` for details.
+- Per-machine values (`name`, `email`, `machineType`, `hostname`) stored in
+  `~/.config/dotfiles/machine.yaml` (created interactively on first run)
 
 ## 🔄 Daily workflow
 
 ```bash
-# Edit a config
-chezmoi edit ~/.zshrc
+# Go to the dotfiles repo
+dotfiles        # alias → cd ~/.dotfiles
 
-# See what would change
-chezmoi diff
+# Edit a template
+$EDITOR home/dot_zshrc.tmpl
 
-# Apply changes
-chezmoi apply
+# Re-apply (re-renders templates + refreshes symlinks)
+python3 scripts/render-dotfiles.py apply
 
-# Commit changes
-chezmoi cd
-git add . && git commit -m "feat: update zshrc" && git push
+# Commit and push
+git add -p && git commit -m "feat: ..." && git push
 ```
 
-## 🖥️ Per-machine differences
+## 🖥️ Per-machine config
 
-During `chezmoi init`, you'll be asked a few questions:
+On first run, `render-dotfiles.py` prompts for:
 
 - Your name & email (for git)
-- Whether this is a "work" or "personal" machine
+- Machine type: `personal` or `work`
 - Hostname identifier
 
-Your answers are stored in `~/.config/chezmoi/chezmoi.toml` and used by templates.
+Answers are saved to `~/.config/dotfiles/machine.yaml` and injected into templates.
 
 ## 📚 Further reading
 
 - [`docs/KEYBINDINGS.md`](docs/KEYBINDINGS.md) — shortcuts cheat sheet
-- [`docs/CHEZMOI.md`](docs/CHEZMOI.md) — chezmoi workflow
+- [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) — locked-down machine workflow
 - [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — common issues
-
-## 📄 License
-
-MIT
