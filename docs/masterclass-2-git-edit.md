@@ -410,7 +410,7 @@ Tes windows, panes, layouts, **et dossiers courants** sont restaurés. Les proce
 Matin :
 
 ```bash
-❯ tm api              # petite fonction : tmux new/attach -s api
+❯ tmux new-session -A -s api
 # dans tmux :
 # prefix + | -> split vertical
 # nvim dans la gauche, tests à droite
@@ -430,7 +430,8 @@ Lendemain :
 ❯ tmux attach -t api  # tout est comme tu l'as laissé
 ```
 
-Tu veux ajouter la fonction `tm` dans ton `~/.zshrc.local` ? Voilà :
+Si tu veux le raccourci `tm api`, ajoute cette fonction dans ton
+`~/.zshrc.local` :
 
 ```bash
 tm() {
@@ -455,7 +456,10 @@ prefix + alt+u # Uninstall les plugins supprimés du config
 
 ## <a name="nvim"></a>5. Neovim + LazyVim — l'éditeur keyboard-first
 
-LazyVim est une **distribution** Neovim : c'est une config pré-faite avec des plugins soigneusement sélectionnés. Tu as 150+ plugins activés sans avoir rien à configurer.
+LazyVim est une **distribution** Neovim : c'est une config pré-faite avec des
+plugins soigneusement sélectionnés. Dans ces dotfiles, elle est utilisée en mode
+contrôlé : le graphe de plugins est verrouillé dans `lazy-lock.json`, et Mason
+n'installe pas automatiquement des outils.
 
 ### Comprendre les modes de vim
 
@@ -478,7 +482,7 @@ Dans LazyVim, toutes les commandes custom commencent par **`Space`** (en mode No
 
 | Raccourci | Action | Équivalent VS Code |
 |---|---|---|
-| `<Space><Space>` | Fuzzy find fichiers du projet | `Cmd+P` |
+| `<Space>ff` | Fuzzy find fichiers du projet | `Cmd+P` |
 | `<Space>/` | Live grep dans le projet | `Cmd+Shift+F` |
 | `<Space>,` | Liste des buffers ouverts | `Cmd+Tab` |
 | `<Space>e` | Toggle le file explorer (neo-tree) | `Cmd+B` |
@@ -562,7 +566,7 @@ Les plus utiles (préfixe Space) :
 
 | Raccourci | Action |
 |---|---|
-| `<Space>ff` | Find files (= `<Space><Space>`) |
+| `<Space>ff` | Find files |
 | `<Space>fr` | Recent files |
 | `<Space>fg` | Files tracked by git |
 | `<Space>fb` | Find buffer |
@@ -580,7 +584,10 @@ Les plus utiles (préfixe Space) :
 
 ### LSP (completions, go to definition, renommage)
 
-Sur ton Mac, LazyVim a installé automatiquement les LSP pour Python, Go, Rust au premier lancement via Mason. Ils tournent en arrière-plan.
+En full mode, LazyVim fournit l'expérience LSP et ces dotfiles désactivent
+l'installation automatique Mason. En restricted mode, la config locale démarre
+les serveurs déjà présents sur le système pour Rust (`rust-analyzer`), Go
+(`gopls`) et Python (`pylsp`).
 
 | Raccourci | Action |
 |---|---|
@@ -594,6 +601,9 @@ Sur ton Mac, LazyVim a installé automatiquement les LSP pour Python, Go, Rust a
 | `<Space>cf` | Format file |
 | `<Space>cd` | Show diagnostic |
 | `[d` / `]d` | Diagnostic précédent / suivant |
+
+En restricted mode, les raccourcis qui diffèrent sont `<Space>rn` pour rename,
+`<Space>f` pour format, et `<Space>d` pour afficher le diagnostic courant.
 
 ### Treesitter (coloration + selection intelligente)
 
@@ -692,9 +702,12 @@ Dans nvim :
 
 4. `gd` sur l'appel `hello("World")` en bas → ça te ramène à la définition. `<Ctrl-o>` → retour en arrière.
 
-5. `<Space>cr` sur `hello` → rename. Tape `greet`, `Entrée`. Les 2 occurrences sont renommées.
+5. En full mode, `<Space>cr` sur `hello` → rename. En restricted mode,
+   utilise `<Space>rn`. Tape `greet`, `Entrée`. Les 2 occurrences sont
+   renommées.
 
-6. `<Space>cf` → format le fichier (via ruff).
+6. En full mode, `<Space>cf` → format le fichier. En restricted mode,
+   `<Space>f`.
 
 7. `<Space>ca` → code actions (sûrement rien pour ce mini fichier, mais c'est là qu'on voit "extract function", "add import", etc.).
 
@@ -707,8 +720,8 @@ Tu viens de faire **5 actions LSP** que dans VS Code t'aurais faites à la souri
 ## 🎯 Workflow type avec tout ce stack
 
 ```bash
-# Lundi matin, j'ouvre mon terminal (tmux relance auto ma session "api")
-❯ tm api
+# Lundi matin, je reprends ou crée ma session tmux "api"
+❯ tmux new-session -A -s api
 
 # 3 panes :
 # - gauche : nvim
@@ -716,10 +729,10 @@ Tu viens de faire **5 actions LSP** que dans VS Code t'aurais faites à la souri
 # - bas droite : shell pour tests/serveur
 
 # Dans nvim :
-<Space><Space>    # cherche un fichier
+<Space>ff         # cherche un fichier
 <Space>/          # cherche "TODO" dans le code
 gd                # saute à une définition
-<Space>cr         # renomme un symbol partout
+<Space>cr         # full mode: renomme un symbole partout
 
 # Dans lazygit :
 a                 # stage tout

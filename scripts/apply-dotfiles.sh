@@ -23,13 +23,17 @@ Usage: $0 [--mode full|restricted] [--dry-run] [--force]
 Options:
   --mode MODE      full uses LazyVim; restricted uses local no-plugin Neovim
   --dry-run        print actions without changing files
-  --force          remove existing files instead of backing them up
+  --force          replace existing files, but still back them up first
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode) MODE="$2"; shift ;;
+    --mode)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--mode requires a value"
+      MODE="$2"
+      shift
+      ;;
     --dry-run) DRY_RUN=1 ;;
     --force) FORCE=1 ;;
     -h|--help) usage; exit 0 ;;
@@ -83,17 +87,26 @@ link_path() {
     fi
     rm "$dst"
   elif [[ -e "$dst" ]]; then
-    if [[ "$FORCE" == "1" ]]; then
-      rm -rf "$dst"
-    else
-      local bak
-      bak="$(backup_path "$dst")"
-      mv "$dst" "$bak"
-      warn "backed up $dst -> $bak"
-    fi
+    local bak
+    bak="$(backup_path "$dst")"
+    mv "$dst" "$bak"
+    warn "backed up $dst -> $bak"
   fi
   ln -s "$src" "$dst"
   success "linked $dst"
+}
+
+refresh_bat_cache() {
+  command -v bat >/dev/null 2>&1 || return 0
+  if [[ "$DRY_RUN" == "1" ]]; then
+    info "would rebuild bat theme cache"
+    return 0
+  fi
+  if bat cache --build >/dev/null 2>&1; then
+    success "rebuilt bat theme cache"
+  else
+    warn "could not rebuild bat theme cache; run: bat cache --build"
+  fi
 }
 
 configure_git_identity() {
@@ -143,4 +156,5 @@ else
   link_path "$HOME_SRC/dot_config/nvim-lazyvim" "$HOME/.config/nvim"
 fi
 
+refresh_bat_cache
 success "dotfiles deployed"

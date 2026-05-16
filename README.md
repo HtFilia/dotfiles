@@ -73,18 +73,29 @@ creates symlinks from `home/` into `$HOME`.
 If `~/.gitconfig.local` does not exist, the script prompts for Git name/email
 and writes that local untracked file.
 
+The default prompt shows the local username and hides the hostname unless the
+session is SSH. The dotfiles do not set macOS `ComputerName`, `LocalHostName`, or
+`HostName`; if a hostname looks wrong, it is existing system state being
+displayed.
+
 ## Security model
 
 Direct downloads are pinned in `scripts/pinned-assets.sh` with exact URLs and
 SHA256 checksums. Installers refuse cached or offline assets whose checksum does
 not match.
 
+Zsh plugins and tmux TPM are pinned in `scripts/pinned-plugins.sh` and checked
+out to exact commits. Shell startup refuses to source plugin files that are not
+owned by the current user or are group/world writable.
+
 LazyVim is used only in full mode. Its plugin graph is captured in
 `home/dot_config/nvim-lazyvim/lazy-lock.json`, and the local config disables
 automatic Mason tool installation. Restricted mode has no plugin manager.
 
 `apt` and Homebrew remain trusted through their native signing and repository
-mechanisms. Upstream shell installers are not run automatically.
+mechanisms. Homebrew installs are mutable and not pinned by this repo; use the
+verification output to record what was installed. Upstream shell installers are
+not run automatically.
 
 ## Verify
 

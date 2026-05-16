@@ -3,7 +3,12 @@
 
 set -euo pipefail
 
-ENV_TYPE="${1:-linux}"
+ENV_TYPE="linux"
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  ENV_TYPE="$1"
+  shift
+fi
+ENABLE_DOCKER_GROUP=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
@@ -13,6 +18,24 @@ success() { printf "\033[0;32m  +\033[0m %s\n" "$*"; }
 info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
 warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
 fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
+
+usage() {
+  cat <<EOF
+Usage: $0 [linux|wsl] [--enable-docker-group]
+
+Options:
+  --enable-docker-group   add the current user to the root-equivalent docker group
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --enable-docker-group) ENABLE_DOCKER_GROUP=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) fatal "Unknown argument: $1" ;;
+  esac
+  shift
+done
 
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 DOWNLOAD_DIR="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
@@ -132,8 +155,13 @@ else
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_ID $OS_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    sudo usermod -aG docker "$USER"
-    info "Added $USER to docker group; log out/in to take effect."
+    if [[ "$ENABLE_DOCKER_GROUP" == "1" ]]; then
+      warn "Adding $USER to the docker group grants root-equivalent access."
+      sudo usermod -aG docker "$USER"
+      info "Added $USER to docker group; log out/in to take effect."
+    else
+      warn "Did not add $USER to docker group. Re-run with --enable-docker-group if you accept root-equivalent access."
+    fi
   fi
 fi
 

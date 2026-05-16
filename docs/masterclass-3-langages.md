@@ -1,13 +1,13 @@
 # 🎓 Masterclass — Partie 3/4 : Langages & Dev
 
-> uv pour Python, Go, Rust (rustup + cargo), Docker, et fnm pour Node.
+> uv pour Python, Go, Rust, Docker/Podman, et les limites volontaires de ce que les dotfiles installent.
 
 ## Table des matières
 
 1. [uv — le futur de Python](#uv)
-2. [fnm — Node version manager](#fnm)
-3. [Go — apt ou GitHub](#go)
-4. [Rust — cargo + rustup](#rust)
+2. [Node — non géré par ces dotfiles](#node)
+3. [Go — Homebrew, apt ou asset épinglé](#go)
+4. [Rust — rustup ou paquets système](#rust)
 5. [Docker / Podman — aliases et patterns](#docker)
 6. [Claude Code — l'assistant dans ton terminal](#claude)
 
@@ -149,55 +149,46 @@ EOF
 
 ---
 
-## <a name="fnm"></a>2. fnm — Node version manager
+## <a name="node"></a>2. Node — non géré par ces dotfiles
 
-**fnm** (Fast Node Manager) remplace nvm. Il est écrit en Rust, 40× plus rapide au shell startup.
+Ces dotfiles n'installent pas Node, npm, nvm, fnm, pnpm, yarn ou bun, et le
+`.zshrc` ne configure aucun auto-switch Node. C'est volontaire : le repo garde
+le socle terminal/editor stable et évite d'imposer un gestionnaire Node.
 
-Dans ton `.zshrc`, j'ai mis `eval "$(fnm env --use-on-cd ...)"`. Résultat : **si tu `cd` dans un projet avec un `.nvmrc` ou un `.node-version`, fnm switch automatiquement de version Node.**
+Si tu veux Node, choisis le gestionnaire au niveau projet ou machine :
 
-### Installer une version Node
+- `mise` si tu veux gérer plusieurs runtimes avec un seul outil ;
+- `fnm` si tu veux un remplaçant rapide de `nvm` ;
+- Homebrew ou le paquet distro si une seule version système suffit.
 
-```bash
-❯ fnm install 22                  # dernière 22.x
-❯ fnm install --lts               # dernière LTS
-❯ fnm install 20.11.0             # version exacte
-❯ fnm list                        # voir les versions installées
-❯ fnm list-remote | tail -20      # voir les 20 dernières dispo
-```
-
-### Utiliser une version
+### Vérifier l'état actuel
 
 ```bash
-❯ fnm use 22                      # dans ce shell uniquement
-❯ fnm default 22                  # définir la version par défaut
-❯ fnm current                     # quelle version est active ?
-```
-
-### Auto-switch par projet
-
-```bash
-❯ cd mon_projet
-❯ echo "22.5.0" > .nvmrc          # ou .node-version
-❯ cd ..
-❯ cd mon_projet                   # fnm switch auto à 22.5.0
-```
-
-### Commandes Node usuelles
-
-Une fois Node actif, `npm`, `npx`, et les packages globaux sont isolés par version :
-
-```bash
+❯ command -v node npm pnpm yarn bun
 ❯ node -v
-❯ npm init -y
-❯ npm install express
-❯ npx create-next-app
+❯ npm -v
 ```
+
+### Exemple avec fnm si tu l'ajoutes toi-même
+
+```bash
+❯ fnm install 22
+❯ fnm use 22
+❯ cd mon_projet
+❯ echo "22" > .node-version
+```
+
+Ajoute ensuite l'init `fnm` dans `~/.zshrc.local`, pas dans le fichier géré par
+les dotfiles.
 
 ---
 
-## <a name="go"></a>3. Go — apt ou GitHub
+## <a name="go"></a>3. Go — Homebrew, apt ou asset épinglé
 
-Go sur Mac est installé via Homebrew, sur Debian via apt (parfois trop ancien → on build depuis GitHub en mode restricted).
+En full mode, Go est installé via Homebrew sur macOS, et via l'asset officiel
+épinglé si Debian/Ubuntu n'a pas déjà `go`. En restricted mode, ces dotfiles
+installent `gopls` pour le LSP, mais pas forcément le compilateur Go : vérifie
+avec `go version`.
 
 ### Les commandes Go essentielles
 
@@ -228,7 +219,7 @@ Go sur Mac est installé via Homebrew, sur Debian via apt (parfois trop ancien �
 ❯ go test -bench=.                      # benchmarks
 
 # Format, vet, lint
-❯ gofmt -w .                            # format tous les .go (déjà fait par LazyVim à la sauvegarde)
+❯ gofmt -w .                            # format tous les .go
 ❯ go vet ./...                          # analyse statique basique
 ❯ go mod tidy                           # nettoie go.mod des deps inutilisées
 ```
@@ -243,7 +234,7 @@ Go sur Mac est installé via Homebrew, sur Debian via apt (parfois trop ancien �
 Exemples utiles :
 
 ```bash
-❯ go install golang.org/x/tools/gopls@latest      # LSP Go (déjà installé par LazyVim)
+❯ go install golang.org/x/tools/gopls@latest      # LSP Go si absent
 ❯ go install github.com/air-verse/air@latest      # hot reload pour dev Go
 ```
 
@@ -258,7 +249,12 @@ Si tu bosses sur plusieurs modules liés :
 
 ---
 
-## <a name="rust"></a>4. Rust — cargo + rustup
+## <a name="rust"></a>4. Rust — rustup ou paquets système
+
+Sur macOS, le script installe `rustup` via Homebrew puis initialise la toolchain
+stable si elle n'existe pas. En full Debian/Ubuntu, `rustc` et `cargo` viennent
+des paquets apt. En restricted Debian, les dotfiles installent `rust-analyzer`
+pour le LSP ; installe le compilateur séparément si `rustc --version` échoue.
 
 ### rustup : le manager de toolchains
 
