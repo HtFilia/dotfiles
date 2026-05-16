@@ -25,7 +25,11 @@ Prefix: **`Ctrl-a`**
 
 Leader: **`<Space>`**
 
-### Core
+Full mode links `~/.config/nvim` to the LazyVim profile. Restricted mode links
+to the local no-plugin profile. Core Vim motions are the same; plugin shortcuts
+exist only in full mode.
+
+### Full Mode: LazyVim
 
 | Action | Keys |
 |---|---|
@@ -40,7 +44,7 @@ Leader: **`<Space>`**
 | Terminal | `<leader>` + `ft` |
 | LazyGit | `<leader>` + `gg` |
 
-### LSP
+### Full Mode: LSP
 
 | Action | Keys |
 |---|---|
@@ -52,14 +56,31 @@ Leader: **`<Space>`**
 | Format | `<leader>` + `cf` |
 | Diagnostics list | `<leader>` + `xx` |
 
-### Edition
+### Restricted Mode
 
 | Action | Keys |
 |---|---|
-| Move line down/up | `Alt-j` / `Alt-k` |
-| Indent / Outdent selection | `>` / `<` (selection is kept) |
+| Save | `Ctrl-s` |
+| Go to definition | `gd` |
+| Go to declaration | `gD` |
+| Find references | `gr` |
+| Go to implementation | `gi` |
+| Hover docs | `K` |
+| Code action | `<leader>` + `ca` |
+| Rename | `<leader>` + `rn` |
+| Format | `<leader>` + `f` |
+| Previous / next diagnostic | `[d` / `]d` |
+| Show diagnostic | `<leader>` + `d` |
+
+### Editing
+
+| Action | Keys |
+|---|---|
 | Paste over without losing clipboard | `p` (in visual mode) |
 | Clear search highlight | `Esc` |
+
+Restricted mode also keeps visual selection after `>` / `<`. Full mode gets
+that behavior from LazyVim if the upstream mapping is present.
 
 ### tmux <-> nvim navigation (seamless)
 
@@ -91,6 +112,8 @@ Leader: **`<Space>`**
 | Fuzzy cd into dir | `Alt-c` (fzf) |
 | History search | `Ctrl-r` (atuin) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
+| Accept autosuggestion word | `Alt-f` or `Ctrl-→` |
+| Reject autosuggestion | `Ctrl-g` |
 
 ### Custom functions
 
@@ -100,5 +123,12 @@ Leader: **`<Space>`**
 | `fcd` | Fuzzy cd |
 | `fga` | Git add with fzf |
 | `fkill` | Kill process with fzf |
+| `frg` | Ripgrep + fzf + bat preview, then open match in `$EDITOR` |
+| `fh` | Fuzzy shell history into the current command line |
 | `mkcd` | `mkdir` + `cd` |
 | `extract` | Universal archive extractor |
+| `groot` | cd to the current Git repository root |
+| `gclone` | clone a repo and cd into it |
+| `gwip` / `gunwip` | create or undo a timestamped WIP commit |
+| `serve` | start `python3 -m http.server` |
+| `activate` | source `.venv/bin/activate` or `venv/bin/activate` |

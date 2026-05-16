@@ -15,6 +15,8 @@ fatal() { printf "%s  x%s %s\n" "$RED" "$RESET" "$*" >&2; exit 1; }
 DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/HtFilia/dotfiles.git}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/pinned-plugins.sh
+. "$SCRIPT_DIR/pinned-plugins.sh"
 
 detect_os() {
   case "$(uname -s)" in
@@ -48,6 +50,10 @@ Options:
   --assets-dir PATH        pass through to restricted installer
   --skip-docker            pass through to restricted installer
   --skip-fonts             pass through to restricted installer
+  --no-shell-plugins       skip zsh plugin and tmux TPM installation
+  --configure-shell        allow /etc/shells and chsh changes
+  --start-colima           start and enable Colima on macOS
+  --enable-docker-group    add current Linux user to docker group
   --pull-latest            reinstall offline assets in restricted mode
   -y, --yes                assume yes to prompts
   -h, --help               show help
@@ -57,6 +63,7 @@ EOF
 main() {
   local mode="${DOTFILES_MODE:-full}"
   local restricted_args=()
+  local install_shell_plugins=1 configure_shell=0 start_colima=0 enable_docker_group=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --restricted) mode="restricted" ;;
@@ -64,9 +71,14 @@ main() {
         restricted_args+=("$1")
         ;;
       --assets-dir)
+        [[ $# -ge 2 && "$2" != --* ]] || fatal "--assets-dir requires a value"
         restricted_args+=("$1" "$2")
         shift
         ;;
+      --no-shell-plugins) install_shell_plugins=0; restricted_args+=("$1") ;;
+      --configure-shell) configure_shell=1; restricted_args+=("$1") ;;
+      --start-colima) start_colima=1 ;;
+      --enable-docker-group) enable_docker_group=1 ;;
       -y|--yes) export DOTFILES_ASSUME_YES=1 ;;
       -h|--help) usage; exit 0 ;;
       *) fatal "Unknown flag: $1" ;;
@@ -84,12 +96,20 @@ main() {
 
   log "Running system installer..."
   case "$os:$mode" in
-    macos:full) bash "$SCRIPT_DIR/install-macos.sh" ;;
+    macos:full)
+      macos_args=()
+      [[ "$start_colima" == "1" ]] && macos_args+=(--start-colima)
+      bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
+      ;;
     linux:restricted|wsl:restricted)
       bash "$SCRIPT_DIR/install-debian-restricted.sh" "${restricted_args[@]}"
       exit $?
       ;;
-    linux:full|wsl:full) bash "$SCRIPT_DIR/install-debian.sh" "$os" ;;
+    linux:full|wsl:full)
+      debian_args=("$os")
+      [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)
+      bash "$SCRIPT_DIR/install-debian.sh" "${debian_args[@]}"
+      ;;
   esac
 
   if [[ "$os" != "wsl" ]]; then
@@ -99,22 +119,17 @@ main() {
     warn "On WSL, install FiraCode Nerd Font on the Windows host."
   fi
 
-  log "Installing zsh plugins..."
-  plugin_dir="$HOME/.local/share/zsh/plugins"
-  mkdir -p "$plugin_dir"
-  for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
-    if [[ ! -d "$plugin_dir/$plugin/.git" ]]; then
-      git clone --depth=1 "https://github.com/zsh-users/$plugin.git" "$plugin_dir/$plugin"
-      success "installed $plugin"
-    else
-      info "$plugin already present"
-    fi
-  done
+  if [[ "$install_shell_plugins" == "1" ]]; then
+    log "Installing pinned zsh plugins..."
+    plugin_dir="$HOME/.local/share/zsh/plugins"
+    for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+      install_pinned_plugin "$plugin" "$plugin_dir" && success "installed $plugin" || fatal "Could not install pinned plugin: $plugin"
+    done
 
-  log "Installing tmux plugin manager..."
-  tpm_dir="$HOME/.tmux/plugins/tpm"
-  if [[ ! -d "$tpm_dir/.git" ]]; then
-    git clone --depth=1 https://github.com/tmux-plugins/tpm "$tpm_dir"
+    log "Installing pinned tmux plugin manager..."
+    install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins" && success "installed tmux TPM" || fatal "Could not install pinned tmux TPM"
+  else
+    warn "Skipped shell plugins; zsh plugin files and tmux TPM will not be installed."
   fi
 
   log "Applying dotfiles..."
@@ -126,14 +141,16 @@ main() {
   fi
   "$dotfiles_dir/scripts/apply-dotfiles.sh" --mode "$mode"
 
-  if [[ "$SHELL" != *"zsh"* ]]; then
+  if [[ "$configure_shell" == "1" && "$SHELL" != *"zsh"* ]]; then
     zsh_path="$(command -v zsh)"
     if [[ -n "$zsh_path" ]]; then
-      grep -q "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+      grep -Fxq "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
       if confirm "Change default shell to Zsh?"; then
         chsh -s "$zsh_path" || warn "Could not change shell. Run: chsh -s $zsh_path"
       fi
     fi
+  elif [[ "$SHELL" != *"zsh"* ]]; then
+    warn "Default shell not changed. Re-run with --configure-shell to allow /etc/shells and chsh changes."
   fi
 
   cat <<EOF

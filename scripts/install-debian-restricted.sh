@@ -7,6 +7,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
+# shellcheck source=scripts/pinned-plugins.sh
+. "$SCRIPT_DIR/pinned-plugins.sh"
 
 if [[ -t 1 ]]; then
   RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[0;33m'
@@ -31,22 +33,30 @@ SKIP_DOCKER=0
 SKIP_FONTS=0
 PULL_LATEST=0
 DRY_RUN=0
+INSTALL_SHELL_PLUGINS=1
+CONFIGURE_SHELL=0
 
 declare -a INSTALLED=() FAILED=() SKIPPED=() MISSING_ASSETS=()
 
 usage() {
   cat <<EOF
-Usage: $0 [--enable-backports] [--assets-dir PATH] [--skip-docker] [--skip-fonts] [--pull-latest] [--dry-run]
+Usage: $0 [--enable-backports] [--assets-dir PATH] [--skip-docker] [--skip-fonts] [--pull-latest] [--no-shell-plugins] [--configure-shell] [--dry-run]
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --enable-backports) ENABLE_BACKPORTS=1 ;;
-    --assets-dir) OFFLINE_ASSETS_DIR="$2"; shift ;;
+    --assets-dir)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--assets-dir requires a value"
+      OFFLINE_ASSETS_DIR="$2"
+      shift
+      ;;
     --skip-docker) SKIP_DOCKER=1 ;;
     --skip-fonts) SKIP_FONTS=1 ;;
     --pull-latest) PULL_LATEST=1 ;;
+    --no-shell-plugins) INSTALL_SHELL_PLUGINS=0 ;;
+    --configure-shell) CONFIGURE_SHELL=1 ;;
     --dry-run) DRY_RUN=1 ;;
     -h|--help) usage; exit 0 ;;
     *) fatal "Unknown argument: $1" ;;
@@ -198,19 +208,23 @@ else
   SKIPPED+=("FiraCode Nerd Font (--skip-fonts)")
 fi
 
-log "Installing zsh plugins and tmux TPM via git clone..."
-clone_or_skip() {
-  local slug="$1" dst="$2"
-  if [[ -d "$dst/.git" ]]; then
-    SKIPPED+=("$slug (cached)")
-    return 0
+if [[ "$INSTALL_SHELL_PLUGINS" == "1" ]]; then
+  log "Installing pinned zsh plugins and tmux TPM..."
+  for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+    if run install_pinned_plugin "$plugin" "$HOME/.local/share/zsh/plugins"; then
+      INSTALLED+=("$plugin")
+    else
+      FAILED+=("$plugin")
+    fi
+  done
+  if run install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; then
+    INSTALLED+=("tmux TPM")
+  else
+    FAILED+=("tmux TPM")
   fi
-  run git clone --quiet --depth=1 "https://github.com/$slug.git" "$dst" && INSTALLED+=("$slug") || FAILED+=("$slug")
-}
-mkdir -p "$HOME/.local/share/zsh/plugins"
-clone_or_skip zsh-users/zsh-autosuggestions "$HOME/.local/share/zsh/plugins/zsh-autosuggestions"
-clone_or_skip zsh-users/zsh-syntax-highlighting "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting"
-clone_or_skip tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+else
+  SKIPPED+=("shell plugins (--no-shell-plugins)")
+fi
 
 log "Deploying dotfiles in restricted mode..."
 apply_args=(--mode restricted)
@@ -221,12 +235,14 @@ else
   FAILED+=("dotfiles")
 fi
 
-if [[ "$DRY_RUN" != "1" && "$SHELL" != *"zsh"* ]]; then
+if [[ "$DRY_RUN" != "1" && "$CONFIGURE_SHELL" == "1" && "$SHELL" != *"zsh"* ]]; then
   zsh_path="$(command -v zsh)"
   if [[ -n "$zsh_path" ]]; then
-    grep -q "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+    grep -Fxq "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
     chsh -s "$zsh_path" 2>/dev/null && INSTALLED+=("default shell -> zsh") || warn "Run manually: chsh -s $zsh_path"
   fi
+elif [[ "$DRY_RUN" != "1" && "$SHELL" != *"zsh"* ]]; then
+  warn "Default shell not changed. Re-run with --configure-shell to allow /etc/shells and chsh changes."
 fi
 
 printf '\n%s%sSummary%s\n' "$CYAN" "$BOLD" "$RESET"

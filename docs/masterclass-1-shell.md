@@ -100,9 +100,10 @@ Les plus utiles à connaître par cœur :
 
 | Alias | Équivalent | Usage |
 |---|---|---|
-| `ll` | `eza -l --icons --git` | Listing détaillé |
-| `la` | `eza -la --icons --git` | Listing complet (cachés inclus) |
-| `lt` | `eza --tree --level=2` | Arbre 2 niveaux |
+| `ls` | `eza --icons --group-directories-first` | Listing simple, si `eza` est installé |
+| `ll` | `eza -l --icons --group-directories-first --git` | Listing détaillé |
+| `la` | `eza -la --icons --group-directories-first --git` | Listing complet (cachés inclus) |
+| `lt` / `ltt` | `eza --tree --icons --level=2/3` | Arbre 2 ou 3 niveaux |
 | `..` / `...` / `....` | `cd ..` etc | Remonter de N niveaux |
 | `g` | `git` | Ouais, rien que `g status` marche |
 | `gs` | `git status -sb` | Status court + branche |
@@ -110,6 +111,11 @@ Les plus utiles à connaître par cœur :
 | `d` | `docker` | |
 | `dc` | `docker compose` | |
 | `lg` | `lazygit` | |
+| `dotfiles` | `cd "${DOTFILES_DIR:-$HOME/.dotfiles}"` | Aller au repo de dotfiles |
+
+Les remplacements plus invasifs (`cat` → `bat`, `grep` → `rg`, `find` → `fd`,
+`mkdir` → `mkdir -p`) sont désactivés par défaut. Active-les explicitement avec
+`DOTFILES_ENABLE_COMMAND_OVERRIDES=1` dans `~/.zshrc.local`.
 
 ### Recharger sans redémarrer
 
@@ -167,7 +173,9 @@ Starship détecte automatiquement les fichiers du projet (`package.json`, `Cargo
 
 **Le concept** : zoxide apprend où tu vas. Plus tu visites un dossier, plus il devient facile d'y aller depuis n'importe où.
 
-Dans ton setup, `cd` a été **remplacé** par zoxide (via `zoxide init --cmd cd`). Donc tout ce qui suit utilise juste `cd`.
+Dans ton setup, zoxide est initialisé et `cd` est un alias vers `z`. Donc tout
+ce qui suit utilise juste `cd`, mais la commande brute reste disponible sous
+`z`.
 
 ### Utilisation de base
 
@@ -186,7 +194,7 @@ Dans ton setup, `cd` a été **remplacé** par zoxide (via `zoxide init --cmd cd
 ### Le menu interactif (très puissant)
 
 ```bash
-❯ cdi             # "cd interactive"
+❯ zi              # zoxide interactive
 ```
 
 Ouvre un fuzzy finder avec tous les dossiers connus, triés par "fréquence × récence". Tu tapes 2 lettres, tu vois le match en live, Entrée → tu y es.
@@ -219,7 +227,7 @@ C'est **le** couteau suisse. Tu peux l'utiliser partout, tout le temps.
 | Raccourci | Usage |
 |---|---|
 | **`Ctrl-T`** | Ouvre un fuzzy finder des fichiers. Sélection → le path est **collé dans ta ligne** |
-| **`Ctrl-R`** | Cherche dans ton historique shell (remplacé par atuin, voir plus bas) |
+| **`Ctrl-R`** | Cherche dans ton historique shell via atuin |
 | **`Alt-C`** | Fuzzy finder des dossiers → `cd` direct dedans |
 
 Exemple concret :
@@ -265,6 +273,9 @@ Définies dans ton `~/.zshrc` :
 ❯ fcd             # fuzzy cd : choisir un dossier et y aller
 ❯ fga             # fuzzy git add : multi-sélection de fichiers à stager
 ❯ fkill           # fuzzy kill : choisir un process à tuer (Tab pour multi-sélection)
+❯ frg pattern     # rg + fzf + preview bat, puis ouverture dans nvim
+❯ fh              # fuzzy history et réinjection dans la ligne courante
+❯ groot           # cd à la racine du repo git courant
 ```
 
 ### Un truc de niveau pro
@@ -313,13 +324,15 @@ Remplace `ls` avec icônes, couleurs, info git.
 
 ## <a name="bat"></a>6. bat — cat avec du style
 
-`cat` qui affiche avec syntax highlighting, numéros de ligne, et intégration git (montre les modifs non commitées en marge).
+`bat` affiche les fichiers avec syntax highlighting, numéros de ligne, et
+intégration git (modifs non commitées en marge). `cat` reste le `cat` système,
+sauf si tu actives `DOTFILES_ENABLE_COMMAND_OVERRIDES=1`.
 
 ### Usage de base
 
 ```bash
-❯ cat fichier.py         # (c'est un alias vers bat --paging=never)
 ❯ bat fichier.py         # avec pagination si le fichier est long
+❯ bat --paging=never fichier.py  # version sans pager, pratique dans un script
 ❯ bat -p fichier.py      # mode "plain" : pas de numéros, pas de frame
 ❯ bat -n fichier.py      # juste les numéros de ligne
 ❯ bat -r 10:20 file.py   # lignes 10 à 20 uniquement
@@ -345,7 +358,9 @@ Remplace `ls` avec icônes, couleurs, info git.
 ❯ bat --theme="Tokyo Night" fichier.py    # change ponctuellement
 ```
 
-(Ton thème par défaut est déjà Tokyo Night via la config.)
+Le thème par défaut de `bat` est `TwoDark` via `BAT_THEME`. Le thème
+`Tokyo Night` est aussi installé et mis en cache pour `delta`, parce que ta
+config Git l'utilise pour les diffs.
 
 ### Astuce : utiliser bat comme help pager
 

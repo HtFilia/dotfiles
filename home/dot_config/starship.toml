@@ -7,8 +7,7 @@ format = """
 [╭─](bold #7aa2f7)\
 $os\
 $username\
-[@](bold #7aa2f7)\
-$hostname\
+$hostname \
 $directory\
 $git_branch\
 $git_status\
@@ -54,14 +53,14 @@ Ubuntu    = ""
 Windows   = ""
 
 [username]
-show_always = false
+show_always = true
 format = "[$user]($style)"
 style_user = "bold green"
 style_root = "bold red"
 
 [hostname]
-ssh_only = false
-format = "[$hostname]($style) "
+ssh_only = true
+format = "[@$hostname]($style)"
 style = "bold purple"
 
 [directory]

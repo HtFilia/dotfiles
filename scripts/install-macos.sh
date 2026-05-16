@@ -9,6 +9,25 @@ info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
 warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
 fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
+START_COLIMA=0
+usage() {
+  cat <<EOF
+Usage: $0 [--start-colima]
+
+Options:
+  --start-colima   start Colima and enable its Homebrew service
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --start-colima) START_COLIMA=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) fatal "Unknown argument: $1" ;;
+  esac
+  shift
+done
+
 if ! xcode-select -p >/dev/null 2>&1; then
   log "Installing Xcode Command Line Tools..."
   xcode-select --install
@@ -73,7 +92,7 @@ for plugin in docker-compose docker-buildx; do
   fi
 done
 
-if command -v colima >/dev/null 2>&1; then
+if [[ "$START_COLIMA" == "1" ]] && command -v colima >/dev/null 2>&1; then
   if ! colima status >/dev/null 2>&1; then
     log "Starting Colima..."
     colima start --cpu 2 --memory 4 --disk 60 || warn "Colima failed to start."
@@ -81,6 +100,8 @@ if command -v colima >/dev/null 2>&1; then
   if ! brew services list | grep -q "^colima .*started"; then
     brew services start colima || warn "Could not enable colima as a service."
   fi
+elif command -v colima >/dev/null 2>&1; then
+  warn "Colima installed but not started. Re-run with --start-colima to enable it."
 fi
 
 warn "Claude Code is not installed automatically; install it manually if you accept its upstream installer."

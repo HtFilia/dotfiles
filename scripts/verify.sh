@@ -9,6 +9,8 @@ CYAN=$'\033[0;36m'; BOLD=$'\033[1m'; RESET=$'\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
+# shellcheck source=scripts/pinned-plugins.sh
+. "$SCRIPT_DIR/pinned-plugins.sh"
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
 
@@ -30,7 +32,17 @@ check_tool() {
   fi
 }
 
+check_bat_theme() {
+  local theme="$1"
+  if command -v bat >/dev/null 2>&1 && bat --list-themes 2>/dev/null | grep -Fxq "$theme"; then
+    status_ok "bat theme" "$theme"
+  else
+    status_miss "bat theme" "$theme"
+  fi
+}
+
 asset_arch="$(pinned_asset_arch 2>/dev/null || printf '%s' x86_64)"
+os_name="$(uname -s)"
 
 check_pinned_version() {
   local tool="$1" key="$2" version_cmd="${3:---version}"
@@ -50,13 +62,42 @@ check_pinned_version() {
   fi
 }
 
+check_pinned_plugin() {
+  local key="$1" base_dir="$2" dir expected actual
+  dir="$(pinned_plugin_field "$key" dir 2>/dev/null || true)"
+  expected="$(pinned_plugin_field "$key" commit 2>/dev/null || true)"
+  if [[ -n "$dir" && -d "$base_dir/$dir/.git" ]]; then
+    actual="$(git -C "$base_dir/$dir" rev-parse HEAD 2>/dev/null || true)"
+    if [[ "$actual" == "$expected" ]]; then
+      status_ok "$key" "pinned ${expected:0:12}"
+    else
+      status_miss "$key" "expected ${expected:0:12}, got ${actual:0:12}"
+    fi
+  else
+    status_miss "$key" ""
+  fi
+}
+
 printf "%s%sDotfiles verification%s\n" "$CYAN" "$BOLD" "$RESET"
 printf "%s%s%s on %s %s%s\n" "$CYAN" "$BOLD" "$(date +'%Y-%m-%d %H:%M')" "$(uname -s)" "$(uname -m)" "$RESET"
 
 section "Shell & prompt"
 check_tool zsh
-check_pinned_version starship "starship-linux-$asset_arch"
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool starship --version
+else
+  check_pinned_version starship "starship-linux-$asset_arch"
+fi
 check_tool tmux
+if command -v zsh >/dev/null 2>&1; then
+  compaudit_out="$(zsh -fc 'autoload -Uz compaudit; compaudit' 2>/dev/null || true)"
+  if [[ -z "$compaudit_out" ]]; then
+    status_ok "compaudit" "secure"
+  else
+    status_miss "compaudit" "insecure paths"
+    printf '%s\n' "$compaudit_out"
+  fi
+fi
 
 section "Editors"
 check_tool nvim --version
@@ -73,20 +114,34 @@ fi
 check_tool code --version 1
 
 section "Modern CLI"
-check_pinned_version eza "eza-linux-$asset_arch"
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool eza --version
+else
+  check_pinned_version eza "eza-linux-$asset_arch"
+fi
 check_tool bat --version
+check_bat_theme "Tokyo Night"
 check_tool fd --version
 check_tool rg --version
 check_tool fzf --version
 check_tool zoxide --version
-check_pinned_version lazygit "lazygit-linux-$asset_arch"
-check_pinned_version delta "delta-linux-$asset_arch"
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool lazygit --version
+  check_tool delta --version
+else
+  check_pinned_version lazygit "lazygit-linux-$asset_arch"
+  check_pinned_version delta "delta-linux-$asset_arch"
+fi
 check_tool atuin --version 1
 check_tool direnv --version
 
 section "Languages"
 check_tool python3
-check_pinned_version uv "uv-linux-$asset_arch"
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool uv --version
+else
+  check_pinned_version uv "uv-linux-$asset_arch"
+fi
 check_tool go version
 check_tool rustc --version
 check_tool cargo --version
@@ -109,16 +164,11 @@ else
 fi
 
 section "Zsh plugins"
-for p in zsh-autosuggestions zsh-syntax-highlighting; do
-  if [[ -d "$HOME/.local/share/zsh/plugins/$p" ]]; then
-    status_ok "$p" "installed"
-  else
-    status_miss "$p" ""
-  fi
-done
+check_pinned_plugin zsh-autosuggestions "$HOME/.local/share/zsh/plugins"
+check_pinned_plugin zsh-syntax-highlighting "$HOME/.local/share/zsh/plugins"
 
 section "tmux TPM"
-[[ -d "$HOME/.tmux/plugins/tpm" ]] && status_ok "TPM" "installed" || status_miss "TPM" ""
+check_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"
 
 printf "\n%sLegend:%s %s+%s present  %sx%s missing  %s-%s optional\n\n" \
   "$BOLD" "$RESET" "$GREEN" "$RESET" "$RED" "$RESET" "$YELLOW" "$RESET"
