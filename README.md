@@ -1,140 +1,93 @@
-# 🚀 Dotfiles
+# Dotfiles
 
-Modern, cross-platform development environment configuration.
+Modern cross-platform development environment configuration.
 
-Supports **macOS**, **Debian 12/13**, and **Debian 13 on WSL**.
+Supports macOS, Debian/Ubuntu, WSL, and a restricted Debian 12 mode.
 
-## ✨ What's inside
+## What's inside
 
 | Category | Tool |
 |---|---|
-| **Shell** | Zsh + [Starship](https://starship.rs/) prompt |
-| **Terminal** | [Ghostty](https://ghostty.org/) |
-| **Multiplexer** | [tmux](https://github.com/tmux/tmux) + [TPM](https://github.com/tmux-plugins/tpm) |
-| **Editors** | [Neovim](https://neovim.io/) (lazy.nvim), VS Code |
-| **Theme** | Tokyo Night (everywhere) |
-| **Font** | FiraCode Nerd Font |
-| **AI** | Claude Code |
-| **Languages** | Python (uv), Go, Rust (rustup) |
-| **Container** | Docker / Podman aliases |
+| Shell | Zsh + Starship |
+| Terminal | Ghostty |
+| Multiplexer | tmux + TPM |
+| Editors | LazyVim in full mode, local no-plugin Neovim in restricted mode, VS Code |
+| Theme | Tokyo Night |
+| Font | FiraCode Nerd Font |
+| Languages | Python with uv, Go, Rust |
+| Container | Docker / Podman aliases |
 
-### Modern CLI tools
-
-- [`eza`](https://github.com/eza-community/eza) — modern `ls`
-- [`bat`](https://github.com/sharkdp/bat) — `cat` with syntax highlighting
-- [`fzf`](https://github.com/junegunn/fzf) — fuzzy finder
-- [`ripgrep`](https://github.com/BurntSushi/ripgrep) — fast grep
-- [`fd`](https://github.com/sharkdp/fd) — modern `find`
-- [`zoxide`](https://github.com/ajeetdsouza/zoxide) — smart `cd`
-- [`lazygit`](https://github.com/jesseduffield/lazygit) — git TUI
-- [`delta`](https://github.com/dandavison/delta) — better git diffs
-- [`direnv`](https://direnv.net/) — per-project environments
-
-## 🚀 Quick start
-
-On a fresh machine, run:
+## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/.dotfiles
+git clone https://github.com/HtFilia/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/bootstrap.sh
 ```
 
-The bootstrap script will:
-
-1. Detect your OS (macOS / Debian / WSL)
-2. Install [Homebrew](https://brew.sh/) (macOS) or set up `apt` (Debian/WSL)
-3. Install all the CLI tools listed above
-4. Render and symlink the dotfiles via `scripts/render-dotfiles.py`
-5. Install the FiraCode Nerd Font
-6. Install Neovim + lazy.nvim bootstrap
-7. Install tmux plugin manager (TPM)
-8. Set Zsh as your default shell
-
-### 🔒 Corporate / locked-down machines (Debian only)
-
-If you're on a work machine where only `apt` (official Debian repos) and `github.com` are reachable:
+Restricted Debian 12 workstation:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-./scripts/bootstrap.sh --restricted
+git clone https://github.com/HtFilia/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./scripts/bootstrap.sh --restricted --enable-backports
 ```
 
-Pre-built binaries for tools not in apt must be placed in `~/dotfiles-offline-assets/` beforehand.
-See [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) for the full workflow and download manifest.
+Pre-download the pinned offline assets listed in
+[`scripts/offline-manifest.md`](scripts/offline-manifest.md) before running
+restricted mode.
 
-### ✅ Verify your install
+## Repository structure
+
+```text
+home/                         dotfiles source (dot_ prefix maps to . in $HOME)
+  dot_config/
+    nvim-lazyvim/             full-mode LazyVim profile
+    nvim-restricted/          restricted no-plugin Neovim profile
+    Code/User/                VS Code settings
+    ghostty/                  Ghostty config
+    git/                      global ignore and attributes
+    ripgrep/                  ripgrep defaults
+  dot_gitconfig               generic Git config; includes ~/.gitconfig.local
+  dot_tmux.conf               tmux config
+  dot_zshrc                   runtime OS-aware Zsh config
+scripts/
+  apply-dotfiles.sh           static symlink deployer
+  bootstrap.sh                one-command installer
+  pinned-assets.sh            pinned URLs and SHA256 values
+  install-*.sh                platform installers
+  offline-manifest.md         restricted-mode download manifest
+```
+
+## Dotfile deployment
+
+This repo does not use Chezmoi or a template engine. `scripts/apply-dotfiles.sh`
+creates symlinks from `home/` into `$HOME`.
+
+```bash
+./scripts/apply-dotfiles.sh --mode full
+./scripts/apply-dotfiles.sh --mode restricted
+./scripts/apply-dotfiles.sh --dry-run --mode full
+```
+
+If `~/.gitconfig.local` does not exist, the script prompts for Git name/email
+and writes that local untracked file.
+
+## Security model
+
+Direct downloads are pinned in `scripts/pinned-assets.sh` with exact URLs and
+SHA256 checksums. Installers refuse cached or offline assets whose checksum does
+not match.
+
+LazyVim is used only in full mode. Its plugin graph is captured in
+`home/dot_config/nvim-lazyvim/lazy-lock.json`, and the local config disables
+automatic Mason tool installation. Restricted mode has no plugin manager.
+
+`apt` and Homebrew remain trusted through their native signing and repository
+mechanisms. Upstream shell installers are not run automatically.
+
+## Verify
 
 ```bash
 ./scripts/verify.sh
 ```
-
-## 📁 Repository structure
-
-```
-.
-├── home/                      # Dotfiles source (dot_ prefix → . in $HOME)
-│   ├── dot_config/
-│   │   ├── Code/User/        # VS Code settings + keybindings
-│   │   ├── ghostty/          # Terminal config
-│   │   ├── git/              # Git config + global ignore
-│   │   ├── nvim/             # Neovim (lazy.nvim, no framework)
-│   │   ├── ripgrep/          # Ripgrep defaults
-│   │   └── starship.toml     # Prompt config
-│   ├── dot_gitconfig.tmpl    # Git config (templated per machine)
-│   ├── dot_tmux.conf         # Tmux config
-│   └── dot_zshrc.tmpl        # Main Zsh config (templated per OS)
-├── scripts/
-│   ├── bootstrap.sh          # One-command installer
-│   ├── render-dotfiles.py    # Template renderer + symlinker
-│   ├── install-macos.sh      # macOS-specific installs
-│   ├── install-debian.sh     # Debian/WSL installs
-│   ├── install-debian-restricted.sh  # Locked-down Debian installs
-│   ├── offline-manifest.md   # Download links for restricted mode
-│   └── install-fonts.sh      # Nerd Font installer
-└── docs/                     # Extended documentation
-```
-
-## 🎨 Templating
-
-Files ending in `.tmpl` are rendered by `scripts/render-dotfiles.py` using a
-Go-template subset. This lets the same repo produce different output per OS and
-machine type:
-
-- Different paths (e.g. Homebrew at `/opt/homebrew` vs `/home/linuxbrew`)
-- Different aliases (macOS `pbcopy` vs WSL `clip.exe`)
-- Per-machine values (`name`, `email`, `machineType`, `hostname`) stored in
-  `~/.config/dotfiles/machine.yaml` (created interactively on first run)
-
-## 🔄 Daily workflow
-
-```bash
-# Go to the dotfiles repo
-dotfiles        # alias → cd ~/.dotfiles
-
-# Edit a template
-$EDITOR home/dot_zshrc.tmpl
-
-# Re-apply (re-renders templates + refreshes symlinks)
-python3 scripts/render-dotfiles.py apply
-
-# Commit and push
-git add -p && git commit -m "feat: ..." && git push
-```
-
-## 🖥️ Per-machine config
-
-On first run, `render-dotfiles.py` prompts for:
-
-- Your name & email (for git)
-- Machine type: `personal` or `work`
-- Hostname identifier
-
-Answers are saved to `~/.config/dotfiles/machine.yaml` and injected into templates.
-
-## 📚 Further reading
-
-- [`docs/KEYBINDINGS.md`](docs/KEYBINDINGS.md) — shortcuts cheat sheet
-- [`docs/RESTRICTED-MODE.md`](docs/RESTRICTED-MODE.md) — locked-down machine workflow
-- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — common issues

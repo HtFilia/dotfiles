@@ -1,0 +1,195 @@
+#!/usr/bin/env zsh
+# ~/.zshrc - managed by dotfiles/scripts/apply-dotfiles.sh
+# shellcheck disable=all
+
+case "$(uname -s)" in
+  Darwin) export DOTFILES_OS="macos" ;;
+  Linux)
+    if grep -qi microsoft /proc/version 2>/dev/null || grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
+      export DOTFILES_OS="wsl"
+    else
+      export DOTFILES_OS="linux"
+    fi
+    ;;
+  *) export DOTFILES_OS="unknown" ;;
+esac
+
+typeset -U path PATH
+path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/go/bin" $path)
+
+if [[ "$DOTFILES_OS" == "macos" ]]; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+export PATH
+export EDITOR="nvim"
+export VISUAL="nvim"
+export PAGER="less"
+export LESS="-R --mouse --wheel-lines=3"
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export BAT_THEME="TwoDark"
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
+setopt EXTENDED_HISTORY HIST_EXPIRE_DUPS_FIRST HIST_IGNORE_DUPS HIST_IGNORE_SPACE
+setopt HIST_VERIFY SHARE_HISTORY APPEND_HISTORY INC_APPEND_HISTORY
+setopt AUTO_CD AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT INTERACTIVE_COMMENTS
+setopt NO_BEEP PROMPT_SUBST
+
+autoload -Uz compinit
+if [[ -n "$HOME/.zcompdump"(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+ZSH_PLUGIN_DIR="$HOME/.local/share/zsh/plugins"
+[[ -f "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#565f89"
+[[ -f "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+command -v starship &>/dev/null && eval "$(starship init zsh)"
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+  alias cd='z'
+fi
+if command -v fzf &>/dev/null; then
+  _fzf_init="$(fzf --zsh 2>/dev/null)"
+  if [[ -n "$_fzf_init" ]]; then
+    eval "$_fzf_init"
+  else
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+    [[ -f ~/.fzf/shell/key-bindings.zsh ]] && source ~/.fzf/shell/key-bindings.zsh
+    [[ -f ~/.fzf/shell/completion.zsh ]] && source ~/.fzf/shell/completion.zsh
+  fi
+  unset _fzf_init
+  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded"
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+fi
+command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+
+if command -v eza &>/dev/null; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -l --icons --group-directories-first --git'
+  alias la='eza -la --icons --group-directories-first --git'
+  alias lt='eza --tree --icons --level=2'
+  alias ltt='eza --tree --icons --level=3'
+fi
+command -v bat &>/dev/null && alias cat='bat --paging=never' less='bat'
+command -v rg &>/dev/null && alias grep='rg'
+command -v fd &>/dev/null && alias find='fd'
+command -v lazygit &>/dev/null && alias lg='lazygit'
+
+alias g='git' gs='git status -sb' ga='git add' gaa='git add --all'
+alias gc='git commit' gcm='git commit -m' gca='git commit --amend'
+alias gco='git checkout' gcb='git checkout -b' gb='git branch'
+alias gp='git push' gpl='git pull' gl='git log --oneline --graph --decorate'
+alias gll='git log --oneline --graph --decorate --all' gd='git diff'
+alias gds='git diff --staged' gst='git stash' gstp='git stash pop'
+alias gstl='git stash list' gf='git fetch' gfa='git fetch --all --prune'
+alias grb='git rebase' grbi='git rebase -i' gcp='git cherry-pick'
+alias grs='git restore' grss='git restore --staged' grt='git rev-parse --show-toplevel'
+
+if command -v docker &>/dev/null; then
+  alias d='docker'
+  alias dc='docker compose'
+  alias dps='docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
+  alias dpsa='docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"'
+  alias di='docker images' dex='docker exec -it' dlog='docker logs -f'
+  alias dprune='docker system prune -af --volumes'
+elif command -v podman &>/dev/null; then
+  alias d='podman' dc='podman compose' dps='podman ps' di='podman images'
+fi
+
+alias ..='cd ..' ...='cd ../..' ....='cd ../../..' -- -='cd -'
+alias mkdir='mkdir -p' df='df -h' du='du -h' free='free -h'
+alias reload='source ~/.zshrc' zshconfig='$EDITOR ~/.zshrc'
+alias nvimconfig='$EDITOR ~/.config/nvim'
+alias dotfiles='cd "${DOTFILES_DIR:-$HOME/.dotfiles}"'
+
+if [[ "$DOTFILES_OS" == "macos" ]]; then
+  alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
+  alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
+  alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
+  alias brewup='brew update && brew upgrade && brew cleanup'
+else
+  alias aptup='sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
+  alias apti='sudo apt install' apts='apt search' aptrm='sudo apt remove'
+  alias aptshow='apt show' open='xdg-open'
+  alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
+  alias jcu='journalctl -u' jcb='journalctl -b'
+fi
+
+if [[ "$DOTFILES_OS" == "wsl" ]]; then
+  alias pbcopy='clip.exe'
+  alias pbpaste='powershell.exe -command "Get-Clipboard" | sed "s/\r//"'
+  alias explorer='explorer.exe'
+  alias winhome='cd "/mnt/c/Users/$USER"'
+fi
+
+mkcd() { mkdir -p "$1" && cd "$1" || return; }
+extract() {
+  if [[ -f "$1" ]]; then
+    case "$1" in
+      *.tar.bz2) tar xjf "$1" ;; *.tar.gz) tar xzf "$1" ;; *.tar.xz) tar xJf "$1" ;;
+      *.bz2) bunzip2 "$1" ;; *.rar) unrar x "$1" ;; *.gz) gunzip "$1" ;;
+      *.tar) tar xf "$1" ;; *.tbz2) tar xjf "$1" ;; *.tgz) tar xzf "$1" ;;
+      *.zip) unzip "$1" ;; *.Z) uncompress "$1" ;; *.7z) 7z x "$1" ;;
+      *) echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+fe() { local file; file=$(fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}') && "${EDITOR:-nvim}" "$file"; }
+fcd() { local dir; dir=$(fd --type d --hidden --exclude .git | fzf --preview 'eza --tree --level=2 --color=always {}') && cd "$dir" || return; }
+fga() { git status -s | fzf -m --preview 'git diff --color=always {2}' | awk '{print $2}' | xargs git add; }
+fkill() { local pid; pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}'); [[ -n "$pid" ]] && echo "$pid" | xargs kill -"${1:-9}"; }
+frg() {
+  local result
+  result=$(rg --color=always --line-number --no-heading --smart-case "${*:-}" | fzf --ansi --delimiter ':' --preview 'bat --color=always --highlight-line {2} {1}' --preview-window 'up,60%,border-bottom,+{2}+3/3,~3')
+  [[ -n "$result" ]] && ${EDITOR:-nvim} "$(cut -d: -f1 <<<"$result")" +"$(cut -d: -f2 <<<"$result")"
+}
+fh() { print -z "$(fc -rln 1 | fzf --no-sort --tac --query="$*")"; }
+groot() { local root; root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not in a git repo."; return 1; }; cd "$root" || return; }
+gclone() { git clone "$1" "${2}" && cd "${2:-$(basename "$1" .git)}" || return; }
+gwip() { git add -A && git commit -m "wip: $(date '+%Y-%m-%d %H:%M')"; }
+gunwip() { git log --oneline -1 | grep -q "wip:" && git reset HEAD~1; }
+serve() { python3 -m http.server "${1:-8000}"; }
+psg() { ps aux | grep -v grep | grep -i "$@"; }
+activate() {
+  if [[ -f .venv/bin/activate ]]; then source .venv/bin/activate
+  elif [[ -f venv/bin/activate ]]; then source venv/bin/activate
+  else echo "No .venv or venv found. Create with: uv venv"; return 1
+  fi
+}
+
+if command -v uv &>/dev/null; then
+  eval "$(uv generate-shell-completion zsh 2>/dev/null)"
+  alias uvr='uv run' uvs='uv sync' uva='uv add' uvp='uv pip'
+  alias pyi='uv pip install' pyls='uv pip list'
+fi
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+export GOPATH="${GOPATH:-$HOME/go}"
+export GOBIN="$GOPATH/bin"
+[[ -d "$GOBIN" ]] && path+=("$GOBIN")
+alias cc='claude' ccr='claude --resume'
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

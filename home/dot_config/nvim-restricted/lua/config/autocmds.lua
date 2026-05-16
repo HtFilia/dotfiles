@@ -1,8 +1,6 @@
--- ~/.config/nvim/lua/config/autocmds.lua
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 
--- Highlight on yank
 autocmd("TextYankPost", {
   group = augroup("HighlightYank", { clear = true }),
   callback = function()
@@ -10,7 +8,6 @@ autocmd("TextYankPost", {
   end,
 })
 
--- Remove trailing whitespace on save
 autocmd("BufWritePre", {
   group = augroup("TrimWhitespace", { clear = true }),
   pattern = "*",
@@ -21,7 +18,6 @@ autocmd("BufWritePre", {
   end,
 })
 
--- Auto-resize splits when window is resized
 autocmd("VimResized", {
   group = augroup("AutoResize", { clear = true }),
   command = "tabdo wincmd =",
