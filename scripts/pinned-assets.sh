@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pinned direct-download assets.
-# Keep versions, URLs, filenames and SHA256 values in sync with offline-manifest.md.
+# Keep versions, URLs, filenames and SHA256 values in sync with docs/ASSET-MANIFEST.md.
 
 pinned_asset_field() {
   local key="$1" field="$2"
@@ -40,15 +40,35 @@ pinned_asset_field() {
     neovim-linux-x86_64:file) printf '%s\n' 'nvim-linux-x86_64.tar.gz' ;;
     neovim-linux-x86_64:sha256) printf '%s\n' '95aaa8e89473f5421114f2787c13ae0ec6e11ebbd1a13a1bd6fcf63420f8073f' ;;
 
-    go-linux-amd64:version) printf '%s\n' '1.23.4' ;;
-    go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.23.4.linux-amd64.tar.gz' ;;
-    go-linux-amd64:file) printf '%s\n' 'go1.23.4.linux-amd64.tar.gz' ;;
-    go-linux-amd64:sha256) printf '%s\n' '6924efde5de86fe277676e929dc9917d466efa02fb934197bc2eba35d5680971' ;;
+    node-linux-x86_64:version) printf '%s\n' 'v24.17.0' ;;
+    node-linux-x86_64:url) printf '%s\n' 'https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-x64.tar.xz' ;;
+    node-linux-x86_64:file) printf '%s\n' 'node-v24.17.0-linux-x64.tar.xz' ;;
+    node-linux-x86_64:sha256) printf '%s\n' 'ab343a1b747c7cbf3630dfd7dbf818c5423fab2eb4f5ad1afc896f6bd121a917' ;;
 
-    go-linux-arm64:version) printf '%s\n' '1.23.4' ;;
-    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.23.4.linux-arm64.tar.gz' ;;
-    go-linux-arm64:file) printf '%s\n' 'go1.23.4.linux-arm64.tar.gz' ;;
-    go-linux-arm64:sha256) printf '%s\n' '16e5017863a7f6071363782b1b8042eb12c6ca4f4cd71528b2123f0a1275b13e' ;;
+    node-linux-arm64:version) printf '%s\n' 'v24.17.0' ;;
+    node-linux-arm64:url) printf '%s\n' 'https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-arm64.tar.xz' ;;
+    node-linux-arm64:file) printf '%s\n' 'node-v24.17.0-linux-arm64.tar.xz' ;;
+    node-linux-arm64:sha256) printf '%s\n' '67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3' ;;
+
+    chezmoi-linux-amd64:version) printf '%s\n' 'v2.70.5' ;;
+    chezmoi-linux-amd64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.70.5/chezmoi_2.70.5_linux_amd64.tar.gz' ;;
+    chezmoi-linux-amd64:file) printf '%s\n' 'chezmoi_2.70.5_linux_amd64.tar.gz' ;;
+    chezmoi-linux-amd64:sha256) printf '%s\n' '6a76a0ac3718f0d45b34b4b57067f9556f8f6042e3da710a3c496838362aca14' ;;
+
+    chezmoi-linux-arm64:version) printf '%s\n' 'v2.70.5' ;;
+    chezmoi-linux-arm64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.70.5/chezmoi_2.70.5_linux_arm64.tar.gz' ;;
+    chezmoi-linux-arm64:file) printf '%s\n' 'chezmoi_2.70.5_linux_arm64.tar.gz' ;;
+    chezmoi-linux-arm64:sha256) printf '%s\n' '4f4f31d0a10ed3b955e814a5ae20075426e27c9d3a09f536bfa4a6c8718353f2' ;;
+
+    go-linux-amd64:version) printf '%s\n' '1.26.4' ;;
+    go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.26.4.linux-amd64.tar.gz' ;;
+    go-linux-amd64:file) printf '%s\n' 'go1.26.4.linux-amd64.tar.gz' ;;
+    go-linux-amd64:sha256) printf '%s\n' '1153d3d50e0ac764b447adfe05c2bcf08e889d42a02e0fe0259bd47f6733ad7f' ;;
+
+    go-linux-arm64:version) printf '%s\n' '1.26.4' ;;
+    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.26.4.linux-arm64.tar.gz' ;;
+    go-linux-arm64:file) printf '%s\n' 'go1.26.4.linux-arm64.tar.gz' ;;
+    go-linux-arm64:sha256) printf '%s\n' 'ef758ae7c6cf9267c9c0ef080b8965f453d89ab2d25d9eb22de4405925238768' ;;
 
     *) return 1 ;;
   esac
