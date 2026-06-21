@@ -45,38 +45,48 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --restricted             use restricted Debian mode and restricted Neovim
-  --enable-backports       pass through to restricted installer
-  --assets-dir PATH        pass through to restricted installer
-  --skip-docker            pass through to restricted installer
-  --skip-fonts             pass through to restricted installer
+  --skip-docker            do not install Docker on Linux
+  --skip-fonts             do not install FiraCode Nerd Font
   --no-shell-plugins       skip zsh plugin and tmux TPM installation
+  --skip-vscode-extensions skip VS Code extension installation
   --configure-shell        allow /etc/shells and chsh changes
   --start-colima           start and enable Colima on macOS
   --enable-docker-group    add current Linux user to docker group
-  --pull-latest            reinstall offline assets in restricted mode
   -y, --yes                assume yes to prompts
   -h, --help               show help
 EOF
 }
 
+install_vscode_extensions() {
+  local extensions_file="$1"
+  [[ -f "$extensions_file" ]] || return 0
+  if ! command -v code >/dev/null 2>&1; then
+    warn "VS Code CLI not found; skipped extension installation."
+    return 0
+  fi
+
+  log "Installing VS Code extensions..."
+  local extension
+  while IFS= read -r extension || [[ -n "$extension" ]]; do
+    [[ -z "$extension" || "$extension" == \#* ]] && continue
+    if code --install-extension "$extension" --force >/dev/null 2>&1; then
+      success "installed $extension"
+    else
+      warn "Could not install VS Code extension: $extension"
+    fi
+  done <"$extensions_file"
+}
+
 main() {
-  local mode="${DOTFILES_MODE:-full}"
-  local restricted_args=()
   local install_shell_plugins=1 configure_shell=0 start_colima=0 enable_docker_group=0
+  local install_code_extensions=1 skip_docker=0 skip_fonts=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --restricted) mode="restricted" ;;
-      --enable-backports|--skip-docker|--skip-fonts|--pull-latest)
-        restricted_args+=("$1")
-        ;;
-      --assets-dir)
-        [[ $# -ge 2 && "$2" != --* ]] || fatal "--assets-dir requires a value"
-        restricted_args+=("$1" "$2")
-        shift
-        ;;
-      --no-shell-plugins) install_shell_plugins=0; restricted_args+=("$1") ;;
-      --configure-shell) configure_shell=1; restricted_args+=("$1") ;;
+      --skip-docker) skip_docker=1 ;;
+      --skip-fonts) skip_fonts=1 ;;
+      --no-shell-plugins) install_shell_plugins=0 ;;
+      --skip-vscode-extensions) install_code_extensions=0 ;;
+      --configure-shell) configure_shell=1 ;;
       --start-colima) start_colima=1 ;;
       --enable-docker-group) enable_docker_group=1 ;;
       -y|--yes) export DOTFILES_ASSUME_YES=1 ;;
@@ -89,30 +99,27 @@ main() {
   local os
   os="$(detect_os)"
   success "Detected OS: $os"
-  success "Install mode: $mode"
-  [[ "$mode" == "restricted" && "$os" == "macos" ]] && fatal "Restricted mode is Linux-only."
 
   confirm "Continue with installation?" || { warn "Aborted."; exit 0; }
 
   log "Running system installer..."
-  case "$os:$mode" in
-    macos:full)
+  case "$os" in
+    macos)
       macos_args=()
       [[ "$start_colima" == "1" ]] && macos_args+=(--start-colima)
       bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
       ;;
-    linux:restricted|wsl:restricted)
-      bash "$SCRIPT_DIR/install-debian-restricted.sh" "${restricted_args[@]}"
-      exit $?
-      ;;
-    linux:full|wsl:full)
+    linux|wsl)
       debian_args=("$os")
       [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)
+      [[ "$skip_docker" == "1" ]] && debian_args+=(--skip-docker)
       bash "$SCRIPT_DIR/install-debian.sh" "${debian_args[@]}"
       ;;
   esac
 
-  if [[ "$os" != "wsl" ]]; then
+  if [[ "$skip_fonts" == "1" ]]; then
+    warn "Skipped font installation."
+  elif [[ "$os" != "wsl" ]]; then
     log "Installing FiraCode Nerd Font..."
     bash "$SCRIPT_DIR/install-fonts.sh"
   else
@@ -123,11 +130,19 @@ main() {
     log "Installing pinned zsh plugins..."
     plugin_dir="$HOME/.local/share/zsh/plugins"
     for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
-      install_pinned_plugin "$plugin" "$plugin_dir" && success "installed $plugin" || fatal "Could not install pinned plugin: $plugin"
+      if install_pinned_plugin "$plugin" "$plugin_dir"; then
+        success "installed $plugin"
+      else
+        fatal "Could not install pinned plugin: $plugin"
+      fi
     done
 
     log "Installing pinned tmux plugin manager..."
-    install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins" && success "installed tmux TPM" || fatal "Could not install pinned tmux TPM"
+    if install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; then
+      success "installed tmux TPM"
+    else
+      fatal "Could not install pinned tmux TPM"
+    fi
   else
     warn "Skipped shell plugins; zsh plugin files and tmux TPM will not be installed."
   fi
@@ -139,7 +154,13 @@ main() {
     dotfiles_dir="$DOTFILES_DIR"
     [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
   fi
-  "$dotfiles_dir/scripts/apply-dotfiles.sh" --mode "$mode"
+  "$dotfiles_dir/scripts/apply-dotfiles.sh"
+
+  if [[ "$install_code_extensions" == "1" ]]; then
+    install_vscode_extensions "$dotfiles_dir/extensions.txt"
+  else
+    warn "Skipped VS Code extension installation."
+  fi
 
   if [[ "$configure_shell" == "1" && "$SHELL" != *"zsh"* ]]; then
     zsh_path="$(command -v zsh)"

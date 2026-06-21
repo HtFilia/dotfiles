@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  scripts:
+    name: Script checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          . scripts/pinned-assets.sh
+          mkdir -p "$HOME/.local/bin" "$RUNNER_TEMP/dotfiles-assets" "$RUNNER_TEMP/chezmoi"
+          download_pinned_asset chezmoi-linux-amd64 "$RUNNER_TEMP/dotfiles-assets"
+          tar -xzf "$RUNNER_TEMP/dotfiles-assets/$(pinned_asset_field chezmoi-linux-amd64 file)" -C "$RUNNER_TEMP/chezmoi"
+          install -m 755 "$RUNNER_TEMP/chezmoi/chezmoi" "$HOME/.local/bin/chezmoi"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Bash syntax
+        run: bash -n scripts/*.sh
+
+      - name: ShellCheck
+        run: shellcheck scripts/*.sh
+
+      - name: Contract tests
+        run: bash tests/script-contracts.sh
+
+      - name: Chezmoi dry-run
+        run: ./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"

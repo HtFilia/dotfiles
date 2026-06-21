@@ -42,9 +42,10 @@ node_modules/
 .cargo/
 
 # Tool-generated local state
-home/dot_config/nvim-lazyvim/lazyvim.json
+home/dot_config/nvim/lazyvim.json
+.worktrees/
 
 # ============================================================================
-# chezmoi state
+# Chezmoi state
 # ============================================================================
 .chezmoistate

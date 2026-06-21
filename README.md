@@ -1,21 +1,29 @@
 # Dotfiles
 
-Modern cross-platform development environment configuration.
+[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Supports macOS, Debian/Ubuntu, WSL, and a restricted Debian 12 mode.
+Opinionated, cross-platform workstation bootstrap for software development.
 
-## What's inside
+This repository is designed to be both my daily environment and a readable
+example of how I approach developer tooling: reproducible where it matters,
+auditable by default, and practical enough to run on real machines.
 
-| Category | Tool |
+## What it installs
+
+| Category | Tools |
 |---|---|
-| Shell | Zsh + Starship |
-| Terminal | Ghostty |
-| Multiplexer | tmux + TPM |
-| Editors | LazyVim in full mode, local no-plugin Neovim in restricted mode, VS Code |
-| Theme | Tokyo Night |
-| Font | FiraCode Nerd Font |
-| Languages | Python with uv, Go, Rust |
-| Container | Docker / Podman aliases |
+| Dotfile engine | Chezmoi with this repo's `home/` source state |
+| Shell | Zsh, Starship, fzf, zoxide, atuin, direnv |
+| Terminal | Ghostty, tmux, TPM |
+| Editors | Neovim/LazyVim, VS Code settings and extensions |
+| CLI | eza, bat, ripgrep, fd, lazygit, git-delta, gh, jq |
+| Languages | Python with uv, Go, Rust, Node.js LTS with pnpm/Corepack |
+| Containers | Docker CLI, Docker Compose, Colima on macOS |
+| Quality | ShellCheck, shfmt, Bats, Biome |
+
+No Nix, devbox, or mise are required. Platform package managers remain the
+base layer: Homebrew on macOS, apt plus pinned direct downloads on Linux.
 
 ## Quick start
 
@@ -25,80 +33,72 @@ cd ~/.dotfiles
 ./scripts/bootstrap.sh
 ```
 
-Restricted Debian 12 workstation:
+Useful flags:
 
 ```bash
-git clone https://github.com/HtFilia/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-./scripts/bootstrap.sh --restricted --enable-backports
+./scripts/bootstrap.sh --start-colima
+./scripts/bootstrap.sh --skip-docker
+./scripts/bootstrap.sh --skip-fonts
+./scripts/bootstrap.sh --skip-vscode-extensions
+./scripts/bootstrap.sh --configure-shell
 ```
 
-Pre-download the pinned offline assets listed in
-[`scripts/offline-manifest.md`](scripts/offline-manifest.md) before running
-restricted mode.
+Apply only the dotfiles:
+
+```bash
+./scripts/apply-dotfiles.sh
+./scripts/apply-dotfiles.sh --dry-run
+./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"
+```
 
 ## Repository structure
 
 ```text
-home/                         dotfiles source (dot_ prefix maps to . in $HOME)
-  dot_config/
-    nvim-lazyvim/             full-mode LazyVim profile
-    nvim-restricted/          restricted no-plugin Neovim profile
-    Code/User/                VS Code settings
-    ghostty/                  Ghostty config
-    git/                      global ignore and attributes
-    ripgrep/                  ripgrep defaults
-  dot_gitconfig               generic Git config; includes ~/.gitconfig.local
-  dot_tmux.conf               tmux config
-  dot_zshrc                   runtime OS-aware Zsh config
+Brewfile                      macOS package manifest
+extensions.txt                VS Code extension manifest
+home/                         Chezmoi source state
+  dot_config/nvim/            LazyVim-based Neovim profile
+  dot_config/Code/User/       VS Code settings and keybindings
+  dot_config/ghostty/         Ghostty config
+  dot_config/git/             global Git ignore and attributes
+  dot_zshrc                   portable runtime shell config
 scripts/
-  apply-dotfiles.sh           static symlink deployer
   bootstrap.sh                one-command installer
-  pinned-assets.sh            pinned URLs and SHA256 values
-  install-*.sh                platform installers
-  offline-manifest.md         restricted-mode download manifest
+  apply-dotfiles.sh           Chezmoi wrapper
+  install-debian.sh           Debian/Ubuntu/WSL packages and pinned assets
+  install-macos.sh            Homebrew bundle orchestration
+  pinned-assets.sh            direct-download URLs and SHA256 checksums
+  pinned-plugins.sh           zsh/tmux plugin commits
+docs/
+  ASSET-MANIFEST.md           downloadable asset inventory
+  SUPPLY-CHAIN.md             trust model and update process
+tests/
+  script-contracts.sh         public CLI contract tests
 ```
 
-## Dotfile deployment
+## Design choices
 
-This repo does not use Chezmoi or a template engine. `scripts/apply-dotfiles.sh`
-creates symlinks from `home/` into `$HOME`.
+Chezmoi manages target state, while Bash keeps the bootstrap easy to audit.
+The repo uses Chezmoi's `dot_` naming convention directly from `home/`, so the
+source tree stays readable without an extra generated layer.
 
-```bash
-./scripts/apply-dotfiles.sh --mode full
-./scripts/apply-dotfiles.sh --mode restricted
-./scripts/apply-dotfiles.sh --dry-run --mode full
-```
+Direct Linux downloads are pinned by exact URL and SHA256 in
+[`scripts/pinned-assets.sh`](scripts/pinned-assets.sh). Zsh and tmux plugins are
+checked out to exact commits in [`scripts/pinned-plugins.sh`](scripts/pinned-plugins.sh).
+Homebrew and apt are trusted through their own signing and repository models.
 
-If `~/.gitconfig.local` does not exist, the script prompts for Git name/email
-and writes that local untracked file.
+The shell startup path is defensive: plugin files are sourced only when they are
+owned by the current user and are not group/world writable.
 
-The default prompt shows the local username and hides the hostname unless the
-session is SSH. The dotfiles do not set macOS `ComputerName`, `LocalHostName`, or
-`HostName`; if a hostname looks wrong, it is existing system state being
-displayed.
-
-## Security model
-
-Direct downloads are pinned in `scripts/pinned-assets.sh` with exact URLs and
-SHA256 checksums. Installers refuse cached or offline assets whose checksum does
-not match.
-
-Zsh plugins and tmux TPM are pinned in `scripts/pinned-plugins.sh` and checked
-out to exact commits. Shell startup refuses to source plugin files that are not
-owned by the current user or are group/world writable.
-
-LazyVim is used only in full mode. Its plugin graph is captured in
-`home/dot_config/nvim-lazyvim/lazy-lock.json`, and the local config disables
-automatic Mason tool installation. Restricted mode has no plugin manager.
-
-`apt` and Homebrew remain trusted through their native signing and repository
-mechanisms. Homebrew installs are mutable and not pinned by this repo; use the
-verification output to record what was installed. Upstream shell installers are
-not run automatically.
-
-## Verify
+## Verification
 
 ```bash
+bash -n scripts/*.sh
+shellcheck scripts/*.sh
+bash tests/script-contracts.sh
+./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"
 ./scripts/verify.sh
 ```
+
+`./scripts/verify.sh` reports installed versions, active dotfile links, pinned
+plugin commits, editor tooling, language runtimes, and quality tools.

@@ -15,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
 
 status_ok() { printf "  %s+%s %-20s %s\n" "$GREEN" "$RESET" "$1" "$2"; }
-status_miss() { printf "  %sx%s %-20s %s\n" "$RED" "$RESET" "$1" "${YELLOW}not installed${RESET}"; }
+status_miss() { printf "  %sx%s %-20s %s\n" "$RED" "$RESET" "$1" "${YELLOW}${2:-not installed}${RESET}"; }
 status_opt() { printf "  %s-%s %-20s %s\n" "$YELLOW" "$RESET" "$1" "${YELLOW}optional${RESET}"; }
 section() { printf "\n%s%s%s\n" "$CYAN$BOLD" "$1" "$RESET"; }
 
@@ -23,7 +23,7 @@ check_tool() {
   local name="$1" version_cmd="${2:---version}" optional="${3:-0}"
   if command -v "$name" >/dev/null 2>&1; then
     local v
-    v=$("$name" $version_cmd 2>&1 | head -1 | grep -oE '[0-9]+(\.[0-9]+)+' | head -1 || true)
+    v=$("$name" "$version_cmd" 2>&1 | head -1 | grep -oE '[0-9]+(\.[0-9]+)+' | head -1 || true)
     status_ok "$name" "${v:-installed}"
   elif [[ "$optional" == "1" ]]; then
     status_opt "$name" ""
@@ -49,7 +49,7 @@ check_pinned_version() {
   if command -v "$tool" >/dev/null 2>&1; then
     local expected out
     expected="$(pinned_asset_field "$key" version 2>/dev/null || true)"
-    out="$("$tool" $version_cmd 2>&1 | head -1 || true)"
+    out="$("$tool" "$version_cmd" 2>&1 | head -1 || true)"
     if [[ -n "$expected" && "$out" == *"${expected#v}"* ]]; then
       status_ok "$tool" "pinned $expected"
     elif [[ -n "$expected" ]]; then
@@ -103,15 +103,19 @@ section "Editors"
 check_tool nvim --version
 if [[ -L "$HOME/.config/nvim" ]]; then
   target="$(readlink "$HOME/.config/nvim")"
-  case "$target" in
-    *nvim-lazyvim) status_ok "nvim profile" "LazyVim" ;;
-    *nvim-restricted) status_ok "nvim profile" "restricted" ;;
-    *) status_ok "nvim profile" "$target" ;;
-  esac
+  if [[ ! -e "$target" ]]; then
+    status_miss "nvim profile" "dangling: $target"
+  else
+    case "$target" in
+      *dot_config/nvim) status_ok "nvim profile" "managed" ;;
+      *) status_ok "nvim profile" "$target" ;;
+    esac
+  fi
 else
   status_miss "nvim profile" ""
 fi
 check_tool code --version 1
+check_tool chezmoi --version
 
 section "Modern CLI"
 if [[ "$os_name" == "Darwin" ]]; then
@@ -143,8 +147,21 @@ else
   check_pinned_version uv "uv-linux-$asset_arch"
 fi
 check_tool go version
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool node --version
+else
+  check_pinned_version node "node-linux-$asset_arch" --version
+fi
+check_tool npm --version 1
+check_tool pnpm --version 1
 check_tool rustc --version
 check_tool cargo --version
+
+section "Quality"
+check_tool shellcheck --version
+check_tool shfmt --version 1
+check_tool bats --version 1
+check_tool biome --version 1
 
 section "DevOps"
 check_tool docker --version
@@ -157,7 +174,7 @@ check_tool claude --version 1
 section "Font"
 if command -v fc-list >/dev/null 2>&1 && fc-list | grep -qi "FiraCode Nerd Font"; then
   status_ok "FiraCode Nerd" "installed"
-elif ls "$HOME/Library/Fonts/" /Library/Fonts/ 2>/dev/null | grep -iq "firacode.*nerd"; then
+elif find "$HOME/Library/Fonts" /Library/Fonts -maxdepth 1 -iname '*firacode*nerd*' -print -quit 2>/dev/null | grep -q .; then
   status_ok "FiraCode Nerd" "installed"
 else
   status_miss "FiraCode Nerd" ""

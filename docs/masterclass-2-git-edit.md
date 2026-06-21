@@ -584,10 +584,9 @@ Les plus utiles (préfixe Space) :
 
 ### LSP (completions, go to definition, renommage)
 
-En full mode, LazyVim fournit l'expérience LSP et ces dotfiles désactivent
-l'installation automatique Mason. En restricted mode, la config locale démarre
-les serveurs déjà présents sur le système pour Rust (`rust-analyzer`), Go
-(`gopls`) et Python (`pylsp`).
+LazyVim fournit l'expérience LSP et ces dotfiles désactivent l'installation
+automatique Mason. Les serveurs de langage sont installés par la couche système
+quand ils font partie de la stack de développement.
 
 | Raccourci | Action |
 |---|---|
@@ -601,9 +600,6 @@ les serveurs déjà présents sur le système pour Rust (`rust-analyzer`), Go
 | `<Space>cf` | Format file |
 | `<Space>cd` | Show diagnostic |
 | `[d` / `]d` | Diagnostic précédent / suivant |
-
-En restricted mode, les raccourcis qui diffèrent sont `<Space>rn` pour rename,
-`<Space>f` pour format, et `<Space>d` pour afficher le diagnostic courant.
 
 ### Treesitter (coloration + selection intelligente)
 
@@ -702,12 +698,10 @@ Dans nvim :
 
 4. `gd` sur l'appel `hello("World")` en bas → ça te ramène à la définition. `<Ctrl-o>` → retour en arrière.
 
-5. En full mode, `<Space>cr` sur `hello` → rename. En restricted mode,
-   utilise `<Space>rn`. Tape `greet`, `Entrée`. Les 2 occurrences sont
-   renommées.
+5. `<Space>cr` sur `hello` → rename. Tape `greet`, `Entrée`. Les 2
+   occurrences sont renommées.
 
-6. En full mode, `<Space>cf` → format le fichier. En restricted mode,
-   `<Space>f`.
+6. `<Space>cf` → format le fichier.
 
 7. `<Space>ca` → code actions (sûrement rien pour ce mini fichier, mais c'est là qu'on voit "extract function", "add import", etc.).
 
@@ -732,7 +726,7 @@ Tu viens de faire **5 actions LSP** que dans VS Code t'aurais faites à la souri
 <Space>ff         # cherche un fichier
 <Space>/          # cherche "TODO" dans le code
 gd                # saute à une définition
-<Space>cr         # full mode: renomme un symbole partout
+<Space>cr         # renomme un symbole partout
 
 # Dans lazygit :
 a                 # stage tout

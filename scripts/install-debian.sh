@@ -9,6 +9,7 @@ if [[ $# -gt 0 && "$1" != --* ]]; then
   shift
 fi
 ENABLE_DOCKER_GROUP=0
+SKIP_DOCKER=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
@@ -21,16 +22,18 @@ fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 [linux|wsl] [--enable-docker-group]
+Usage: $0 [linux|wsl] [--enable-docker-group] [--skip-docker]
 
 Options:
   --enable-docker-group   add the current user to the root-equivalent docker group
+  --skip-docker           do not install Docker
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --enable-docker-group) ENABLE_DOCKER_GROUP=1 ;;
+    --skip-docker) SKIP_DOCKER=1 ;;
     -h|--help) usage; exit 0 ;;
     *) fatal "Unknown argument: $1" ;;
   esac
@@ -100,6 +103,32 @@ install_go() {
   success "installed go $(pinned_asset_field "$key" version)"
 }
 
+install_node() {
+  local key="node-linux-$ARCH" file archive version tmp found
+  file="$(pinned_asset_field "$key" file)"
+  version="$(pinned_asset_field "$key" version)"
+  archive="$DOWNLOAD_DIR/$file"
+  if [[ ! -f "$archive" ]]; then
+    log "Downloading pinned Node.js LTS"
+    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
+  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
+    fatal "Checksum failed for cached file: $archive"
+  fi
+  tmp="$(mktemp -d)"
+  tar -xJf "$archive" -C "$tmp"
+  found="$(find "$tmp" -type f -path '*/bin/node' -perm -111 | head -1)"
+  [[ -n "$found" ]] || { rm -rf "$tmp"; fatal "Could not find node in $file"; }
+  sudo rm -rf /usr/local/node
+  sudo mkdir -p /usr/local/node
+  sudo cp -R "$(dirname "$(dirname "$found")")/." /usr/local/node/
+  sudo ln -sf /usr/local/node/bin/node /usr/local/bin/node
+  sudo ln -sf /usr/local/node/bin/npm /usr/local/bin/npm
+  sudo ln -sf /usr/local/node/bin/npx /usr/local/bin/npx
+  [[ -x /usr/local/node/bin/corepack ]] && sudo ln -sf /usr/local/node/bin/corepack /usr/local/bin/corepack
+  rm -rf "$tmp"
+  success "installed node $version"
+}
+
 if [[ -f /etc/os-release ]]; then
   # shellcheck disable=SC1091
   . /etc/os-release
@@ -114,9 +143,9 @@ sudo apt upgrade -y
 
 log "Installing packages from apt..."
 sudo apt install -y \
-  build-essential curl wget git zsh tmux unzip ca-certificates gnupg lsb-release \
+  build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo
+  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo shellcheck
 success "apt packages installed"
 
 if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
@@ -132,6 +161,7 @@ command -v uv >/dev/null 2>&1 || install_from_tarball "uv-linux-$ARCH" uv "$LOCA
 [[ -x "$LOCAL_BIN/uv" && ! -e "$LOCAL_BIN/uvx" ]] && ln -sf uv "$LOCAL_BIN/uvx"
 command -v delta >/dev/null 2>&1 || install_from_tarball "delta-linux-$ARCH" delta "$LOCAL_BIN/delta"
 command -v lazygit >/dev/null 2>&1 || install_from_tarball "lazygit-linux-$ARCH" lazygit "$LOCAL_BIN/lazygit"
+command -v chezmoi >/dev/null 2>&1 || install_from_tarball "chezmoi-linux-$GO_ARCH" chezmoi "$LOCAL_BIN/chezmoi"
 
 if ! command -v nvim >/dev/null 2>&1; then
   install_neovim
@@ -139,8 +169,16 @@ fi
 if ! command -v go >/dev/null 2>&1; then
   install_go
 fi
+if ! command -v node >/dev/null 2>&1; then
+  install_node
+fi
+if command -v corepack >/dev/null 2>&1; then
+  sudo corepack enable pnpm --install-directory /usr/local/bin >/dev/null 2>&1 || corepack enable pnpm >/dev/null 2>&1 || warn "Could not enable pnpm with Corepack."
+fi
 
-if [[ "$ENV_TYPE" == "wsl" ]]; then
+if [[ "$SKIP_DOCKER" == "1" ]]; then
+  warn "Skipped Docker installation."
+elif [[ "$ENV_TYPE" == "wsl" ]]; then
   warn "WSL detected: install Docker Desktop and VS Code on Windows with WSL integration."
 else
   if ! command -v docker >/dev/null 2>&1; then

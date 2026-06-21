@@ -27,6 +27,13 @@ elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
+if command -v brew &>/dev/null; then
+  _dotfiles_brew_prefix="$(brew --prefix 2>/dev/null)"
+  [[ -d "$_dotfiles_brew_prefix/opt/node@24/bin" ]] && path=("$_dotfiles_brew_prefix/opt/node@24/bin" $path)
+  [[ -d "$_dotfiles_brew_prefix/opt/python@3.14/libexec/bin" ]] && path=("$_dotfiles_brew_prefix/opt/python@3.14/libexec/bin" $path)
+  unset _dotfiles_brew_prefix
+fi
+
 export PATH
 export EDITOR="nvim"
 export VISUAL="nvim"
@@ -35,7 +42,7 @@ export LESS="-R --mouse --wheel-lines=3"
 export LANG="${LANG:-en_US.UTF-8}"
 export LC_ALL="${LC_ALL:-en_US.UTF-8}"
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-export BAT_THEME="TwoDark"
+export BAT_THEME="Tokyo Night"
 export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 
 HISTFILE="$HOME/.zsh_history"

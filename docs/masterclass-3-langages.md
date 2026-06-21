@@ -185,10 +185,8 @@ les dotfiles.
 
 ## <a name="go"></a>3. Go — Homebrew, apt ou asset épinglé
 
-En full mode, Go est installé via Homebrew sur macOS, et via l'asset officiel
-épinglé si Debian/Ubuntu n'a pas déjà `go`. En restricted mode, ces dotfiles
-installent `gopls` pour le LSP, mais pas forcément le compilateur Go : vérifie
-avec `go version`.
+Go est installé via Homebrew sur macOS, et via l'asset officiel épinglé si
+Debian/Ubuntu n'a pas déjà `go`. Vérifie l'installation avec `go version`.
 
 ### Les commandes Go essentielles
 
@@ -252,9 +250,9 @@ Si tu bosses sur plusieurs modules liés :
 ## <a name="rust"></a>4. Rust — rustup ou paquets système
 
 Sur macOS, le script installe `rustup` via Homebrew puis initialise la toolchain
-stable si elle n'existe pas. En full Debian/Ubuntu, `rustc` et `cargo` viennent
-des paquets apt. En restricted Debian, les dotfiles installent `rust-analyzer`
-pour le LSP ; installe le compilateur séparément si `rustc --version` échoue.
+stable si elle n'existe pas. Sur Debian/Ubuntu, `rustc` et `cargo` viennent des
+paquets apt ; installe une toolchain séparée avec `rustup` si ton projet exige
+une version plus récente.
 
 ### rustup : le manager de toolchains
 

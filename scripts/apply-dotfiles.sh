@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Deploy dotfiles with plain symlinks. No template engine, no Chezmoi.
+# Deploy dotfiles with Chezmoi, using this repository's home/ as source state.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-HOME_SRC="$REPO_ROOT/home"
-MODE="${DOTFILES_MODE:-full}"
+SOURCE_DIR="${DOTFILES_SOURCE_DIR:-$REPO_ROOT/home}"
+DESTINATION="${DOTFILES_DESTINATION:-$HOME}"
+CHEZMOI_MODE="${DOTFILES_CHEZMOI_MODE:-symlink}"
+CHEZMOI_STATE="${DOTFILES_CHEZMOI_STATE:-}"
 DRY_RUN=0
 FORCE=0
 
@@ -18,20 +20,33 @@ fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 [--mode full|restricted] [--dry-run] [--force]
+Usage: $0 [OPTIONS]
 
 Options:
-  --mode MODE      full uses LazyVim; restricted uses local no-plugin Neovim
-  --dry-run        print actions without changing files
-  --force          replace existing files, but still back them up first
+  --destination PATH       apply dotfiles to PATH instead of \$HOME
+  --source PATH            use PATH as Chezmoi source state
+  --materialize MODE       Chezmoi materialization mode: symlink or file
+  --dry-run                print actions without changing files
+  --force                  allow Chezmoi to overwrite changed targets
+  -h, --help               show help
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode)
-      [[ $# -ge 2 && "$2" != --* ]] || fatal "--mode requires a value"
-      MODE="$2"
+    --destination)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--destination requires a value"
+      DESTINATION="$2"
+      shift
+      ;;
+    --source)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--source requires a value"
+      SOURCE_DIR="$2"
+      shift
+      ;;
+    --materialize)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--materialize requires a value"
+      CHEZMOI_MODE="$2"
       shift
       ;;
     --dry-run) DRY_RUN=1 ;;
@@ -42,86 +57,31 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-case "$MODE" in
-  full|restricted) ;;
-  *) fatal "--mode must be 'full' or 'restricted'" ;;
+case "$CHEZMOI_MODE" in
+  symlink|file) ;;
+  *) fatal "--materialize must be 'symlink' or 'file'" ;;
 esac
+[[ -n "$CHEZMOI_STATE" ]] || CHEZMOI_STATE="$DESTINATION/.local/state/chezmoi/chezmoistate.boltdb"
 
-run() {
-  if [[ "$DRY_RUN" == "1" ]]; then
-    info "dry-run: $*"
-  else
-    "$@"
-  fi
-}
-
-target_for_rel() {
-  local rel="$1" out="" part
-  IFS='/' read -r -a parts <<<"$rel"
-  for part in "${parts[@]}"; do
-    if [[ "$part" == dot_* ]]; then
-      part=".${part#dot_}"
-    fi
-    out="${out:+$out/}$part"
-  done
-  printf '%s/%s\n' "$HOME" "$out"
-}
-
-backup_path() {
-  local dst="$1" stamp
-  stamp="$(date +%Y%m%d%H%M%S)"
-  printf '%s.dotfiles-bak.%s\n' "$dst" "$stamp"
-}
-
-link_path() {
-  local src="$1" dst="$2"
-  if [[ "$DRY_RUN" == "1" ]]; then
-    info "would link $dst -> $src"
-    return 0
-  fi
-  mkdir -p "$(dirname "$dst")"
-  if [[ -L "$dst" ]]; then
-    if [[ "$(readlink "$dst")" == "$src" ]]; then
-      info "already linked: $dst"
-      return 0
-    fi
-    rm "$dst"
-  elif [[ -e "$dst" ]]; then
-    local bak
-    bak="$(backup_path "$dst")"
-    mv "$dst" "$bak"
-    warn "backed up $dst -> $bak"
-  fi
-  ln -s "$src" "$dst"
-  success "linked $dst"
-}
-
-refresh_bat_cache() {
-  command -v bat >/dev/null 2>&1 || return 0
-  if [[ "$DRY_RUN" == "1" ]]; then
-    info "would rebuild bat theme cache"
-    return 0
-  fi
-  if bat cache --build >/dev/null 2>&1; then
-    success "rebuilt bat theme cache"
-  else
-    warn "could not rebuild bat theme cache; run: bat cache --build"
-  fi
-}
+command -v chezmoi >/dev/null 2>&1 || fatal "chezmoi is required. Run ./scripts/bootstrap.sh or install it from https://chezmoi.io."
+[[ -d "$SOURCE_DIR" ]] || fatal "Chezmoi source directory not found: $SOURCE_DIR"
+mkdir -p "$DESTINATION"
+mkdir -p "$(dirname "$CHEZMOI_STATE")"
 
 configure_git_identity() {
-  local local_cfg="$HOME/.gitconfig.local"
+  local local_cfg="$DESTINATION/.gitconfig.local"
   [[ -e "$local_cfg" ]] && return 0
   if [[ "$DRY_RUN" == "1" ]]; then
     info "would create $local_cfg if git identity is provided"
     return 0
   fi
+
   local name="${DOTFILES_GIT_NAME:-}" email="${DOTFILES_GIT_EMAIL:-}"
-  if [[ -z "$name" && -t 0 ]]; then
+  if [[ -z "$name" && -t 0 && "$DESTINATION" == "$HOME" ]]; then
     printf "Git user.name: "
     read -r name
   fi
-  if [[ -z "$email" && -t 0 ]]; then
+  if [[ -z "$email" && -t 0 && "$DESTINATION" == "$HOME" ]]; then
     printf "Git user.email: "
     read -r email
   fi
@@ -138,23 +98,36 @@ configure_git_identity() {
   fi
 }
 
-log "Deploying dotfiles (mode: $MODE)"
+refresh_bat_cache() {
+  command -v bat >/dev/null 2>&1 || return 0
+  [[ "$DRY_RUN" == "1" ]] && { info "would rebuild bat theme cache"; return 0; }
+  [[ "$DESTINATION" != "$HOME" ]] && return 0
+  if bat cache --build >/dev/null 2>&1; then
+    success "rebuilt bat theme cache"
+  else
+    warn "could not rebuild bat theme cache; run: bat cache --build"
+  fi
+}
+
+log "Deploying dotfiles with Chezmoi"
+info "source: $SOURCE_DIR"
+info "destination: $DESTINATION"
+info "materialize: $CHEZMOI_MODE"
+
 configure_git_identity
 
-while IFS= read -r -d '' src; do
-  rel="${src#$HOME_SRC/}"
-  case "$rel" in
-    dot_config/nvim-lazyvim/*|dot_config/nvim-restricted/*) continue ;;
-  esac
-  dst="$(target_for_rel "$rel")"
-  link_path "$src" "$dst"
-done < <(find "$HOME_SRC" -type f -print0 | sort -z)
+chezmoi_args=(
+  --config /dev/null
+  --config-format toml
+  --persistent-state "$CHEZMOI_STATE"
+  --source "$SOURCE_DIR"
+  --destination "$DESTINATION"
+  --mode "$CHEZMOI_MODE"
+  --no-tty
+)
+[[ "$DRY_RUN" == "1" ]] && chezmoi_args+=(--dry-run)
+[[ "$FORCE" == "1" ]] && chezmoi_args+=(--force)
 
-if [[ "$MODE" == "restricted" ]]; then
-  link_path "$HOME_SRC/dot_config/nvim-restricted" "$HOME/.config/nvim"
-else
-  link_path "$HOME_SRC/dot_config/nvim-lazyvim" "$HOME/.config/nvim"
-fi
-
+chezmoi "${chezmoi_args[@]}" apply
 refresh_bat_cache
 success "dotfiles deployed"

@@ -25,11 +25,10 @@ Prefix: **`Ctrl-a`**
 
 Leader: **`<Space>`**
 
-Full mode links `~/.config/nvim` to the LazyVim profile. Restricted mode links
-to the local no-plugin profile. Core Vim motions are the same; plugin shortcuts
-exist only in full mode.
+`~/.config/nvim` is managed by Chezmoi and points to the single LazyVim-based
+profile in `home/dot_config/nvim`.
 
-### Full Mode: LazyVim
+### LazyVim
 
 | Action | Keys |
 |---|---|
@@ -44,7 +43,7 @@ exist only in full mode.
 | Terminal | `<leader>` + `ft` |
 | LazyGit | `<leader>` + `gg` |
 
-### Full Mode: LSP
+### LSP
 
 | Action | Keys |
 |---|---|
@@ -56,31 +55,12 @@ exist only in full mode.
 | Format | `<leader>` + `cf` |
 | Diagnostics list | `<leader>` + `xx` |
 
-### Restricted Mode
-
-| Action | Keys |
-|---|---|
-| Save | `Ctrl-s` |
-| Go to definition | `gd` |
-| Go to declaration | `gD` |
-| Find references | `gr` |
-| Go to implementation | `gi` |
-| Hover docs | `K` |
-| Code action | `<leader>` + `ca` |
-| Rename | `<leader>` + `rn` |
-| Format | `<leader>` + `f` |
-| Previous / next diagnostic | `[d` / `]d` |
-| Show diagnostic | `<leader>` + `d` |
-
 ### Editing
 
 | Action | Keys |
 |---|---|
 | Paste over without losing clipboard | `p` (in visual mode) |
 | Clear search highlight | `Esc` |
-
-Restricted mode also keeps visual selection after `>` / `<`. Full mode gets
-that behavior from LazyVim if the upstream mapping is present.
 
 ### tmux <-> nvim navigation (seamless)
 
