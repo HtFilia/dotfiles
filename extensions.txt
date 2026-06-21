@@ -1,4 +1,4 @@
-enkia.tokyo-night
+sainnhe.gruvbox-material
 PKief.material-icon-theme
 PKief.material-product-icons
 usernamehw.errorlens

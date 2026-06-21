@@ -32,7 +32,7 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = { colorscheme = { "gruvbox-material", "habamax" } },
   checker = { enabled = false },
   change_detection = { notify = false },
 })

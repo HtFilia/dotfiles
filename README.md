@@ -14,16 +14,17 @@ auditable by default, and practical enough to run on real machines.
 | Category | Tools |
 |---|---|
 | Dotfile engine | Chezmoi with this repo's `home/` source state |
-| Shell | Zsh, Starship, fzf, zoxide, atuin, direnv |
+| Shell | Zsh, Starship, fzf, zoxide, atuin, direnv, mise |
 | Terminal | Ghostty, tmux, TPM |
 | Editors | Neovim/LazyVim, VS Code settings and extensions |
-| CLI | eza, bat, ripgrep, fd, lazygit, git-delta, gh, jq |
+| CLI | eza, bat, ripgrep, fd, lazygit, lazydocker, git-delta, yazi, yq, sd, dust, duf, hyperfine, tokei, watchexec, xh, gh, jq |
 | Languages | Python with uv, Go, Rust, Node.js LTS with pnpm/Corepack |
 | Containers | Docker CLI, Docker Compose, Colima on macOS |
-| Quality | ShellCheck, shfmt, Bats, Biome |
+| Quality | ShellCheck, actionlint, gitleaks; shfmt, Bats, Biome on macOS and when present on Linux |
+| Theme | Gruvbox Material Dark for managed editor, terminal, prompt and diff surfaces |
 
-No Nix, devbox, or mise are required. Platform package managers remain the
-base layer: Homebrew on macOS, apt plus pinned direct downloads on Linux.
+No Nix or devbox are required. Platform package managers remain the base layer:
+Homebrew on macOS, apt plus pinned direct downloads on Linux.
 
 ## Quick start
 
@@ -56,6 +57,7 @@ Apply only the dotfiles:
 ```text
 Brewfile                      macOS package manifest
 extensions.txt                VS Code extension manifest
+justfile                      local verification and audit recipes
 home/                         Chezmoi source state
   dot_config/nvim/            LazyVim-based Neovim profile
   dot_config/Code/User/       VS Code settings and keybindings
@@ -72,6 +74,7 @@ scripts/
 docs/
   ASSET-MANIFEST.md           downloadable asset inventory
   SUPPLY-CHAIN.md             trust model and update process
+  TOOLING.md                  installed tool and managed theme audit
 tests/
   script-contracts.sh         public CLI contract tests
 ```
@@ -90,14 +93,16 @@ Homebrew and apt are trusted through their own signing and repository models.
 The shell startup path is defensive: plugin files are sourced only when they are
 owned by the current user and are not group/world writable.
 
+Managed UI surfaces use Gruvbox Material Dark. VS Code and Neovim use native
+theme integrations; Ghostty, tmux, Starship, fzf, bat, and delta use matching
+Gruvbox colors or syntax themes.
+
 ## Verification
 
 ```bash
-bash -n scripts/*.sh
-shellcheck scripts/*.sh
-bash tests/script-contracts.sh
-./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"
-./scripts/verify.sh
+just check
+just dry-run
+just verify
 ```
 
 `./scripts/verify.sh` reports installed versions, active dotfile links, pinned

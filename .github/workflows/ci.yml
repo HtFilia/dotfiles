@@ -15,7 +15,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y shellcheck
+          sudo apt-get install -y shellcheck zsh
           . scripts/pinned-assets.sh
           mkdir -p "$HOME/.local/bin" "$RUNNER_TEMP/dotfiles-assets" "$RUNNER_TEMP/chezmoi"
           download_pinned_asset chezmoi-linux-amd64 "$RUNNER_TEMP/dotfiles-assets"
@@ -25,6 +25,9 @@ jobs:
 
       - name: Bash syntax
         run: bash -n scripts/*.sh
+
+      - name: Zsh syntax
+        run: zsh -n home/dot_zshrc
 
       - name: ShellCheck
         run: shellcheck scripts/*.sh
