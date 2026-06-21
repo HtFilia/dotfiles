@@ -30,11 +30,14 @@
   "editor.wordWrap": "off",
 
   // ==========================================================================
-  // WORKBENCH — Tokyo Night
+  // WORKBENCH - Gruvbox Material Dark
   // ==========================================================================
-  "workbench.colorTheme": "Tokyo Night",
+  "workbench.colorTheme": "Gruvbox Material Dark",
   "workbench.iconTheme": "material-icon-theme",
   "workbench.productIconTheme": "material-product-icons",
+  "gruvboxMaterial.darkContrast": "medium",
+  "gruvboxMaterial.darkPalette": "material",
+  "gruvboxMaterial.darkWorkbench": "material",
   "workbench.tree.indent": 16,
   "workbench.editor.enablePreview": false,
   "workbench.editor.limit.enabled": true,

@@ -13,6 +13,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/pinned-plugins.sh"
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+  if command -v brew >/dev/null 2>&1; then
+    brew_prefix="$(brew --prefix 2>/dev/null)"
+    [[ -d "$brew_prefix/opt/node@24/bin" ]] && export PATH="$brew_prefix/opt/node@24/bin:$PATH"
+    [[ -d "$brew_prefix/opt/python@3.14/libexec/bin" ]] && export PATH="$brew_prefix/opt/python@3.14/libexec/bin:$PATH"
+    unset brew_prefix
+  fi
+fi
 
 status_ok() { printf "  %s+%s %-20s %s\n" "$GREEN" "$RESET" "$1" "$2"; }
 status_miss() { printf "  %sx%s %-20s %s\n" "$RED" "$RESET" "$1" "${YELLOW}${2:-not installed}${RESET}"; }
@@ -42,6 +55,7 @@ check_bat_theme() {
 }
 
 asset_arch="$(pinned_asset_arch 2>/dev/null || printf '%s' x86_64)"
+asset_go_arch="$(pinned_asset_go_arch 2>/dev/null || printf '%s' amd64)"
 os_name="$(uname -s)"
 
 check_pinned_version() {
@@ -89,6 +103,7 @@ else
   check_pinned_version starship "starship-linux-$asset_arch"
 fi
 check_tool tmux
+check_tool just --version
 if command -v zsh >/dev/null 2>&1; then
   compaudit_out="$(zsh -fc 'autoload -Uz compaudit; compaudit' 2>/dev/null || true)"
   if [[ -z "$compaudit_out" ]]; then
@@ -124,11 +139,36 @@ else
   check_pinned_version eza "eza-linux-$asset_arch"
 fi
 check_tool bat --version
-check_bat_theme "Tokyo Night"
+check_bat_theme "gruvbox-dark"
 check_tool fd --version
 check_tool rg --version
 check_tool fzf --version
 check_tool zoxide --version
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool mise --version
+  check_tool yazi --version
+  check_tool yq --version
+  check_tool sd --version
+  check_tool dust --version
+  check_tool duf --version
+  check_tool hyperfine --version
+  check_tool tokei --version
+  check_tool watchexec --version
+  check_tool xh --version
+  check_tool lazydocker --version
+else
+  check_pinned_version mise "mise-linux-$asset_arch"
+  check_pinned_version yazi "yazi-linux-$asset_arch"
+  check_pinned_version yq "yq-linux-$asset_go_arch"
+  check_pinned_version sd "sd-linux-$asset_arch"
+  check_pinned_version dust "dust-linux-$asset_arch"
+  check_pinned_version duf "duf-linux-$asset_arch"
+  check_pinned_version hyperfine "hyperfine-linux-$asset_arch"
+  check_tool tokei --version
+  check_pinned_version watchexec "watchexec-linux-$asset_arch"
+  check_pinned_version xh "xh-linux-$asset_arch"
+  check_pinned_version lazydocker "lazydocker-linux-$asset_arch"
+fi
 if [[ "$os_name" == "Darwin" ]]; then
   check_tool lazygit --version
   check_tool delta --version
@@ -162,6 +202,13 @@ check_tool shellcheck --version
 check_tool shfmt --version 1
 check_tool bats --version 1
 check_tool biome --version 1
+if [[ "$os_name" == "Darwin" ]]; then
+  check_tool actionlint --version
+  check_tool gitleaks version
+else
+  check_pinned_version actionlint "actionlint-linux-$asset_go_arch"
+  check_pinned_version gitleaks "gitleaks-linux-x64" version
+fi
 
 section "DevOps"
 check_tool docker --version

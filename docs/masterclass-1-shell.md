@@ -355,12 +355,12 @@ sauf si tu actives `DOTFILES_ENABLE_COMMAND_OVERRIDES=1`.
 
 ```bash
 ❯ bat --list-themes                       # liste
-❯ bat --theme="Tokyo Night" fichier.py    # change ponctuellement
+❯ bat --theme="gruvbox-dark" fichier.py   # change ponctuellement
 ```
 
-Le thème par défaut de `bat` est `TwoDark` via `BAT_THEME`. Le thème
-`Tokyo Night` est aussi installé et mis en cache pour `delta`, parce que ta
-config Git l'utilise pour les diffs.
+Le thème par défaut de `bat` est `gruvbox-dark` via `BAT_THEME`. La config Git
+utilise le même thème pour `delta`, donc les diffs gardent la même palette que
+le terminal et l'éditeur.
 
 ### Astuce : utiliser bat comme help pager
 

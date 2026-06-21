@@ -14,8 +14,14 @@ Direct downloads are used only when the platform package manager is not a good
 fit for the expected developer experience. Each asset is pinned by exact URL,
 filename, version, and SHA256 in `scripts/pinned-assets.sh`.
 
-Installers refuse to extract cached or downloaded files when the checksum does
-not match.
+Installers refuse to install, copy, or extract cached and downloaded files when
+the checksum does not match.
+
+## Language package managers
+
+Cargo is used only where a tool does not publish a suitable Linux binary asset.
+At the moment this applies to `tokei`, installed with an explicit version and
+`--locked` so Cargo verifies the crate dependency graph from crates.io metadata.
 
 ## Git-based plugins
 
@@ -35,9 +41,7 @@ from their official channels when the user accepts their trust model.
 ## Update checklist
 
 ```bash
-bash -n scripts/*.sh
-shellcheck scripts/*.sh
-bash tests/script-contracts.sh
-./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"
-./scripts/verify.sh
+just check
+just dry-run
+just verify
 ```

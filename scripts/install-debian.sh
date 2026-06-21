@@ -49,7 +49,17 @@ ARCH="$(pinned_asset_arch)" || fatal "Unsupported architecture: $(uname -m)"
 GO_ARCH="$(pinned_asset_go_arch)" || fatal "Unsupported Go architecture: $(uname -m)"
 [[ "$ARCH" == "x86_64" ]] || fatal "Pinned Linux assets currently support x86_64 only."
 
-install_from_tarball() {
+extract_archive() {
+  local archive="$1" dest="$2"
+  case "$archive" in
+    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$dest" ;;
+    *.tar.xz) tar -xJf "$archive" -C "$dest" ;;
+    *.zip) unzip -oq "$archive" -d "$dest" ;;
+    *) return 1 ;;
+  esac
+}
+
+install_from_archive() {
   local key="$1" member="$2" dest="$3" archive tmp file
   file="$(pinned_asset_field "$key" file)"
   archive="$DOWNLOAD_DIR/$file"
@@ -60,13 +70,61 @@ install_from_tarball() {
     fatal "Checksum failed for cached file: $archive"
   fi
   tmp="$(mktemp -d)"
-  tar -xzf "$archive" -C "$tmp"
+  extract_archive "$archive" "$tmp" || { rm -rf "$tmp"; fatal "Unsupported archive type: $file"; }
   local found
-  found="$(find "$tmp" -type f -name "$member" -perm -111 | head -1)"
+  found="$(find "$tmp" -type f -name "$member" | head -1)"
   [[ -n "$found" ]] || { rm -rf "$tmp"; fatal "Could not find $member in $file"; }
   install -m 755 "$found" "$dest"
   rm -rf "$tmp"
   success "installed $(basename "$dest")"
+}
+
+install_binary_asset() {
+  local key="$1" dest="$2" archive file
+  file="$(pinned_asset_field "$key" file)"
+  archive="$DOWNLOAD_DIR/$file"
+  if [[ ! -f "$archive" ]]; then
+    log "Downloading pinned asset: $key"
+    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
+  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
+    fatal "Checksum failed for cached file: $archive"
+  fi
+  install -m 755 "$archive" "$dest"
+  success "installed $(basename "$dest")"
+}
+
+pinned_version_matches() {
+  local tool="$1" key="$2" version_cmd="${3:---version}" expected out
+  command -v "$tool" >/dev/null 2>&1 || return 1
+  expected="$(pinned_asset_field "$key" version 2>/dev/null || true)"
+  [[ -n "$expected" ]] || return 1
+  out="$("$tool" "$version_cmd" 2>&1 | head -1 || true)"
+  [[ "$out" == *"${expected#v}"* ]]
+}
+
+install_archive_if_needed() {
+  local tool="$1" key="$2" member="$3" dest="$4" version_cmd="${5:---version}"
+  pinned_version_matches "$tool" "$key" "$version_cmd" || install_from_archive "$key" "$member" "$dest"
+}
+
+install_binary_if_needed() {
+  local tool="$1" key="$2" dest="$3" version_cmd="${4:---version}"
+  pinned_version_matches "$tool" "$key" "$version_cmd" || install_binary_asset "$key" "$dest"
+}
+
+install_yazi() {
+  install_from_archive "yazi-linux-$ARCH" yazi "$LOCAL_BIN/yazi"
+  install_from_archive "yazi-linux-$ARCH" ya "$LOCAL_BIN/ya"
+}
+
+install_tokei() {
+  command -v cargo >/dev/null 2>&1 || fatal "cargo is required to install tokei"
+  cargo install --locked --version 14.0.0 tokei
+}
+
+tokei_version_matches() {
+  command -v tokei >/dev/null 2>&1 || return 1
+  tokei --version 2>&1 | head -1 | grep -q '14\.0\.0'
 }
 
 install_neovim() {
@@ -155,21 +213,37 @@ if command -v batcat >/dev/null 2>&1 && ! command -v bat >/dev/null 2>&1; then
   ln -sf "$(command -v batcat)" "$LOCAL_BIN/bat"
 fi
 
-command -v starship >/dev/null 2>&1 || install_from_tarball "starship-linux-$ARCH" starship "$LOCAL_BIN/starship"
-command -v eza >/dev/null 2>&1 || install_from_tarball "eza-linux-$ARCH" eza "$LOCAL_BIN/eza"
-command -v uv >/dev/null 2>&1 || install_from_tarball "uv-linux-$ARCH" uv "$LOCAL_BIN/uv"
+install_archive_if_needed starship "starship-linux-$ARCH" starship "$LOCAL_BIN/starship"
+install_archive_if_needed eza "eza-linux-$ARCH" eza "$LOCAL_BIN/eza"
+install_archive_if_needed uv "uv-linux-$ARCH" uv "$LOCAL_BIN/uv"
 [[ -x "$LOCAL_BIN/uv" && ! -e "$LOCAL_BIN/uvx" ]] && ln -sf uv "$LOCAL_BIN/uvx"
-command -v delta >/dev/null 2>&1 || install_from_tarball "delta-linux-$ARCH" delta "$LOCAL_BIN/delta"
-command -v lazygit >/dev/null 2>&1 || install_from_tarball "lazygit-linux-$ARCH" lazygit "$LOCAL_BIN/lazygit"
-command -v chezmoi >/dev/null 2>&1 || install_from_tarball "chezmoi-linux-$GO_ARCH" chezmoi "$LOCAL_BIN/chezmoi"
+install_archive_if_needed delta "delta-linux-$ARCH" delta "$LOCAL_BIN/delta"
+install_archive_if_needed lazygit "lazygit-linux-$ARCH" lazygit "$LOCAL_BIN/lazygit"
+install_archive_if_needed chezmoi "chezmoi-linux-$GO_ARCH" chezmoi "$LOCAL_BIN/chezmoi"
+install_archive_if_needed just "just-linux-$ARCH" just "$LOCAL_BIN/just"
+install_binary_if_needed mise "mise-linux-$ARCH" "$LOCAL_BIN/mise"
+if ! pinned_version_matches yazi "yazi-linux-$ARCH" --version || ! command -v ya >/dev/null 2>&1; then
+  install_yazi
+fi
+install_binary_if_needed yq "yq-linux-$GO_ARCH" "$LOCAL_BIN/yq"
+install_archive_if_needed sd "sd-linux-$ARCH" sd "$LOCAL_BIN/sd"
+install_archive_if_needed dust "dust-linux-$ARCH" dust "$LOCAL_BIN/dust"
+install_archive_if_needed duf "duf-linux-$ARCH" duf "$LOCAL_BIN/duf"
+install_archive_if_needed hyperfine "hyperfine-linux-$ARCH" hyperfine "$LOCAL_BIN/hyperfine"
+tokei_version_matches || install_tokei
+install_archive_if_needed watchexec "watchexec-linux-$ARCH" watchexec "$LOCAL_BIN/watchexec"
+install_archive_if_needed xh "xh-linux-$ARCH" xh "$LOCAL_BIN/xh"
+install_archive_if_needed lazydocker "lazydocker-linux-$ARCH" lazydocker "$LOCAL_BIN/lazydocker"
+install_archive_if_needed gitleaks "gitleaks-linux-x64" gitleaks "$LOCAL_BIN/gitleaks" version
+install_archive_if_needed actionlint "actionlint-linux-$GO_ARCH" actionlint "$LOCAL_BIN/actionlint"
 
-if ! command -v nvim >/dev/null 2>&1; then
+if ! pinned_version_matches nvim "neovim-linux-$ARCH" --version; then
   install_neovim
 fi
-if ! command -v go >/dev/null 2>&1; then
+if ! pinned_version_matches go "go-linux-$GO_ARCH" version; then
   install_go
 fi
-if ! command -v node >/dev/null 2>&1; then
+if ! pinned_version_matches node "node-linux-$ARCH" --version; then
   install_node
 fi
 if command -v corepack >/dev/null 2>&1; then

@@ -1,6 +1,6 @@
 # ~/.config/ghostty/config
 # Ghostty terminal — https://ghostty.org/docs/config
-# Theme: Tokyo Night
+# Theme: Gruvbox Material Dark
 
 # ============================================================================
 # FONT
@@ -13,34 +13,31 @@ font-feature = +ss01
 font-thicken = true
 
 # ============================================================================
-# THEME — Tokyo Night
+# THEME - Gruvbox Material Dark
 # ============================================================================
-theme = "tokyonight"
+background = 1d2021
+foreground = d4be98
+cursor-color = d4be98
+selection-background = 3c3836
+selection-foreground = d4be98
 
-# Fallback custom palette if theme is unavailable
-background = 1a1b26
-foreground = c0caf5
-cursor-color = c0caf5
-selection-background = 283457
-selection-foreground = c0caf5
-
-# 16-color palette (Tokyo Night)
-palette = 0=#15161e
-palette = 1=#f7768e
-palette = 2=#9ece6a
-palette = 3=#e0af68
-palette = 4=#7aa2f7
-palette = 5=#bb9af7
-palette = 6=#7dcfff
-palette = 7=#a9b1d6
-palette = 8=#414868
-palette = 9=#f7768e
-palette = 10=#9ece6a
-palette = 11=#e0af68
-palette = 12=#7aa2f7
-palette = 13=#bb9af7
-palette = 14=#7dcfff
-palette = 15=#c0caf5
+# 16-color palette (Gruvbox Material Dark)
+palette = 0=#1d2021
+palette = 1=#ea6962
+palette = 2=#a9b665
+palette = 3=#d8a657
+palette = 4=#7daea3
+palette = 5=#d3869b
+palette = 6=#89b482
+palette = 7=#d4be98
+palette = 8=#928374
+palette = 9=#ea6962
+palette = 10=#a9b665
+palette = 11=#d8a657
+palette = 12=#7daea3
+palette = 13=#d3869b
+palette = 14=#89b482
+palette = 15=#d4be98
 
 # ============================================================================
 # WINDOW

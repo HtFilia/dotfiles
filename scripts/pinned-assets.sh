@@ -5,40 +5,105 @@
 pinned_asset_field() {
   local key="$1" field="$2"
   case "$key:$field" in
-    starship-linux-x86_64:version) printf '%s\n' 'v1.23.0' ;;
-    starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.23.0/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
+    starship-linux-x86_64:version) printf '%s\n' 'v1.25.1' ;;
+    starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.25.1/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
     starship-linux-x86_64:file) printf '%s\n' 'starship-x86_64-unknown-linux-gnu.tar.gz' ;;
-    starship-linux-x86_64:sha256) printf '%s\n' 'cef41df04378c6f692913c5d9c1032d3b9a4369a1d2f3296c8300ed8838c2197' ;;
+    starship-linux-x86_64:sha256) printf '%s\n' '4488c11ca632327d1f1f16fb2f102c0646094c35479cd5435991385da43c61ac' ;;
 
-    eza-linux-x86_64:version) printf '%s\n' 'v0.21.5' ;;
-    eza-linux-x86_64:url) printf '%s\n' 'https://github.com/eza-community/eza/releases/download/v0.21.5/eza_x86_64-unknown-linux-gnu.tar.gz' ;;
+    eza-linux-x86_64:version) printf '%s\n' 'v0.23.4' ;;
+    eza-linux-x86_64:url) printf '%s\n' 'https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.tar.gz' ;;
     eza-linux-x86_64:file) printf '%s\n' 'eza_x86_64-unknown-linux-gnu.tar.gz' ;;
-    eza-linux-x86_64:sha256) printf '%s\n' 'f49f764340d13379013213dbffc6e0d78cba7b0f9b9388be9306eb0c69914dd1' ;;
+    eza-linux-x86_64:sha256) printf '%s\n' '0c38665440226cd8bef5d1d4f3bc6ff77c927fb0d68b752739105db7ab5b358d' ;;
 
-    uv-linux-x86_64:version) printf '%s\n' '0.6.17' ;;
-    uv-linux-x86_64:url) printf '%s\n' 'https://github.com/astral-sh/uv/releases/download/0.6.17/uv-x86_64-unknown-linux-gnu.tar.gz' ;;
+    uv-linux-x86_64:version) printf '%s\n' '0.11.23' ;;
+    uv-linux-x86_64:url) printf '%s\n' 'https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-gnu.tar.gz' ;;
     uv-linux-x86_64:file) printf '%s\n' 'uv-x86_64-unknown-linux-gnu.tar.gz' ;;
-    uv-linux-x86_64:sha256) printf '%s\n' '720ec28f7a94aa8cd91d3d57dec1434d64b9ae13d1dd6a25f4c0cdb837ba9cf6' ;;
+    uv-linux-x86_64:sha256) printf '%s\n' 'e12c4cda2fe8c305510a78380a88f2c32a27e90cdcd123cefd2873388f0ebb5f' ;;
 
-    lazygit-linux-x86_64:version) printf '%s\n' 'v0.48.0' ;;
-    lazygit-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazygit/releases/download/v0.48.0/lazygit_0.48.0_Linux_x86_64.tar.gz' ;;
-    lazygit-linux-x86_64:file) printf '%s\n' 'lazygit_0.48.0_Linux_x86_64.tar.gz' ;;
-    lazygit-linux-x86_64:sha256) printf '%s\n' '291722c643a10805de3bd7b58f51d5275878269aeadb046709708f8683f558d7' ;;
+    lazygit-linux-x86_64:version) printf '%s\n' 'v0.62.2' ;;
+    lazygit-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazygit/releases/download/v0.62.2/lazygit_0.62.2_linux_x86_64.tar.gz' ;;
+    lazygit-linux-x86_64:file) printf '%s\n' 'lazygit_0.62.2_linux_x86_64.tar.gz' ;;
+    lazygit-linux-x86_64:sha256) printf '%s\n' '8b9a4c2d0969cbea92b45c956dd2a44e1ba76900c9df49f1c60984045ce77984' ;;
 
-    delta-linux-x86_64:version) printf '%s\n' '0.18.2' ;;
-    delta-linux-x86_64:url) printf '%s\n' 'https://github.com/dandavison/delta/releases/download/0.18.2/delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz' ;;
-    delta-linux-x86_64:file) printf '%s\n' 'delta-0.18.2-x86_64-unknown-linux-gnu.tar.gz' ;;
-    delta-linux-x86_64:sha256) printf '%s\n' '99607c43238e11a77fe90a914d8c2d64961aff84b60b8186c1b5691b39955b0f' ;;
+    delta-linux-x86_64:version) printf '%s\n' '0.19.2' ;;
+    delta-linux-x86_64:url) printf '%s\n' 'https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-x86_64-unknown-linux-gnu.tar.gz' ;;
+    delta-linux-x86_64:file) printf '%s\n' 'delta-0.19.2-x86_64-unknown-linux-gnu.tar.gz' ;;
+    delta-linux-x86_64:sha256) printf '%s\n' '8e695c5f586a8c53d6c3b01be0b4a422ed218bfed2a56191caebe373a1c18ab2' ;;
 
-    firacode:version) printf '%s\n' 'v3.3.0' ;;
-    firacode:url) printf '%s\n' 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FiraCode.zip' ;;
+    firacode:version) printf '%s\n' 'v3.4.0' ;;
+    firacode:url) printf '%s\n' 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/FiraCode.zip' ;;
     firacode:file) printf '%s\n' 'FiraCode.zip' ;;
-    firacode:sha256) printf '%s\n' '89978e6f870d044286a339161d5ed961569744b1cd2afee62337fa140cd0b397' ;;
+    firacode:sha256) printf '%s\n' '7cc4ffd8f7a1fc914cdab7b149808298165ff7a7f40e40d82dea9ebe41e8ca0b' ;;
 
-    neovim-linux-x86_64:version) printf '%s\n' 'v0.10.4' ;;
-    neovim-linux-x86_64:url) printf '%s\n' 'https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz' ;;
+    neovim-linux-x86_64:version) printf '%s\n' 'v0.12.3' ;;
+    neovim-linux-x86_64:url) printf '%s\n' 'https://github.com/neovim/neovim/releases/download/v0.12.3/nvim-linux-x86_64.tar.gz' ;;
     neovim-linux-x86_64:file) printf '%s\n' 'nvim-linux-x86_64.tar.gz' ;;
-    neovim-linux-x86_64:sha256) printf '%s\n' '95aaa8e89473f5421114f2787c13ae0ec6e11ebbd1a13a1bd6fcf63420f8073f' ;;
+    neovim-linux-x86_64:sha256) printf '%s\n' 'c441b547142860bf01bcce39e36cbed185c41112813e15443b16e5237750724d' ;;
+
+    just-linux-x86_64:version) printf '%s\n' '1.53.0' ;;
+    just-linux-x86_64:url) printf '%s\n' 'https://github.com/casey/just/releases/download/1.53.0/just-1.53.0-x86_64-unknown-linux-musl.tar.gz' ;;
+    just-linux-x86_64:file) printf '%s\n' 'just-1.53.0-x86_64-unknown-linux-musl.tar.gz' ;;
+    just-linux-x86_64:sha256) printf '%s\n' '7fedeb22c7e14d9ef1551e8b793700866d80f409f9884b0e80ebb65c11d4874d' ;;
+
+    mise-linux-x86_64:version) printf '%s\n' 'v2026.6.11' ;;
+    mise-linux-x86_64:url) printf '%s\n' 'https://github.com/jdx/mise/releases/download/v2026.6.11/mise-v2026.6.11-linux-x64' ;;
+    mise-linux-x86_64:file) printf '%s\n' 'mise-v2026.6.11-linux-x64' ;;
+    mise-linux-x86_64:sha256) printf '%s\n' '4c1036af15efea3a4d83f13481132ec7d7dda15e7ec5869dd70a64072bf1a6c9' ;;
+
+    yazi-linux-x86_64:version) printf '%s\n' 'v26.5.6' ;;
+    yazi-linux-x86_64:url) printf '%s\n' 'https://github.com/sxyazi/yazi/releases/download/v26.5.6/yazi-x86_64-unknown-linux-gnu.zip' ;;
+    yazi-linux-x86_64:file) printf '%s\n' 'yazi-x86_64-unknown-linux-gnu.zip' ;;
+    yazi-linux-x86_64:sha256) printf '%s\n' '1c9096f0a83b8102c194385f644cdeff93cc8269426163c9d033041ebd537bd2' ;;
+
+    yq-linux-amd64:version) printf '%s\n' 'v4.53.3' ;;
+    yq-linux-amd64:url) printf '%s\n' 'https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64' ;;
+    yq-linux-amd64:file) printf '%s\n' 'yq_linux_amd64' ;;
+    yq-linux-amd64:sha256) printf '%s\n' 'fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4' ;;
+
+    sd-linux-x86_64:version) printf '%s\n' 'v1.1.0' ;;
+    sd-linux-x86_64:url) printf '%s\n' 'https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-gnu.tar.gz' ;;
+    sd-linux-x86_64:file) printf '%s\n' 'sd-v1.1.0-x86_64-unknown-linux-gnu.tar.gz' ;;
+    sd-linux-x86_64:sha256) printf '%s\n' '3613eca74cd686739bb5a6d68319aa56c747e7315274d02323a2ca2b1c5d82d2' ;;
+
+    dust-linux-x86_64:version) printf '%s\n' 'v1.2.4' ;;
+    dust-linux-x86_64:url) printf '%s\n' 'https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz' ;;
+    dust-linux-x86_64:file) printf '%s\n' 'dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz' ;;
+    dust-linux-x86_64:sha256) printf '%s\n' '707cfdbfb9d2dc536f8c3853815bbe98a01012f2772463835edae06816551160' ;;
+
+    duf-linux-x86_64:version) printf '%s\n' 'v0.9.1' ;;
+    duf-linux-x86_64:url) printf '%s\n' 'https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_linux_x86_64.tar.gz' ;;
+    duf-linux-x86_64:file) printf '%s\n' 'duf_0.9.1_linux_x86_64.tar.gz' ;;
+    duf-linux-x86_64:sha256) printf '%s\n' '5add851e7062c5e56939abb664705e4d14fa2d06289490aff31d51f153832de7' ;;
+
+    hyperfine-linux-x86_64:version) printf '%s\n' 'v1.20.0' ;;
+    hyperfine-linux-x86_64:url) printf '%s\n' 'https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-gnu.tar.gz' ;;
+    hyperfine-linux-x86_64:file) printf '%s\n' 'hyperfine-v1.20.0-x86_64-unknown-linux-gnu.tar.gz' ;;
+    hyperfine-linux-x86_64:sha256) printf '%s\n' '63ad53934062118f5b0be11785e0bb1603d4b91667d1921f2fd8df9a8712040a' ;;
+
+    watchexec-linux-x86_64:version) printf '%s\n' 'v2.5.1' ;;
+    watchexec-linux-x86_64:url) printf '%s\n' 'https://github.com/watchexec/watchexec/releases/download/v2.5.1/watchexec-2.5.1-x86_64-unknown-linux-gnu.tar.xz' ;;
+    watchexec-linux-x86_64:file) printf '%s\n' 'watchexec-2.5.1-x86_64-unknown-linux-gnu.tar.xz' ;;
+    watchexec-linux-x86_64:sha256) printf '%s\n' 'cafc381f74e95f8e93e796ef590c7cbbf3409dda6d56cf3dee6109c10e5188ee' ;;
+
+    xh-linux-x86_64:version) printf '%s\n' 'v0.26.1' ;;
+    xh-linux-x86_64:url) printf '%s\n' 'https://github.com/ducaale/xh/releases/download/v0.26.1/xh-v0.26.1-x86_64-unknown-linux-musl.tar.gz' ;;
+    xh-linux-x86_64:file) printf '%s\n' 'xh-v0.26.1-x86_64-unknown-linux-musl.tar.gz' ;;
+    xh-linux-x86_64:sha256) printf '%s\n' 'c411f07a0b204ca07858a67473d0f5c77e332226430d4d84d1d2afd351a425f2' ;;
+
+    lazydocker-linux-x86_64:version) printf '%s\n' 'v0.25.2' ;;
+    lazydocker-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazydocker/releases/download/v0.25.2/lazydocker_0.25.2_Linux_x86_64.tar.gz' ;;
+    lazydocker-linux-x86_64:file) printf '%s\n' 'lazydocker_0.25.2_Linux_x86_64.tar.gz' ;;
+    lazydocker-linux-x86_64:sha256) printf '%s\n' '0d9dbfc26068b218e7ed84b104748cadc6e3cf733c0afd35465306fb39b9523c' ;;
+
+    gitleaks-linux-x64:version) printf '%s\n' 'v8.30.1' ;;
+    gitleaks-linux-x64:url) printf '%s\n' 'https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz' ;;
+    gitleaks-linux-x64:file) printf '%s\n' 'gitleaks_8.30.1_linux_x64.tar.gz' ;;
+    gitleaks-linux-x64:sha256) printf '%s\n' '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb' ;;
+
+    actionlint-linux-amd64:version) printf '%s\n' 'v1.7.12' ;;
+    actionlint-linux-amd64:url) printf '%s\n' 'https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz' ;;
+    actionlint-linux-amd64:file) printf '%s\n' 'actionlint_1.7.12_linux_amd64.tar.gz' ;;
+    actionlint-linux-amd64:sha256) printf '%s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' ;;
 
     node-linux-x86_64:version) printf '%s\n' 'v24.17.0' ;;
     node-linux-x86_64:url) printf '%s\n' 'https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-x64.tar.xz' ;;

@@ -15,14 +15,14 @@
     navigate = true
     line-numbers = true
     side-by-side = false
-    syntax-theme = "Tokyo Night"
+    syntax-theme = "gruvbox-dark"
     features = decorations
 
 [delta "decorations"]
-    commit-decoration-style = "#7aa2f7 box ul"
-    file-style = bold "#c0caf5"
-    file-decoration-style = "#7aa2f7 ul"
-    hunk-header-decoration-style = "#7aa2f7 box"
+    commit-decoration-style = "#7daea3 box ul"
+    file-style = bold "#d4be98"
+    file-decoration-style = "#7daea3 ul"
+    hunk-header-decoration-style = "#7daea3 box"
 
 [merge]
     conflictstyle = diff3
