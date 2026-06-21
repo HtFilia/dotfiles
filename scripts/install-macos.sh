@@ -10,6 +10,9 @@ warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
 fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 START_COLIMA=0
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BREWFILE="$REPO_ROOT/Brewfile"
 usage() {
   cat <<EOF
 Usage: $0 [--start-colima]
@@ -42,31 +45,10 @@ fi
 info "Homebrew already installed; updating..."
 brew update
 
-log "Installing CLI tools..."
-brew_formulae=(
-  zsh starship tmux neovim eza bat fzf ripgrep fd zoxide lazygit git-delta
-  atuin direnv git gh curl wget jq tree htop btop python@3.12 uv go rustup
-  colima docker docker-compose docker-buildx
-)
-
-for formula in "${brew_formulae[@]}"; do
-  if brew list --formula "$formula" >/dev/null 2>&1; then
-    info "$formula already installed"
-  else
-    brew install "$formula"
-    success "installed $formula"
-  fi
-done
-
-log "Installing GUI applications..."
-brew_casks=(ghostty visual-studio-code font-fira-code-nerd-font)
-for cask in "${brew_casks[@]}"; do
-  if brew list --cask "$cask" >/dev/null 2>&1; then
-    info "$cask already installed"
-  else
-    brew install --cask "$cask" || warn "Skipped $cask"
-  fi
-done
+[[ -f "$BREWFILE" ]] || fatal "Brewfile not found: $BREWFILE"
+log "Installing Homebrew bundle..."
+brew bundle check --file "$BREWFILE" >/dev/null 2>&1 || brew bundle install --file "$BREWFILE"
+success "Homebrew bundle satisfied"
 
 if command -v rustup-init >/dev/null 2>&1 && [[ ! -d "$HOME/.cargo" ]]; then
   log "Initializing Rust toolchain..."
