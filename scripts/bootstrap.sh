@@ -12,7 +12,7 @@ success() { printf "%s  +%s %s\n" "$GREEN" "$RESET" "$*"; }
 warn() { printf "%s  !%s %s\n" "$YELLOW" "$RESET" "$*" >&2; }
 fatal() { printf "%s  x%s %s\n" "$RED" "$RESET" "$*" >&2; exit 1; }
 
-DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/HtFilia/dotfiles.git}"
+DOTFILES_REPO="${DOTFILES_REPO:-git@github.com:HtFilia/dotfiles.git}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-plugins.sh
@@ -46,9 +46,11 @@ Usage: $0 [OPTIONS]
 
 Options:
   --profile PROFILE       workstation (default) or server (SSH terminal/editor)
-  --skip-docker            do not install Docker on Linux
+  --skip-docker            do not install container packages
   --skip-fonts             do not install FiraCode Nerd Font
-  --no-shell-plugins       skip zsh plugin and tmux TPM installation
+  --no-shell-plugins       skip zsh plugin installation
+  --with-tpm               install optional tmux plugin manager
+  --setup-editor           explicitly download language tools and parsers
   --skip-vscode-extensions skip VS Code extension installation
   --configure-shell        allow /etc/shells and chsh changes
   --start-colima           start and enable Colima on macOS
@@ -70,7 +72,7 @@ install_vscode_extensions() {
   local extension
   while IFS= read -r extension || [[ -n "$extension" ]]; do
     [[ -z "$extension" || "$extension" == \#* ]] && continue
-    if code --install-extension "$extension" --force >/dev/null 2>&1; then
+    if code --install-extension "$extension" >/dev/null 2>&1; then
       success "installed $extension"
     else
       warn "Could not install VS Code extension: $extension"
@@ -79,8 +81,8 @@ install_vscode_extensions() {
 }
 
 main() {
-  local install_shell_plugins=1 configure_shell=0 start_colima=0 enable_docker_group=0
-  local install_code_extensions=1 skip_docker=0 skip_fonts=0
+  local install_shell_plugins=1 install_tpm=0 configure_shell=0 start_colima=0 enable_docker_group=0
+  local install_code_extensions=1 skip_docker=0 skip_fonts=0 setup_editor=0
   local profile="${DOTFILES_PROFILE:-workstation}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -91,6 +93,8 @@ main() {
         ;;
       --skip-docker) skip_docker=1 ;;
       --skip-fonts) skip_fonts=1 ;;
+      --setup-editor) setup_editor=1 ;;
+      --with-tpm) install_tpm=1 ;;
       --no-shell-plugins) install_shell_plugins=0 ;;
       --skip-vscode-extensions) install_code_extensions=0 ;;
       --configure-shell) configure_shell=1 ;;
@@ -119,11 +123,24 @@ main() {
 
   confirm "Continue with installation?" || { warn "Aborted."; exit 0; }
 
+  export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
+  if [[ "$os" == macos ]]; then
+    for prefix in /opt/homebrew /usr/local; do
+      [[ ! -x "$prefix/bin/brew" ]] || { export PATH="$prefix/bin:$prefix/sbin:$PATH"; break; }
+    done
+  else
+    # shellcheck source=scripts/preflight.sh
+    . "$SCRIPT_DIR/preflight.sh"
+    preflight_linux "$profile"
+    (( EUID != 0 )) || fatal "Run bootstrap as your regular SSH/development user."
+  fi
   log "Running system installer..."
   case "$os" in
     macos)
       macos_args=()
       [[ "$start_colima" == "1" ]] && macos_args+=(--start-colima)
+      [[ "$skip_fonts" == "1" ]] && macos_args+=(--skip-fonts)
+      [[ "$skip_docker" == "1" ]] && macos_args+=(--skip-docker)
       bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
       ;;
     linux|wsl)
@@ -158,15 +175,19 @@ main() {
       fi
     done
 
+
+  else
+    warn "Skipped Zsh plugin installation."
+  fi
+
+    if [[ "$install_tpm" == 1 ]]; then
     log "Installing pinned tmux plugin manager..."
     if install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; then
       success "installed tmux TPM"
     else
       fatal "Could not install pinned tmux TPM"
     fi
-  else
-    warn "Skipped shell plugins; zsh plugin files and tmux TPM will not be installed."
-  fi
+    fi
 
   log "Applying dotfiles..."
   if [[ -f "$SCRIPT_DIR/../home/dot_zshrc" ]]; then
@@ -183,7 +204,9 @@ main() {
     warn "Skipped VS Code extension installation."
   fi
 
-  if [[ "$configure_shell" == "1" && "$SHELL" != *"zsh"* ]]; then
+  [[ "$setup_editor" != 1 ]] || "$dotfiles_dir/scripts/setup-editor.sh"
+
+  if [[ "$configure_shell" == "1" && "${SHELL:-}" != *"zsh"* ]]; then
     zsh_path="$(command -v zsh)"
     if [[ -n "$zsh_path" ]]; then
       grep -Fxq "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
@@ -191,7 +214,7 @@ main() {
         chsh -s "$zsh_path" || warn "Could not change shell. Run: chsh -s $zsh_path"
       fi
     fi
-  elif [[ "$SHELL" != *"zsh"* ]]; then
+  elif [[ "${SHELL:-}" != *"zsh"* ]]; then
     warn "Default shell not changed. Re-run with --configure-shell to allow /etc/shells and chsh changes."
   fi
 
