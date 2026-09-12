@@ -5,6 +5,7 @@
 pinned_asset_field() {
   local key="$1" field="$2"
   case "$key:$field" in
+    tokei-cargo:version) printf '%s\n' '14.0.0' ;;
     starship-linux-x86_64:version) printf '%s\n' 'v1.26.0' ;;
     starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
     starship-linux-x86_64:file) printf '%s\n' 'starship-x86_64-unknown-linux-gnu.tar.gz' ;;
@@ -188,4 +189,36 @@ require_pinned_file() {
   sha="$(pinned_asset_field "$key" sha256)" || return 1
   [[ -f "$dir/$file" ]] || return 2
   verify_sha256 "$dir/$file" "$sha"
+}
+
+# Versioned cache paths avoid collisions for upstream filenames without versions.
+cached_asset_path() {
+  local key="$1" cache="$2" file version directory
+  file="$(pinned_asset_field "$key" file)" || return 1
+  version="$(pinned_asset_field "$key" version)" || return 1
+  directory="$cache/$key/$version"
+  if ! require_pinned_file "$key" "$directory"; then
+    download_pinned_asset "$key" "$directory" || return 1
+  fi
+  printf '%s\n' "$directory/$file"
+}
+
+extract_pinned_archive() {
+  local archive="$1" destination="$2"
+  case "$archive" in
+    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$destination" ;;
+    *.tar.xz) tar -xJf "$archive" -C "$destination" ;;
+    *.zip) unzip -oq "$archive" -d "$destination" ;;
+    *) return 1 ;;
+  esac
+}
+
+asset_version_matches() {
+  local tool="$1" key="$2" argument="${3:---version}" expected output
+  command -v "$tool" >/dev/null 2>&1 || return 1
+  expected="$(pinned_asset_field "$key" version)" || return 1
+  output="$("$tool" "$argument" 2>&1)" || return 1
+  expected="${expected#v}"
+  expected="${expected//./\\.}"
+  printf '%s\n' "$output" | grep -Eq "(^|[^0-9.])$expected([^0-9.]|$)"
 }
