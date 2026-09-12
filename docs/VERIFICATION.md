@@ -24,6 +24,9 @@ keyboard shortcut to match the generic API key rule. Full history remains scanne
 including deleted files; other values in that file still receive normal checks.
 To investigate a failure, run `gitleaks git --redact --no-banner --verbose` and
 inspect the rule, path, commit, and fingerprint before adding an exception.
+CI prints the scanner version and verbose, redacted findings directly in the
+Secret scan step. Older Gitleaks releases use `detect --source .` instead of `git`;
+use the CI version when validating this repository's allowlist configuration.
 
 ## Machine acceptance
 
