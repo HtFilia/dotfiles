@@ -45,6 +45,7 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
+  --profile PROFILE       workstation (default) or server (SSH terminal/editor)
   --skip-docker            do not install Docker on Linux
   --skip-fonts             do not install FiraCode Nerd Font
   --no-shell-plugins       skip zsh plugin and tmux TPM installation
@@ -80,8 +81,14 @@ install_vscode_extensions() {
 main() {
   local install_shell_plugins=1 configure_shell=0 start_colima=0 enable_docker_group=0
   local install_code_extensions=1 skip_docker=0 skip_fonts=0
+  local profile="${DOTFILES_PROFILE:-workstation}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
+      --profile)
+        [[ $# -ge 2 ]] || fatal "--profile requires a value"
+        profile="$2"
+        shift
+        ;;
       --skip-docker) skip_docker=1 ;;
       --skip-fonts) skip_fonts=1 ;;
       --no-shell-plugins) install_shell_plugins=0 ;;
@@ -95,6 +102,16 @@ main() {
     esac
     shift
   done
+  case "$profile" in
+    workstation|server) ;;
+    *) fatal "Unknown profile: $profile" ;;
+  esac
+  export DOTFILES_PROFILE="$profile"
+  if [[ "$profile" == server ]]; then
+    skip_fonts=1
+    install_code_extensions=0
+    [[ "$(uname -s)" == Linux ]] || fatal "The server profile requires Linux."
+  fi
 
   local os
   os="$(detect_os)"
@@ -110,10 +127,14 @@ main() {
       bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
       ;;
     linux|wsl)
+      if [[ "$profile" == server ]]; then
+        bash "$SCRIPT_DIR/install-server.sh"
+      else
       debian_args=("$os")
       [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)
       [[ "$skip_docker" == "1" ]] && debian_args+=(--skip-docker)
       bash "$SCRIPT_DIR/install-debian.sh" "${debian_args[@]}"
+      fi
       ;;
   esac
 
@@ -154,7 +175,7 @@ main() {
     dotfiles_dir="$DOTFILES_DIR"
     [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
   fi
-  "$dotfiles_dir/scripts/apply-dotfiles.sh"
+  "$dotfiles_dir/scripts/apply-dotfiles.sh" --force
 
   if [[ "$install_code_extensions" == "1" ]]; then
     install_vscode_extensions "$dotfiles_dir/extensions.txt"
@@ -180,8 +201,8 @@ ${GREEN}${BOLD}Done.${RESET}
 
 Next steps:
   1. Restart your terminal or run: exec zsh
-  2. Open tmux and press Ctrl-a then I to install tmux plugins
-  3. Run: ./scripts/verify.sh
+  2. Run: ./scripts/verify.sh --profile $profile
+  3. For a Mac connecting over SSH, see docs/VPS-GHOSTTY.md
 EOF
 }
 

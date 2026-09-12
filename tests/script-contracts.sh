@@ -98,7 +98,9 @@ test_gruvbox_material_theme_contract() {
   contains "$(cat "$ROOT/home/dot_gitconfig")" 'syntax-theme = "gruvbox-dark"' "git delta uses gruvbox-dark"
   contains "$(cat "$ROOT/scripts/verify.sh")" 'check_bat_theme "gruvbox-dark"' "verify checks gruvbox-dark"
 
-  if grep -RInE "Tokyo Night|tokyonight" "$ROOT/home" "$ROOT/extensions.txt" "$ROOT/scripts/verify.sh" >/tmp/dotfiles-tokyo-night.out 2>&1; then
+  # LazyVim may include alternative themes as dependencies; only active configs
+  # determine the managed theme, not names recorded in the dependency lock.
+  if grep -RInE --exclude=lazy-lock.json "Tokyo Night|tokyonight" "$ROOT/home" "$ROOT/extensions.txt" "$ROOT/scripts/verify.sh" >/tmp/dotfiles-tokyo-night.out 2>&1; then
     fail "managed configs do not reference Tokyo Night"
     sed -n '1,40p' /tmp/dotfiles-tokyo-night.out >&2 || true
   else
@@ -116,6 +118,38 @@ test_justfile_contract() {
   fi
 }
 
+test_server_deployment_contract() {
+  local fixture backup
+  fixture="$(mktemp -d)"
+  printf 'original-shell-config\n' >"$fixture/.zshrc"
+  if run_script ./scripts/apply-dotfiles.sh --profile server --destination "$fixture" --force >"$fixture/apply.log" 2>&1; then
+    pass "server applies over existing configuration"
+  else
+    fail "server applies over existing configuration"
+    cat "$fixture/apply.log" >&2
+  fi
+  [[ -e "$fixture/.zshrc" && -e "$fixture/.zshenv" && -e "$fixture/.config/nvim/init.lua" ]] && pass "server deploys shell and editor" || fail "server deploys shell and editor"
+  [[ ! -e "$fixture/.config/Code" && ! -e "$fixture/.config/ghostty" ]] && pass "server excludes desktop configs" || fail "server excludes desktop configs"
+  backup="$(find "$fixture/.local/state/dotfiles/backups" -name targets.tar -print -quit)"
+  if [[ -n "$backup" && "$(tar -xOf "$backup" .zshrc)" == original-shell-config ]]; then
+    pass "server backs up original contents before replacing"
+  else
+    fail "server backs up original contents before replacing"
+  fi
+  if run_script ./scripts/apply-dotfiles.sh --profile server --destination "$fixture" >"$fixture/reapply.log" 2>&1; then
+    pass "server apply is repeatable"
+  else
+    fail "server apply is repeatable"
+    cat "$fixture/reapply.log" >&2
+  fi
+  if run_script ./scripts/bootstrap.sh --profile invalid --yes >"$fixture/invalid.log" 2>&1; then
+    fail "bootstrap rejects invalid profiles before installation"
+  else
+    contains "$(cat "$fixture/invalid.log")" 'Unknown profile' "bootstrap rejects invalid profiles before installation"
+  fi
+  rm -rf "$fixture"
+}
+
 main() {
   test_bootstrap_no_restricted_public_contract
   test_apply_dotfiles_uses_chezmoi_contract
@@ -123,6 +157,7 @@ main() {
   test_docs_no_restricted_contract
   test_gruvbox_material_theme_contract
   test_justfile_contract
+  test_server_deployment_contract
 
   if (( failures > 0 )); then
     printf '\n%d contract test(s) failed.\n' "$failures" >&2

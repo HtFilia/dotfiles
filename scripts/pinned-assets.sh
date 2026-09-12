@@ -5,70 +5,70 @@
 pinned_asset_field() {
   local key="$1" field="$2"
   case "$key:$field" in
-    starship-linux-x86_64:version) printf '%s\n' 'v1.25.1' ;;
-    starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.25.1/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
+    starship-linux-x86_64:version) printf '%s\n' 'v1.26.0' ;;
+    starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
     starship-linux-x86_64:file) printf '%s\n' 'starship-x86_64-unknown-linux-gnu.tar.gz' ;;
-    starship-linux-x86_64:sha256) printf '%s\n' '4488c11ca632327d1f1f16fb2f102c0646094c35479cd5435991385da43c61ac' ;;
+    starship-linux-x86_64:sha256) printf '%s\n' '321f0dd7af8340a5f2e6a8fec6538a04f617486f9ec70d878f91c09cd8deef22' ;;
 
-    eza-linux-x86_64:version) printf '%s\n' 'v0.23.4' ;;
-    eza-linux-x86_64:url) printf '%s\n' 'https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.tar.gz' ;;
+    eza-linux-x86_64:version) printf '%s\n' 'v0.23.5' ;;
+    eza-linux-x86_64:url) printf '%s\n' 'https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-gnu.tar.gz' ;;
     eza-linux-x86_64:file) printf '%s\n' 'eza_x86_64-unknown-linux-gnu.tar.gz' ;;
-    eza-linux-x86_64:sha256) printf '%s\n' '0c38665440226cd8bef5d1d4f3bc6ff77c927fb0d68b752739105db7ab5b358d' ;;
+    eza-linux-x86_64:sha256) printf '%s\n' '35c70c5c43c29108075e58b893234c67ef585f0b53a7eaf8e9e7d4eec9f339b4' ;;
 
-    uv-linux-x86_64:version) printf '%s\n' '0.11.23' ;;
-    uv-linux-x86_64:url) printf '%s\n' 'https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-gnu.tar.gz' ;;
+    uv-linux-x86_64:version) printf '%s\n' '0.12.13' ;;
+    uv-linux-x86_64:url) printf '%s\n' 'https://github.com/astral-sh/uv/releases/download/0.12.13/uv-x86_64-unknown-linux-gnu.tar.gz' ;;
     uv-linux-x86_64:file) printf '%s\n' 'uv-x86_64-unknown-linux-gnu.tar.gz' ;;
-    uv-linux-x86_64:sha256) printf '%s\n' 'e12c4cda2fe8c305510a78380a88f2c32a27e90cdcd123cefd2873388f0ebb5f' ;;
+    uv-linux-x86_64:sha256) printf '%s\n' '745765a3b6e360ad76743599ae5c42e9278c7edf8bbff9fc76d05bf2623a04dd' ;;
 
-    lazygit-linux-x86_64:version) printf '%s\n' 'v0.62.2' ;;
-    lazygit-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazygit/releases/download/v0.62.2/lazygit_0.62.2_linux_x86_64.tar.gz' ;;
-    lazygit-linux-x86_64:file) printf '%s\n' 'lazygit_0.62.2_linux_x86_64.tar.gz' ;;
-    lazygit-linux-x86_64:sha256) printf '%s\n' '8b9a4c2d0969cbea92b45c956dd2a44e1ba76900c9df49f1c60984045ce77984' ;;
+    lazygit-linux-x86_64:version) printf '%s\n' 'v0.65.0' ;;
+    lazygit-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_linux_x86_64.tar.gz' ;;
+    lazygit-linux-x86_64:file) printf '%s\n' 'lazygit_0.65.0_linux_x86_64.tar.gz' ;;
+    lazygit-linux-x86_64:sha256) printf '%s\n' '44d8e7dd1484b4a66e191bd4ab25a71e8b4b3a65ab122f838e65677ef58c5506' ;;
 
     delta-linux-x86_64:version) printf '%s\n' '0.19.2' ;;
     delta-linux-x86_64:url) printf '%s\n' 'https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-x86_64-unknown-linux-gnu.tar.gz' ;;
     delta-linux-x86_64:file) printf '%s\n' 'delta-0.19.2-x86_64-unknown-linux-gnu.tar.gz' ;;
     delta-linux-x86_64:sha256) printf '%s\n' '8e695c5f586a8c53d6c3b01be0b4a422ed218bfed2a56191caebe373a1c18ab2' ;;
 
-    firacode:version) printf '%s\n' 'v3.4.0' ;;
-    firacode:url) printf '%s\n' 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/FiraCode.zip' ;;
+    firacode:version) printf '%s\n' 'v3.5.1' ;;
+    firacode:url) printf '%s\n' 'https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/FiraCode.zip' ;;
     firacode:file) printf '%s\n' 'FiraCode.zip' ;;
-    firacode:sha256) printf '%s\n' '7cc4ffd8f7a1fc914cdab7b149808298165ff7a7f40e40d82dea9ebe41e8ca0b' ;;
+    firacode:sha256) printf '%s\n' '239395baf60c89b2eaf4862b6b09db0ef95605cd3e8eef51c00345822a81a665' ;;
 
-    neovim-linux-x86_64:version) printf '%s\n' 'v0.12.3' ;;
-    neovim-linux-x86_64:url) printf '%s\n' 'https://github.com/neovim/neovim/releases/download/v0.12.3/nvim-linux-x86_64.tar.gz' ;;
+    neovim-linux-x86_64:version) printf '%s\n' 'v0.12.5' ;;
+    neovim-linux-x86_64:url) printf '%s\n' 'https://github.com/neovim/neovim/releases/download/v0.12.5/nvim-linux-x86_64.tar.gz' ;;
     neovim-linux-x86_64:file) printf '%s\n' 'nvim-linux-x86_64.tar.gz' ;;
-    neovim-linux-x86_64:sha256) printf '%s\n' 'c441b547142860bf01bcce39e36cbed185c41112813e15443b16e5237750724d' ;;
+    neovim-linux-x86_64:sha256) printf '%s\n' 'bce0f56eda1f1b1db6eee8f4133d7a38813ea07933837dd1777411ca384c6875' ;;
 
-    just-linux-x86_64:version) printf '%s\n' '1.53.0' ;;
-    just-linux-x86_64:url) printf '%s\n' 'https://github.com/casey/just/releases/download/1.53.0/just-1.53.0-x86_64-unknown-linux-musl.tar.gz' ;;
-    just-linux-x86_64:file) printf '%s\n' 'just-1.53.0-x86_64-unknown-linux-musl.tar.gz' ;;
-    just-linux-x86_64:sha256) printf '%s\n' '7fedeb22c7e14d9ef1551e8b793700866d80f409f9884b0e80ebb65c11d4874d' ;;
+    just-linux-x86_64:version) printf '%s\n' '1.58.0' ;;
+    just-linux-x86_64:url) printf '%s\n' 'https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz' ;;
+    just-linux-x86_64:file) printf '%s\n' 'just-1.58.0-x86_64-unknown-linux-musl.tar.gz' ;;
+    just-linux-x86_64:sha256) printf '%s\n' '4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d' ;;
 
-    mise-linux-x86_64:version) printf '%s\n' 'v2026.6.11' ;;
-    mise-linux-x86_64:url) printf '%s\n' 'https://github.com/jdx/mise/releases/download/v2026.6.11/mise-v2026.6.11-linux-x64' ;;
-    mise-linux-x86_64:file) printf '%s\n' 'mise-v2026.6.11-linux-x64' ;;
-    mise-linux-x86_64:sha256) printf '%s\n' '4c1036af15efea3a4d83f13481132ec7d7dda15e7ec5869dd70a64072bf1a6c9' ;;
+    mise-linux-x86_64:version) printf '%s\n' 'v2026.9.5' ;;
+    mise-linux-x86_64:url) printf '%s\n' 'https://github.com/jdx/mise/releases/download/v2026.9.5/mise-v2026.9.5-linux-x64' ;;
+    mise-linux-x86_64:file) printf '%s\n' 'mise-v2026.9.5-linux-x64' ;;
+    mise-linux-x86_64:sha256) printf '%s\n' '32f644d8c291bb182f702c6d2b0dda9f8b01441e940d74d328aad5f08446b2fd' ;;
 
-    yazi-linux-x86_64:version) printf '%s\n' 'v26.5.6' ;;
-    yazi-linux-x86_64:url) printf '%s\n' 'https://github.com/sxyazi/yazi/releases/download/v26.5.6/yazi-x86_64-unknown-linux-gnu.zip' ;;
+    yazi-linux-x86_64:version) printf '%s\n' 'v26.9.1' ;;
+    yazi-linux-x86_64:url) printf '%s\n' 'https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-gnu.zip' ;;
     yazi-linux-x86_64:file) printf '%s\n' 'yazi-x86_64-unknown-linux-gnu.zip' ;;
-    yazi-linux-x86_64:sha256) printf '%s\n' '1c9096f0a83b8102c194385f644cdeff93cc8269426163c9d033041ebd537bd2' ;;
+    yazi-linux-x86_64:sha256) printf '%s\n' 'a02fe91d3304294048c681f010f1100856872a4e98ecf6927328e888d40a6ad2' ;;
 
-    yq-linux-amd64:version) printf '%s\n' 'v4.53.3' ;;
-    yq-linux-amd64:url) printf '%s\n' 'https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64' ;;
+    yq-linux-amd64:version) printf '%s\n' 'v4.53.6' ;;
+    yq-linux-amd64:url) printf '%s\n' 'https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_amd64' ;;
     yq-linux-amd64:file) printf '%s\n' 'yq_linux_amd64' ;;
-    yq-linux-amd64:sha256) printf '%s\n' 'fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4' ;;
+    yq-linux-amd64:sha256) printf '%s\n' 'c5f056448f973ae7d39b5401949648a78f2dc1947d6a8eb65be60d5c504b9385' ;;
 
     sd-linux-x86_64:version) printf '%s\n' 'v1.1.0' ;;
     sd-linux-x86_64:url) printf '%s\n' 'https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-gnu.tar.gz' ;;
     sd-linux-x86_64:file) printf '%s\n' 'sd-v1.1.0-x86_64-unknown-linux-gnu.tar.gz' ;;
     sd-linux-x86_64:sha256) printf '%s\n' '3613eca74cd686739bb5a6d68319aa56c747e7315274d02323a2ca2b1c5d82d2' ;;
 
-    dust-linux-x86_64:version) printf '%s\n' 'v1.2.4' ;;
-    dust-linux-x86_64:url) printf '%s\n' 'https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz' ;;
-    dust-linux-x86_64:file) printf '%s\n' 'dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz' ;;
-    dust-linux-x86_64:sha256) printf '%s\n' '707cfdbfb9d2dc536f8c3853815bbe98a01012f2772463835edae06816551160' ;;
+    dust-linux-x86_64:version) printf '%s\n' 'v1.2.5' ;;
+    dust-linux-x86_64:url) printf '%s\n' 'https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-unknown-linux-gnu.tar.gz' ;;
+    dust-linux-x86_64:file) printf '%s\n' 'dust-v1.2.5-x86_64-unknown-linux-gnu.tar.gz' ;;
+    dust-linux-x86_64:sha256) printf '%s\n' '64b16f5c10cc4c25d2eaa144e9d2d44b3ed8f72ee63b3bc0a92c85e21e9e0932' ;;
 
     duf-linux-x86_64:version) printf '%s\n' 'v0.9.1' ;;
     duf-linux-x86_64:url) printf '%s\n' 'https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_linux_x86_64.tar.gz' ;;
@@ -80,15 +80,15 @@ pinned_asset_field() {
     hyperfine-linux-x86_64:file) printf '%s\n' 'hyperfine-v1.20.0-x86_64-unknown-linux-gnu.tar.gz' ;;
     hyperfine-linux-x86_64:sha256) printf '%s\n' '63ad53934062118f5b0be11785e0bb1603d4b91667d1921f2fd8df9a8712040a' ;;
 
-    watchexec-linux-x86_64:version) printf '%s\n' 'v2.5.1' ;;
-    watchexec-linux-x86_64:url) printf '%s\n' 'https://github.com/watchexec/watchexec/releases/download/v2.5.1/watchexec-2.5.1-x86_64-unknown-linux-gnu.tar.xz' ;;
-    watchexec-linux-x86_64:file) printf '%s\n' 'watchexec-2.5.1-x86_64-unknown-linux-gnu.tar.xz' ;;
-    watchexec-linux-x86_64:sha256) printf '%s\n' 'cafc381f74e95f8e93e796ef590c7cbbf3409dda6d56cf3dee6109c10e5188ee' ;;
+    watchexec-linux-x86_64:version) printf '%s\n' 'v2.7.2' ;;
+    watchexec-linux-x86_64:url) printf '%s\n' 'https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-x86_64-unknown-linux-gnu.tar.xz' ;;
+    watchexec-linux-x86_64:file) printf '%s\n' 'watchexec-2.7.2-x86_64-unknown-linux-gnu.tar.xz' ;;
+    watchexec-linux-x86_64:sha256) printf '%s\n' 'b5b3cf6fd45ce2503bae90ba4017f85d62314b427b91c06818ff39a4c46930c4' ;;
 
-    xh-linux-x86_64:version) printf '%s\n' 'v0.26.1' ;;
-    xh-linux-x86_64:url) printf '%s\n' 'https://github.com/ducaale/xh/releases/download/v0.26.1/xh-v0.26.1-x86_64-unknown-linux-musl.tar.gz' ;;
-    xh-linux-x86_64:file) printf '%s\n' 'xh-v0.26.1-x86_64-unknown-linux-musl.tar.gz' ;;
-    xh-linux-x86_64:sha256) printf '%s\n' 'c411f07a0b204ca07858a67473d0f5c77e332226430d4d84d1d2afd351a425f2' ;;
+    xh-linux-x86_64:version) printf '%s\n' 'v0.26.2' ;;
+    xh-linux-x86_64:url) printf '%s\n' 'https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-x86_64-unknown-linux-musl.tar.gz' ;;
+    xh-linux-x86_64:file) printf '%s\n' 'xh-v0.26.2-x86_64-unknown-linux-musl.tar.gz' ;;
+    xh-linux-x86_64:sha256) printf '%s\n' '8c53b6a23435754f9e2ea8ab8c0d0296a1921404b88132cf9b364ff6e8c22a6e' ;;
 
     lazydocker-linux-x86_64:version) printf '%s\n' 'v0.25.2' ;;
     lazydocker-linux-x86_64:url) printf '%s\n' 'https://github.com/jesseduffield/lazydocker/releases/download/v0.25.2/lazydocker_0.25.2_Linux_x86_64.tar.gz' ;;
@@ -105,35 +105,35 @@ pinned_asset_field() {
     actionlint-linux-amd64:file) printf '%s\n' 'actionlint_1.7.12_linux_amd64.tar.gz' ;;
     actionlint-linux-amd64:sha256) printf '%s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' ;;
 
-    node-linux-x86_64:version) printf '%s\n' 'v24.17.0' ;;
-    node-linux-x86_64:url) printf '%s\n' 'https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-x64.tar.xz' ;;
-    node-linux-x86_64:file) printf '%s\n' 'node-v24.17.0-linux-x64.tar.xz' ;;
-    node-linux-x86_64:sha256) printf '%s\n' 'ab343a1b747c7cbf3630dfd7dbf818c5423fab2eb4f5ad1afc896f6bd121a917' ;;
+    node-linux-x86_64:version) printf '%s\n' 'v24.21.0' ;;
+    node-linux-x86_64:url) printf '%s\n' 'https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.xz' ;;
+    node-linux-x86_64:file) printf '%s\n' 'node-v24.21.0-linux-x64.tar.xz' ;;
+    node-linux-x86_64:sha256) printf '%s\n' 'fd8e59d5a511510f6a298afb548f18c7d2b1be404d8b4a27d94fbe49f56cb2d6' ;;
 
-    node-linux-arm64:version) printf '%s\n' 'v24.17.0' ;;
-    node-linux-arm64:url) printf '%s\n' 'https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:file) printf '%s\n' 'node-v24.17.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:sha256) printf '%s\n' '67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3' ;;
+    node-linux-arm64:version) printf '%s\n' 'v24.21.0' ;;
+    node-linux-arm64:url) printf '%s\n' 'https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-arm64.tar.xz' ;;
+    node-linux-arm64:file) printf '%s\n' 'node-v24.21.0-linux-arm64.tar.xz' ;;
+    node-linux-arm64:sha256) printf '%s\n' '6ad1325edbdb5649c379b75a237147a666c95d4f9ae8d340fef2d1575d289ad2' ;;
 
-    chezmoi-linux-amd64:version) printf '%s\n' 'v2.70.5' ;;
-    chezmoi-linux-amd64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.70.5/chezmoi_2.70.5_linux_amd64.tar.gz' ;;
-    chezmoi-linux-amd64:file) printf '%s\n' 'chezmoi_2.70.5_linux_amd64.tar.gz' ;;
-    chezmoi-linux-amd64:sha256) printf '%s\n' '6a76a0ac3718f0d45b34b4b57067f9556f8f6042e3da710a3c496838362aca14' ;;
+    chezmoi-linux-amd64:version) printf '%s\n' 'v2.72.1' ;;
+    chezmoi-linux-amd64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.72.1/chezmoi_2.72.1_linux_amd64.tar.gz' ;;
+    chezmoi-linux-amd64:file) printf '%s\n' 'chezmoi_2.72.1_linux_amd64.tar.gz' ;;
+    chezmoi-linux-amd64:sha256) printf '%s\n' '9f97d32caca166e5c92160ec3a9325519809c38963121cef38173142065c981f' ;;
 
-    chezmoi-linux-arm64:version) printf '%s\n' 'v2.70.5' ;;
-    chezmoi-linux-arm64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.70.5/chezmoi_2.70.5_linux_arm64.tar.gz' ;;
-    chezmoi-linux-arm64:file) printf '%s\n' 'chezmoi_2.70.5_linux_arm64.tar.gz' ;;
-    chezmoi-linux-arm64:sha256) printf '%s\n' '4f4f31d0a10ed3b955e814a5ae20075426e27c9d3a09f536bfa4a6c8718353f2' ;;
+    chezmoi-linux-arm64:version) printf '%s\n' 'v2.72.1' ;;
+    chezmoi-linux-arm64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.72.1/chezmoi_2.72.1_linux_arm64.tar.gz' ;;
+    chezmoi-linux-arm64:file) printf '%s\n' 'chezmoi_2.72.1_linux_arm64.tar.gz' ;;
+    chezmoi-linux-arm64:sha256) printf '%s\n' '75508ef41216b6d64f3145986b751729d7f92d09c6bad77d51cf2895ab35a508' ;;
 
-    go-linux-amd64:version) printf '%s\n' '1.26.4' ;;
-    go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.26.4.linux-amd64.tar.gz' ;;
-    go-linux-amd64:file) printf '%s\n' 'go1.26.4.linux-amd64.tar.gz' ;;
-    go-linux-amd64:sha256) printf '%s\n' '1153d3d50e0ac764b447adfe05c2bcf08e889d42a02e0fe0259bd47f6733ad7f' ;;
+    go-linux-amd64:version) printf '%s\n' '1.26.8' ;;
+    go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.26.8.linux-amd64.tar.gz' ;;
+    go-linux-amd64:file) printf '%s\n' 'go1.26.8.linux-amd64.tar.gz' ;;
+    go-linux-amd64:sha256) printf '%s\n' 'd0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b' ;;
 
-    go-linux-arm64:version) printf '%s\n' '1.26.4' ;;
-    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.26.4.linux-arm64.tar.gz' ;;
-    go-linux-arm64:file) printf '%s\n' 'go1.26.4.linux-arm64.tar.gz' ;;
-    go-linux-arm64:sha256) printf '%s\n' 'ef758ae7c6cf9267c9c0ef080b8965f453d89ab2d25d9eb22de4405925238768' ;;
+    go-linux-arm64:version) printf '%s\n' '1.26.8' ;;
+    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.26.8.linux-arm64.tar.gz' ;;
+    go-linux-arm64:file) printf '%s\n' 'go1.26.8.linux-arm64.tar.gz' ;;
+    go-linux-arm64:sha256) printf '%s\n' '211ffced9dcb9633a55eac6364816ec0ddd951389a740e88fa8b3337971bdda0' ;;
 
     *) return 1 ;;
   esac
@@ -171,8 +171,15 @@ download_pinned_asset() {
   url="$(pinned_asset_field "$key" url)" || return 1
   sha="$(pinned_asset_field "$key" sha256)" || return 1
   mkdir -p "$dest_dir"
-  curl -fsSL "$url" -o "$dest_dir/$file"
-  verify_sha256 "$dest_dir/$file" "$sha"
+  local partial
+  partial="$(mktemp "$dest_dir/$file.part.XXXXXX")" || return 1
+  if curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+    --retry 3 --connect-timeout 15 "$url" -o "$partial" && verify_sha256 "$partial" "$sha"; then
+    mv "$partial" "$dest_dir/$file"
+  else
+    rm -f "$partial"
+    return 1
+  fi
 }
 
 require_pinned_file() {

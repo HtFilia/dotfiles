@@ -62,7 +62,10 @@ profile in `home/dot_config/nvim`.
 | Paste over without losing clipboard | `p` (in visual mode) |
 | Clear search highlight | `Esc` |
 
-### tmux <-> nvim navigation (seamless)
+### Neovim split navigation
+
+These keys move between Neovim splits. Between tmux panes, use the prefix
+followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 
 | Action | Keys |
 |---|---|
@@ -90,7 +93,7 @@ profile in `home/dot_config/nvim`.
 |---|---|
 | Fuzzy file search | `Ctrl-t` (fzf) |
 | Fuzzy cd into dir | `Alt-c` (fzf) |
-| History search | `Ctrl-r` (atuin) |
+| History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
 | Accept autosuggestion word | `Alt-f` or `Ctrl-→` |
 | Reject autosuggestion | `Ctrl-g` |

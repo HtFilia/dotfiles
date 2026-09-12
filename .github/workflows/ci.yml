@@ -4,13 +4,18 @@ on:
   pull_request:
   push:
 
+permissions:
+  contents: read
+
 jobs:
   scripts:
     name: Script checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install tools
         run: |
@@ -24,10 +29,10 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Bash syntax
-        run: bash -n scripts/*.sh
+        run: for file in scripts/*.sh tests/*.sh; do bash -n "$file"; done
 
       - name: Zsh syntax
-        run: zsh -n home/dot_zshrc
+        run: for file in home/dot_zsh*; do zsh -n "$file"; done
 
       - name: ShellCheck
         run: shellcheck scripts/*.sh
