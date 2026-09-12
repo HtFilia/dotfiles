@@ -57,7 +57,9 @@ jobs:
         run: actionlint
 
       - name: Secret scan
-        run: gitleaks git --redact --no-banner
+        run: |
+          gitleaks version
+          gitleaks git --redact --no-banner --verbose
 
       - name: Asset inventory consistency
         run: |
