@@ -18,6 +18,13 @@ the generated asset inventory, and scans full Git history with redacted gitleaks
 output. Package installers and interactive GUI behavior are not fully exercised
 by offline CI.
 
+`.gitleaks.toml` extends all built-in detection rules. Its only exception requires
+both the historical VS Code keybindings path and the literal `shift+alt+down`
+keyboard shortcut to match the generic API key rule. Full history remains scanned,
+including deleted files; other values in that file still receive normal checks.
+To investigate a failure, run `gitleaks git --redact --no-banner --verbose` and
+inspect the rule, path, commit, and fingerprint before adding an exception.
+
 ## Machine acceptance
 
 ```sh
