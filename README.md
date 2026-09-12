@@ -1,122 +1,127 @@
-# Dotfiles
+# Personal dotfiles
 
-[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+A practical development environment for macOS, Debian/Ubuntu, WSL, and SSH
+servers. Bash installs packages; Chezmoi deploys the files in `home/`. The shell,
+terminal, editors, prompt, and Git diffs share a Gruvbox dark palette.
 
-Opinionated, cross-platform workstation bootstrap for software development.
+## Supported environments
 
-This repository is designed to be both my daily environment and a readable
-example of how I approach developer tooling: reproducible where it matters,
-auditable by default, and practical enough to run on real machines.
+| Profile | Platform | Installed environment |
+|---|---|---|
+| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
+| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
+| Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
+| Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts, containers or language runtimes |
 
-## What it installs
+Linux ARM asset entries are metadata for selected upstream downloads, not a
+supported installation profile. Linux Ghostty and VS Code installation are
+manual. Homebrew/apt versions follow their repositories; direct Linux downloads
+and plugin checkouts are pinned. See [supply chain](docs/SUPPLY-CHAIN.md).
 
-| Category | Tools |
-|---|---|
-| Dotfile engine | Chezmoi with this repo's `home/` source state |
-| Shell | Zsh, Starship, fzf, zoxide, atuin, direnv, mise |
-| Terminal | Ghostty, tmux, TPM |
-| Editors | Neovim/LazyVim, VS Code settings and extensions |
-| CLI | eza, bat, ripgrep, fd, lazygit, lazydocker, git-delta, yazi, yq, sd, dust, duf, hyperfine, tokei, watchexec, xh, gh, jq |
-| Languages | Python with uv, Go, Rust, Node.js LTS with pnpm/Corepack |
-| Containers | Docker CLI, Docker Compose, Colima on macOS |
-| Quality | ShellCheck, actionlint, gitleaks; shfmt, Bats, Biome on macOS and when present on Linux |
-| Theme | Gruvbox Material Dark for managed editor, terminal, prompt and diff surfaces |
+## Install
 
-No Nix or devbox are required. Platform package managers remain the base layer:
-Homebrew on macOS, apt plus pinned direct downloads on Linux.
+Configure your GitHub SSH key first, then clone through SSH:
 
-## Quick start
-
-```bash
-git clone https://github.com/HtFilia/dotfiles.git ~/.dotfiles
+```sh
+git clone git@github.com:HtFilia/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/bootstrap.sh
 ```
 
-For a VPS accessed through Ghostty on a Mac, use the server profile as your
-regular SSH user (not root):
+Run as your regular development/SSH account. Linux package installation needs
+sudo. macOS requires Homebrew; if Command Line Tools installation is started,
+finish it and rerun bootstrap.
 
-```bash
+For a server:
+
+```sh
 ./scripts/bootstrap.sh --profile server --configure-shell --yes
 ./scripts/verify.sh --profile server
 ```
 
-This installs the shell, terminal tools and Neovim without desktop apps, fonts,
-Docker, language runtimes or a system upgrade. Existing managed files are backed
-up before apply. The workstation profile remains the default.
-See [VPS and Mac Ghostty setup](docs/VPS-GHOSTTY.md) for the client setup and rollback.
+Useful workstation choices:
 
-Useful flags:
-
-```bash
-./scripts/bootstrap.sh --start-colima
-./scripts/bootstrap.sh --skip-docker
-./scripts/bootstrap.sh --skip-fonts
-./scripts/bootstrap.sh --skip-vscode-extensions
-./scripts/bootstrap.sh --configure-shell
+```sh
+./scripts/bootstrap.sh --skip-docker --skip-fonts
+./scripts/bootstrap.sh --start-colima --configure-shell
+./scripts/bootstrap.sh --setup-editor
 ```
 
-Apply only the dotfiles:
+Shell plugins are installed by default. TPM is optional through `--with-tpm`.
+`--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
+extensions. Docker-group membership is opt-in with `--enable-docker-group` and
+grants root-equivalent access. See [installation](docs/INSTALLATION.md).
 
-```bash
-./scripts/apply-dotfiles.sh
+## Apply and update
+
+```sh
 ./scripts/apply-dotfiles.sh --dry-run
-./scripts/apply-dotfiles.sh --dry-run --destination "$(mktemp -d)"
+./scripts/apply-dotfiles.sh
+./scripts/update-dotfiles.sh
 ```
 
-## Repository structure
+The selected profile and materialization mode are saved under
+`~/.local/state/dotfiles`. Workstations use file-level symlinks; servers use
+independent files. Choose a mode explicitly with `--materialize file` or
+`--materialize symlink`. Apply supports isolated `--destination` and `--source`
+paths. Dry runs do not create destination files or persistent state.
 
-```text
-Brewfile                      macOS package manifest
-extensions.txt                VS Code extension manifest
-justfile                      local verification and audit recipes
-home/                         Chezmoi source state
-  dot_config/nvim/            LazyVim-based Neovim profile
-  dot_config/Code/User/       VS Code settings and keybindings
-  dot_config/ghostty/         Ghostty config
-  dot_config/git/             global Git ignore and attributes
-  dot_zshrc                   portable runtime shell config
-scripts/
-  bootstrap.sh                one-command installer
-  apply-dotfiles.sh           Chezmoi wrapper
-  install-debian.sh           Debian/Ubuntu/WSL packages and pinned assets
-  install-macos.sh            Homebrew bundle orchestration
-  pinned-assets.sh            direct-download URLs and SHA256 checksums
-  pinned-plugins.sh           zsh/tmux plugin commits
-docs/
-  ASSET-MANIFEST.md           downloadable asset inventory
-  SUPPLY-CHAIN.md             trust model and update process
-  TOOLING.md                  installed tool and managed theme audit
-tests/
-  script-contracts.sh         public CLI contract tests
+The update helper requires a clean checkout and GitHub SSH origin. It snapshots
+live contents before a fast-forward pull, then applies the saved profile. This
+matters for symlinks: source edits take effect immediately. See
+[deployment and recovery](docs/DEPLOYMENT.md).
+
+## Personal settings
+
+| File | Purpose |
+|---|---|
+| `~/.gitconfig.local` | Identity, credentials, signing, repository-specific includes |
+| `~/.zshrc.settings` | Inputs read before integrations, such as command-override flags |
+| `~/.zshrc.local` | Final shell aliases, environment overrides, widgets |
+| `~/.tmux.conf.local` | Extra tmux bindings/plugins |
+| `~/.ssh/config.local` | SSH hosts and identity paths |
+
+Existing managed files are backed up before apply. Git identity is prompted
+when appropriate or supplied through `DOTFILES_GIT_NAME`/`DOTFILES_GIT_EMAIL`.
+Existing identity files are preserved.
+
+## Repository map
+
+| Path | Responsibility |
+|---|---|
+| `Brewfile`, `extensions.txt` | macOS packages and VS Code extensions |
+| `home/` | Chezmoi source files, templates, and platform exclusions |
+| `scripts/` | Installation, deployment, snapshots, updates, editor setup, verification |
+| `scripts/pinned-assets.sh`, `scripts/pinned-plugins.sh` | Authoritative download and plugin pins |
+| `assets/terminfo/` | Vendored Ghostty terminfo and upstream license |
+| `tests/` | Offline behavioral regressions using temporary homes |
+| `.github/workflows/ci.yml` | Linux/macOS checks, actionlint, redacted secret scan |
+
+## Guides
+
+- [Shell startup and customization](docs/SHELL.md)
+- [Aliases and helper functions](docs/ALIASES.md)
+- [Git behavior](docs/GIT.md)
+- [SSH hosts and identities](docs/SSH.md)
+- [Ghostty and tmux](docs/TERMINALS.md)
+- [Neovim and VS Code](docs/EDITORS.md)
+- [Runtimes and project environments](docs/RUNTIMES.md)
+- [Tools and their roles](docs/TOOLING.md)
+- [Keybindings](docs/KEYBINDINGS.md)
+- [Mac Ghostty connecting to a VPS](docs/VPS-GHOSTTY.md)
+- [Verification and maintenance](docs/VERIFICATION.md)
+
+## Check the repository
+
+```sh
+just check        # syntax, ShellCheck, offline regressions
+just dry-run      # isolated deployment preview
+just verify       # acceptance checks for this machine
+just workflow     # actionlint, when installed
+just security     # redacted Git-history secret scan, when installed
 ```
 
-## Design choices
+Checks do not install packages or alter active dotfiles. Full package
+installation and language-tool downloads are separate from offline tests.
 
-Chezmoi manages target state, while Bash keeps the bootstrap easy to audit.
-The repo uses Chezmoi's `dot_` naming convention directly from `home/`, so the
-source tree stays readable without an extra generated layer.
-
-Direct Linux downloads are pinned by exact URL and SHA256 in
-[`scripts/pinned-assets.sh`](scripts/pinned-assets.sh). Zsh and tmux plugins are
-checked out to exact commits in [`scripts/pinned-plugins.sh`](scripts/pinned-plugins.sh).
-Homebrew and apt are trusted through their own signing and repository models.
-
-The shell startup path is defensive: plugin files are sourced only when they are
-owned by the current user and are not group/world writable.
-
-Managed UI surfaces use Gruvbox Material Dark. VS Code and Neovim use native
-theme integrations; Ghostty, tmux, Starship, fzf, bat, and delta use matching
-Gruvbox colors or syntax themes.
-
-## Verification
-
-```bash
-just check
-just dry-run
-just verify
-```
-
-`./scripts/verify.sh` reports installed versions, active dotfile links, pinned
-plugin commits, editor tooling, language runtimes, and quality tools.
+MIT licensed; vendored terminfo retains its upstream license.
