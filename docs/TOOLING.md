@@ -10,7 +10,7 @@ The managed UI theme is Gruvbox Material Dark.
 |---|---|---|
 | VS Code | `home/dot_config/Code/User/settings.json`, `extensions.txt` | `sainnhe.gruvbox-material`, dark medium/material variant |
 | Neovim | `home/dot_config/nvim/` | `sainnhe/gruvbox-material`, dark medium/material variant |
-| Ghostty | `home/dot_config/ghostty/config` | Custom Gruvbox Material Dark 16-color palette |
+| Ghostty | `home/dot_config/ghostty/config.ghostty` | Custom Gruvbox Material Dark 16-color palette |
 | tmux | `home/dot_tmux.conf` | Custom Gruvbox Material Dark status and border colors |
 | Starship | `home/dot_config/starship.toml` | Custom Gruvbox Material Dark palette |
 | bat and delta | `home/dot_zshrc`, `home/dot_gitconfig` | Built-in `gruvbox-dark` syntax theme |
