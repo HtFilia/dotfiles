@@ -18,15 +18,15 @@ Prefix: **`Ctrl-a`**
 | Start selection | `v` (in copy mode) |
 | Copy selection | `y` (in copy mode) |
 | Reload config | `prefix` + `r` |
-| Install plugins | `prefix` + `I` |
-| Update plugins | `prefix` + `U` |
+| Install plugins (optional TPM) | `prefix` + `I` |
+| Update plugins (optional TPM; review pin drift) | `prefix` + `U` |
 
 ## Neovim
 
 Leader: **`<Space>`**
 
-`~/.config/nvim` is managed by Chezmoi and points to the single LazyVim-based
-profile in `home/dot_config/nvim`.
+`~/.config/nvim` contains the single managed LazyVim-based profile.
+See [editor provisioning](EDITORS.md) for language-tool prerequisites.
 
 ### LazyVim
 
@@ -95,8 +95,7 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Fuzzy cd into dir | `Alt-c` (fzf) |
 | History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
-| Accept autosuggestion word | `Alt-f` or `Ctrl-→` |
-| Reject autosuggestion | `Ctrl-g` |
+| Move forward one word | `Alt-f` |
 
 ### Custom functions
 
