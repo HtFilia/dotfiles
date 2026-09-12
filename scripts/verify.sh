@@ -1,252 +1,94 @@
 #!/usr/bin/env bash
-# Check installed tools, dotfile links and active Neovim profile.
-
-set -u
-case "${1:-}" in
-  --profile)
-    case "${2:-}" in
-      server) exec bash "$(dirname "${BASH_SOURCE[0]}")/verify-server.sh" ;;
-      workstation) ;;
-      *) printf 'Expected --profile server|workstation\n' >&2; exit 1 ;;
-    esac
-    ;;
-  -h|--help) printf 'Usage: %s [--profile server|workstation]\n' "$0"; exit 0 ;;
-  '')
-    [[ "${DOTFILES_PROFILE:-}" != server ]] || exec bash "$(dirname "${BASH_SOURCE[0]}")/verify-server.sh"
-    ;;
-  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
-esac
-
-GREEN=$'\033[0;32m'; RED=$'\033[0;31m'; YELLOW=$'\033[0;33m'
-CYAN=$'\033[0;36m'; BOLD=$'\033[1m'; RESET=$'\033[0m'
-
+# shellcheck disable=SC2016
+# Read-only acceptance checks for installed tools and managed leaf files.
+set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
-
-export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-  fi
-  if command -v brew >/dev/null 2>&1; then
-    brew_prefix="$(brew --prefix 2>/dev/null)"
-    [[ -d "$brew_prefix/opt/node@24/bin" ]] && export PATH="$brew_prefix/opt/node@24/bin:$PATH"
-    [[ -d "$brew_prefix/opt/python@3.14/libexec/bin" ]] && export PATH="$brew_prefix/opt/python@3.14/libexec/bin:$PATH"
-    unset brew_prefix
-  fi
+export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
+profile="${DOTFILES_PROFILE:-}"
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    -h|--help) printf 'Usage: %s [--profile server|workstation]\nExits nonzero for missing required components or pin drift.\n' "$0"; exit 0 ;;
+    --profile) [[ $# == 2 ]] || exit 1; profile="$2" ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
+  esac
 fi
-
-status_ok() { printf "  %s+%s %-20s %s\n" "$GREEN" "$RESET" "$1" "$2"; }
-status_miss() { printf "  %sx%s %-20s %s\n" "$RED" "$RESET" "$1" "${YELLOW}${2:-not installed}${RESET}"; }
-status_opt() { printf "  %s-%s %-20s %s\n" "$YELLOW" "$RESET" "$1" "${YELLOW}optional${RESET}"; }
-section() { printf "\n%s%s%s\n" "$CYAN$BOLD" "$1" "$RESET"; }
-
-check_tool() {
-  local name="$1" version_cmd="${2:---version}" optional="${3:-0}"
-  if command -v "$name" >/dev/null 2>&1; then
-    local v
-    v=$("$name" "$version_cmd" 2>&1 | head -1 | grep -oE '[0-9]+(\.[0-9]+)+' | head -1 || true)
-    status_ok "$name" "${v:-installed}"
-  elif [[ "$optional" == "1" ]]; then
-    status_opt "$name" ""
-  else
-    status_miss "$name" ""
-  fi
+if [[ -z "$profile" && -f "$HOME/.local/state/dotfiles/profile" ]]; then
+  profile="$(cat "$HOME/.local/state/dotfiles/profile")"
+fi
+profile="${profile:-workstation}"
+[[ "$profile" == server || "$profile" == workstation ]] || exit 1
+failures=0
+check() {
+  local label="$1"
+  shift
+  if "$@"; then printf 'ok - %s\n' "$label"; else printf 'FAIL - %s\n' "$label" >&2; failures=$((failures + 1)); fi
 }
-
-check_bat_theme() {
-  local theme="$1"
-  if command -v bat >/dev/null 2>&1 && bat --list-themes 2>/dev/null | grep -Fxq "$theme"; then
-    status_ok "bat theme" "$theme"
-  else
-    status_miss "bat theme" "$theme"
-  fi
+available() { command -v "$1" >/dev/null 2>&1; }
+plugin_matches() {
+  local plugin="$1" base="$2" directory expected actual
+  directory="$base/$(pinned_plugin_field "$plugin" dir)"
+  expected="$(pinned_plugin_field "$plugin" commit)"
+  actual="$(git -C "$directory" rev-parse HEAD 2>/dev/null)" || return 1
+  [[ "$actual" == "$expected" && -z "$(git -C "$directory" status --porcelain)" ]]
 }
-
-asset_arch="$(pinned_asset_arch 2>/dev/null || printf '%s' x86_64)"
-asset_go_arch="$(pinned_asset_go_arch 2>/dev/null || printf '%s' amd64)"
-os_name="$(uname -s)"
-
-check_pinned_version() {
-  local tool="$1" key="$2" version_cmd="${3:---version}"
-  if command -v "$tool" >/dev/null 2>&1; then
-    local expected out
-    expected="$(pinned_asset_field "$key" version 2>/dev/null || true)"
-    out="$("$tool" "$version_cmd" 2>&1 | head -1 || true)"
-    if [[ -n "$expected" && "$out" == *"${expected#v}"* ]]; then
-      status_ok "$tool" "pinned $expected"
-    elif [[ -n "$expected" ]]; then
-      status_ok "$tool" "installed (${out:-unknown}; pinned $expected)"
-    else
-      status_ok "$tool" "${out:-installed}"
-    fi
-  else
-    status_miss "$tool" ""
+for tool in zsh starship tmux chezmoi eza delta lazygit just bat fd rg fzf zoxide direnv nvim git jq; do
+  check "$tool available" available "$tool"
+done
+for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/nvim/init.lua .config/nvim/lazy-lock.json; do
+  check "$target deployed" test -f "$HOME/$target"
+done
+check 'Zsh syntax' zsh -n "$HOME/.zshrc"
+check 'Completion permissions' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
+check 'bat Gruvbox theme' bash -c 'bat --list-themes | rg -x gruvbox-dark >/dev/null'
+check 'Starship configuration' bash -c 'STARSHIP_LOG=error starship prompt >/dev/null'
+check 'tmux terminfo' bash -c 'infocmp -x tmux-256color >/dev/null 2>&1'
+# Terminfo output is useful on failure but verbose on success; hide via wrapper below.
+if [[ "$profile" == server ]]; then
+  check 'Ghostty terminfo' bash -c 'infocmp -x xterm-ghostty >/dev/null 2>&1'
+fi
+if [[ "$(uname -s)" == Linux ]]; then
+  for pair in starship:starship-linux-x86_64 eza:eza-linux-x86_64 delta:delta-linux-x86_64 lazygit:lazygit-linux-x86_64 chezmoi:chezmoi-linux-amd64 just:just-linux-x86_64 nvim:neovim-linux-x86_64; do
+    check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
+  done
+fi
+for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+  directory="$HOME/.local/share/zsh/plugins/$plugin"
+  if [[ -d "$directory" ]]; then
+    check "$plugin pin and clean checkout" plugin_matches "$plugin" "$HOME/.local/share/zsh/plugins"
+  else printf 'optional - %s\n' "$plugin"; fi
+done
+if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
+  check 'TPM pin and clean checkout' plugin_matches tmux-tpm "$HOME/.tmux/plugins"
+fi
+if [[ "$profile" == workstation ]]; then
+  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck; do
+    check "$tool available" available "$tool"
+  done
+  if [[ "$(uname -s)" == Linux ]]; then
+    for pair in uv:uv-linux-x86_64 uvx:uv-linux-x86_64 mise:mise-linux-x86_64 yazi:yazi-linux-x86_64 yq:yq-linux-amd64 sd:sd-linux-x86_64 dust:dust-linux-x86_64 duf:duf-linux-x86_64 hyperfine:hyperfine-linux-x86_64 watchexec:watchexec-linux-x86_64 xh:xh-linux-x86_64 lazydocker:lazydocker-linux-x86_64 actionlint:actionlint-linux-amd64 node:node-linux-x86_64; do
+      check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
+    done
+    check 'Go pin' asset_version_matches go go-linux-amd64 version
+    check 'Gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
   fi
-}
-
-check_pinned_plugin() {
-  local key="$1" base_dir="$2" dir expected actual
-  dir="$(pinned_plugin_field "$key" dir 2>/dev/null || true)"
-  expected="$(pinned_plugin_field "$key" commit 2>/dev/null || true)"
-  if [[ -n "$dir" && -d "$base_dir/$dir/.git" ]]; then
-    actual="$(git -C "$base_dir/$dir" rev-parse HEAD 2>/dev/null || true)"
-    if [[ "$actual" == "$expected" ]]; then
-      status_ok "$key" "pinned ${expected:0:12}"
-    else
-      status_miss "$key" "expected ${expected:0:12}, got ${actual:0:12}"
-    fi
-  else
-    status_miss "$key" ""
-  fi
-}
-
-printf "%s%sDotfiles verification%s\n" "$CYAN" "$BOLD" "$RESET"
-printf "%s%s%s on %s %s%s\n" "$CYAN" "$BOLD" "$(date +'%Y-%m-%d %H:%M')" "$(uname -s)" "$(uname -m)" "$RESET"
-
-section "Shell & prompt"
-check_tool zsh
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool starship --version
-else
-  check_pinned_version starship "starship-linux-$asset_arch"
+  if available tokei; then check "tokei version" asset_version_matches tokei tokei-cargo --version; else printf "optional - tokei (Rust >=1.85 build)\n"; fi
+  if available docker; then
+    check 'Docker Compose plugin' docker compose version
+    check 'Docker Buildx plugin' docker buildx version
+  else printf 'optional - Docker (--skip-docker or WSL host integration)\n'; fi
+  if [[ "$(uname -s)" == Darwin ]]; then
+    check 'VS Code settings' test -f "$HOME/Library/Application Support/Code/User/settings.json"
+  else check 'VS Code settings' test -f "$HOME/.config/Code/User/settings.json"; fi
 fi
-check_tool tmux
-check_tool just --version
-if command -v zsh >/dev/null 2>&1; then
-  compaudit_out="$(zsh -fc 'autoload -Uz compaudit; compaudit' 2>/dev/null || true)"
-  if [[ -z "$compaudit_out" ]]; then
-    status_ok "compaudit" "secure"
-  else
-    status_miss "compaudit" "insecure paths"
-    printf '%s\n' "$compaudit_out"
-  fi
+# Explicit editor provisioning is checked only when its marker exists.
+if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
+  while IFS= read -r tool; do
+    check "editor tool $tool" test -x "$HOME/.local/share/nvim/mason/bin/$tool"
+  done <"$HOME/.local/state/dotfiles/editor-tools"
 fi
-
-section "Editors"
-check_tool nvim --version
-if [[ -L "$HOME/.config/nvim" ]]; then
-  target="$(readlink "$HOME/.config/nvim")"
-  if [[ ! -e "$target" ]]; then
-    status_miss "nvim profile" "dangling: $target"
-  else
-    case "$target" in
-      *dot_config/nvim) status_ok "nvim profile" "managed" ;;
-      *) status_ok "nvim profile" "$target" ;;
-    esac
-  fi
-else
-  status_miss "nvim profile" ""
-fi
-check_tool code --version 1
-check_tool chezmoi --version
-
-section "Modern CLI"
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool eza --version
-else
-  check_pinned_version eza "eza-linux-$asset_arch"
-fi
-check_tool bat --version
-check_bat_theme "gruvbox-dark"
-check_tool fd --version
-check_tool rg --version
-check_tool fzf --version
-check_tool zoxide --version
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool mise --version
-  check_tool yazi --version
-  check_tool yq --version
-  check_tool sd --version
-  check_tool dust --version
-  check_tool duf --version
-  check_tool hyperfine --version
-  check_tool tokei --version
-  check_tool watchexec --version
-  check_tool xh --version
-  check_tool lazydocker --version
-else
-  check_pinned_version mise "mise-linux-$asset_arch"
-  check_pinned_version yazi "yazi-linux-$asset_arch"
-  check_pinned_version yq "yq-linux-$asset_go_arch"
-  check_pinned_version sd "sd-linux-$asset_arch"
-  check_pinned_version dust "dust-linux-$asset_arch"
-  check_pinned_version duf "duf-linux-$asset_arch"
-  check_pinned_version hyperfine "hyperfine-linux-$asset_arch"
-  check_tool tokei --version
-  check_pinned_version watchexec "watchexec-linux-$asset_arch"
-  check_pinned_version xh "xh-linux-$asset_arch"
-  check_pinned_version lazydocker "lazydocker-linux-$asset_arch"
-fi
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool lazygit --version
-  check_tool delta --version
-else
-  check_pinned_version lazygit "lazygit-linux-$asset_arch"
-  check_pinned_version delta "delta-linux-$asset_arch"
-fi
-check_tool atuin --version 1
-check_tool direnv --version
-
-section "Languages"
-check_tool python3
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool uv --version
-else
-  check_pinned_version uv "uv-linux-$asset_arch"
-fi
-check_tool go version
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool node --version
-else
-  check_pinned_version node "node-linux-$asset_arch" --version
-fi
-check_tool npm --version 1
-check_tool pnpm --version 1
-check_tool rustc --version
-check_tool cargo --version
-
-section "Quality"
-check_tool shellcheck --version
-check_tool shfmt --version 1
-check_tool bats --version 1
-check_tool biome --version 1
-if [[ "$os_name" == "Darwin" ]]; then
-  check_tool actionlint --version
-  check_tool gitleaks version
-else
-  check_pinned_version actionlint "actionlint-linux-$asset_go_arch"
-  check_pinned_version gitleaks "gitleaks-linux-x64" version
-fi
-
-section "DevOps"
-check_tool docker --version
-check_tool docker-compose --version 1
-check_tool git --version
-
-section "AI / Assistant"
-check_tool claude --version 1
-
-section "Font"
-if command -v fc-list >/dev/null 2>&1 && fc-list | grep -qi "FiraCode Nerd Font"; then
-  status_ok "FiraCode Nerd" "installed"
-elif find "$HOME/Library/Fonts" /Library/Fonts -maxdepth 1 -iname '*firacode*nerd*' -print -quit 2>/dev/null | grep -q .; then
-  status_ok "FiraCode Nerd" "installed"
-else
-  status_miss "FiraCode Nerd" ""
-fi
-
-section "Zsh plugins"
-check_pinned_plugin zsh-autosuggestions "$HOME/.local/share/zsh/plugins"
-check_pinned_plugin zsh-syntax-highlighting "$HOME/.local/share/zsh/plugins"
-
-section "tmux TPM"
-check_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"
-
-printf "\n%sLegend:%s %s+%s present  %sx%s missing  %s-%s optional\n\n" \
-  "$BOLD" "$RESET" "$GREEN" "$RESET" "$RED" "$RESET" "$YELLOW" "$RESET"
+printf '%s verification failure(s).\n' "$failures"
+(( failures == 0 ))
