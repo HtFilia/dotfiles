@@ -29,7 +29,7 @@
     tool = nvim
 
 [mergetool "nvim"]
-    cmd = nvim -d $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+    cmd = nvim -d \"$LOCAL\" \"$REMOTE\" \"$MERGED\" -c '$wincmd w' -c 'wincmd J'
 
 [diff]
     colorMoved = default
@@ -49,7 +49,6 @@
 
 [fetch]
     prune = true
-    pruneTags = true
 
 [color]
     ui = auto
@@ -83,7 +82,7 @@
     undo = reset --soft HEAD^
     amend = commit --amend --no-edit
     br = branch --sort=-committerdate
-    cleanup = "!git branch --merged | grep -vE '^\\*|main$|master$|develop$' | xargs -r git branch -d"
+    cleanup = "!f() { base=${1:-main}; branches=$(git for-each-ref --merged=\"$base\" --format='%(refname:short)' refs/heads) || return; printf '%s\\n' \"$branches\" | while IFS= read -r branch; do case \"$branch\" in \"\"|main|master|develop) continue;; esac; git branch -d -- \"$branch\"; done; }; f"
     aliases = config --get-regexp alias
 
 [include]
