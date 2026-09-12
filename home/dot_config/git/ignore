@@ -13,7 +13,6 @@ Thumbs.db
 desktop.ini
 
 # --- Editors ---
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -33,7 +32,6 @@ __pycache__/
 .venv/
 venv/
 env/
-.python-version
 
 # --- Node ---
 node_modules/
@@ -44,7 +42,6 @@ yarn-error.log*
 
 # --- Rust ---
 target/
-Cargo.lock
 **/*.rs.bk
 
 # --- Go ---
@@ -55,19 +52,13 @@ Cargo.lock
 *.dylib
 *.test
 *.out
-vendor/
 
 # --- Env / Secrets ---
 .env
 .env.local
 .env.*.local
-*.pem
-*.key
 
 # --- Build output ---
-dist/
-build/
-out/
 coverage/
 
 # --- Misc ---
