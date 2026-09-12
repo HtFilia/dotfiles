@@ -20,6 +20,11 @@ if not uv.fs_stat(lazypath) then
     error("Failed to pin lazy.nvim: " .. checkout)
   end
 end
+-- Refuse a drifted plugin manager instead of executing an unexpected checkout.
+local installed_commit = vim.fn.system({ "git", "-C", lazypath, "rev-parse", "HEAD" }):gsub("%s+$", "")
+if installed_commit ~= lazy_commit then
+  error("lazy.nvim checkout differs from the pin; review it and restore " .. lazy_commit)
+end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
