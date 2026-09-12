@@ -1,0 +1,4 @@
+* text=auto
+*.sh text eol=lf
+home/dot_zsh* text eol=lf
+*.lua text eol=lf
