@@ -22,16 +22,28 @@ return {
     "mason-org/mason-lspconfig.nvim",
     opts = function(_, opts)
       opts.ensure_installed = {}
-      opts.automatic_enable = false
     end,
   },
   {
     "neovim/nvim-lspconfig",
-    opts = {
-      servers = {
-        lua_ls = { mason = false },
-      },
-    },
+    opts = function(_, opts)
+      opts.servers = opts.servers or {}
+      local servers = {
+        lua_ls = "lua-language-server",
+        basedpyright = "basedpyright-langserver",
+        ruff = "ruff",
+        gopls = "gopls",
+        rust_analyzer = "rust-analyzer",
+        ts_ls = "typescript-language-server",
+        bashls = "bash-language-server",
+      }
+      for server, binary in pairs(servers) do
+        opts.servers[server] = vim.tbl_deep_extend("force", opts.servers[server] or {}, {
+          mason = false,
+          enabled = vim.fn.executable(binary) == 1,
+        })
+      end
+    end,
   },
   {
     "nvim-treesitter/nvim-treesitter",
