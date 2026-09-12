@@ -7,11 +7,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOURCE_DIR="${DOTFILES_SOURCE_DIR:-$REPO_ROOT/home}"
 DESTINATION="${DOTFILES_DESTINATION:-$HOME}"
-CHEZMOI_MODE="${DOTFILES_CHEZMOI_MODE:-symlink}"
+CHEZMOI_MODE="${DOTFILES_CHEZMOI_MODE:-}"
 CHEZMOI_STATE="${DOTFILES_CHEZMOI_STATE:-}"
 DRY_RUN=0
 FORCE=0
-PROFILE="${DOTFILES_PROFILE:-workstation}"
+SNAPSHOT_ONLY=0
+PROFILE="${DOTFILES_PROFILE:-}"
 
 log() { printf "\033[0;34m==>\033[0m %s\n" "$*"; }
 info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
@@ -29,6 +30,7 @@ Options:
   --source PATH            use PATH as Chezmoi source state
   --materialize MODE       Chezmoi materialization mode: symlink or file
   --dry-run                print actions without changing files
+  --snapshot-only          back up live contents without applying
   --force                  allow Chezmoi to overwrite changed targets
   -h, --help               show help
 EOF
@@ -56,6 +58,7 @@ while [[ $# -gt 0 ]]; do
       CHEZMOI_MODE="$2"
       shift
       ;;
+    --snapshot-only) SNAPSHOT_ONLY=1 ;;
     --dry-run) DRY_RUN=1 ;;
     --force) FORCE=1 ;;
     -h|--help) usage; exit 0 ;;
@@ -63,6 +66,14 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+if [[ -z "$PROFILE" && -f "$DESTINATION/.local/state/dotfiles/profile" ]]; then
+  PROFILE="$(cat "$DESTINATION/.local/state/dotfiles/profile")"
+fi
+PROFILE="${PROFILE:-workstation}"
+if [[ -z "$CHEZMOI_MODE" && -f "$DESTINATION/.local/state/dotfiles/materialize" ]]; then
+  CHEZMOI_MODE="$(cat "$DESTINATION/.local/state/dotfiles/materialize")"
+fi
+[[ -n "$CHEZMOI_MODE" ]] || { if [[ "$PROFILE" == server ]]; then CHEZMOI_MODE="file"; else CHEZMOI_MODE=symlink; fi; }
 case "$PROFILE" in
   workstation|server) ;;
   *) fatal "Unknown profile: $PROFILE" ;;
@@ -77,12 +88,19 @@ esac
 
 command -v chezmoi >/dev/null 2>&1 || fatal "chezmoi is required. Run ./scripts/bootstrap.sh or install it from https://chezmoi.io."
 [[ -d "$SOURCE_DIR" ]] || fatal "Chezmoi source directory not found: $SOURCE_DIR"
-mkdir -p "$DESTINATION"
-mkdir -p "$(dirname "$CHEZMOI_STATE")"
+SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
+export DOTFILES_SOURCE_DIR="$SOURCE_DIR"
+if [[ "$DRY_RUN" == 1 ]]; then
+  dry_state="$(mktemp -d)"
+  trap 'rm -rf "$dry_state"' EXIT
+  CHEZMOI_STATE="$dry_state/state.boltdb"
+else
+  mkdir -p "$DESTINATION" "$(dirname "$CHEZMOI_STATE")"
+fi
 
 configure_git_identity() {
   local local_cfg="$DESTINATION/.gitconfig.local"
-  [[ -e "$local_cfg" ]] && return 0
+  [[ -e "$local_cfg" || -L "$local_cfg" ]] && return 0
   if [[ "$DRY_RUN" == "1" ]]; then
     info "would create $local_cfg if git identity is provided"
     return 0
@@ -98,26 +116,15 @@ configure_git_identity() {
     read -r email
   fi
   if [[ -n "$name" && -n "$email" ]]; then
-    {
-      printf '[user]\n'
-      printf '    name = %s\n' "$name"
-      printf '    email = %s\n' "$email"
-    } >"$local_cfg"
-    chmod 600 "$local_cfg"
+    local stage
+    stage="$(mktemp "$DESTINATION/.gitconfig.local.XXXXXX")"
+    chmod 600 "$stage"
+    git config --file "$stage" user.name "$name"
+    git config --file "$stage" user.email "$email"
+    mv "$stage" "$local_cfg"
     success "created $local_cfg"
   else
     warn "git identity not configured; create $local_cfg later"
-  fi
-}
-
-refresh_bat_cache() {
-  command -v bat >/dev/null 2>&1 || return 0
-  [[ "$DRY_RUN" == "1" ]] && { info "would rebuild bat theme cache"; return 0; }
-  [[ "$DESTINATION" != "$HOME" ]] && return 0
-  if bat cache --build >/dev/null 2>&1; then
-    success "rebuilt bat theme cache"
-  else
-    warn "could not rebuild bat theme cache; run: bat cache --build"
   fi
 }
 
@@ -152,10 +159,32 @@ if [[ "$DRY_RUN" == 0 ]]; then
     backup_dir="$(mktemp -d "$backup_root/$(date -u +%Y%m%dT%H%M%SZ).XXXXXX")"
     chmod 700 "$backup_root" "$backup_dir"
     (umask 077; tar -C "$DESTINATION" -cpf "$backup_dir/targets.tar" -- "${backup_files[@]}")
+    # Keep link metadata and a separate independent content snapshot.
+    content_files=()
+    for target in "${backup_files[@]}"; do
+      [[ ! -e "$DESTINATION/$target" ]] || content_files+=("$target")
+    done
+    if (( ${#content_files[@]} )); then
+      (umask 077; tar -h -C "$DESTINATION" -cpf "$backup_dir/contents.tar" -- "${content_files[@]}")
+    fi
+    git -C "$REPO_ROOT" rev-parse HEAD >"$backup_dir/source-revision" 2>/dev/null || true
     info "backup: $backup_dir/targets.tar"
+  fi
+fi
+[[ "$SNAPSHOT_ONLY" != 1 ]] || { success "snapshot complete"; exit 0; }
+# Preserve existing host identities when introducing the local SSH include.
+if [[ "$DRY_RUN" == 0 && -f "$DESTINATION/.ssh/config" && ! -e "$DESTINATION/.ssh/config.local" && ! -L "$DESTINATION/.ssh/config.local" ]]; then
+  if ! grep -Eq '^[[:space:]]*Include[[:space:]]+~/.ssh/config.local' "$DESTINATION/.ssh/config"; then
+    (umask 077; cp -L "$DESTINATION/.ssh/config" "$DESTINATION/.ssh/config.local")
+    chmod 600 "$DESTINATION/.ssh/config.local"
+    info "preserved existing SSH hosts in .ssh/config.local"
   fi
 fi
 configure_git_identity
 chezmoi "${chezmoi_args[@]}" apply
-refresh_bat_cache
+if [[ "$DRY_RUN" == 0 ]]; then
+  mkdir -p "$DESTINATION/.local/state/dotfiles"
+  printf '%s\n' "$PROFILE" >"$DESTINATION/.local/state/dotfiles/profile"
+  printf '%s\n' "$CHEZMOI_MODE" >"$DESTINATION/.local/state/dotfiles/materialize"
+fi
 success "dotfiles deployed"

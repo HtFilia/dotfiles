@@ -3,4 +3,12 @@
 .config/Code/**
 .config/ghostty
 .config/ghostty/**
+Library
+Library/**
+{{ else if eq .chezmoi.os "darwin" }}
+.config/Code
+.config/Code/**
+{{ else }}
+Library
+Library/**
 {{ end }}
