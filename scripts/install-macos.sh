@@ -10,12 +10,14 @@ warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
 fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 START_COLIMA=0
+SKIP_FONTS=0
+SKIP_DOCKER=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BREWFILE="$REPO_ROOT/Brewfile"
 usage() {
   cat <<EOF
-Usage: $0 [--start-colima]
+Usage: $0 [--start-colima] [--skip-fonts] [--skip-docker]
 
 Options:
   --start-colima   start Colima and enable its Homebrew service
@@ -24,6 +26,8 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --skip-fonts) SKIP_FONTS=1 ;;
+    --skip-docker) SKIP_DOCKER=1 ;;
     --start-colima) START_COLIMA=1 ;;
     -h|--help) usage; exit 0 ;;
     *) fatal "Unknown argument: $1" ;;
@@ -35,7 +39,7 @@ if ! xcode-select -p >/dev/null 2>&1; then
   log "Installing Xcode Command Line Tools..."
   xcode-select --install
   info "Re-run this script once Xcode CLT installation completes."
-  exit 0
+  exit 2
 fi
 
 if ! command -v brew >/dev/null 2>&1; then
@@ -46,20 +50,24 @@ info "Homebrew already installed; updating..."
 brew update
 
 [[ -f "$BREWFILE" ]] || fatal "Brewfile not found: $BREWFILE"
+temporary_brewfile="$(mktemp)"
+trap 'rm -f "$temporary_brewfile"' EXIT
+awk -v fonts="$SKIP_FONTS" -v docker="$SKIP_DOCKER" '
+  fonts == 1 && /font-fira-code-nerd-font/ { next }
+  docker == 1 && /brew "(docker|docker-compose|docker-buildx|colima|lazydocker)"/ { next }
+  { print }
+' "$BREWFILE" >"$temporary_brewfile"
+BREWFILE="$temporary_brewfile"
 log "Installing Homebrew bundle..."
 brew bundle check --file "$BREWFILE" >/dev/null 2>&1 || brew bundle install --file "$BREWFILE"
 success "Homebrew bundle satisfied"
 
-if command -v rustup-init >/dev/null 2>&1 && [[ ! -d "$HOME/.cargo" ]]; then
+if command -v rustup-init >/dev/null 2>&1 && ! rustup show active-toolchain >/dev/null 2>&1; then
   log "Initializing Rust toolchain..."
   rustup-init -y --no-modify-path --default-toolchain stable
 fi
 
-if command -v fzf >/dev/null 2>&1 && [[ ! -f "$HOME/.fzf.zsh" ]]; then
-  log "Installing fzf key bindings..."
-  "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
-fi
-
+if [[ "$SKIP_DOCKER" == 0 ]]; then
 log "Wiring Docker CLI plugins..."
 mkdir -p "$HOME/.docker/cli-plugins"
 brew_prefix="$(brew --prefix)"
@@ -86,5 +94,6 @@ elif command -v colima >/dev/null 2>&1; then
   warn "Colima installed but not started. Re-run with --start-colima to enable it."
 fi
 
+fi
 warn "Claude Code is not installed automatically; install it manually if you accept its upstream installer."
 success "macOS setup complete."

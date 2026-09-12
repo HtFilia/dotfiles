@@ -12,11 +12,16 @@ success() { printf "\033[0;32m  +\033[0m %s\n" "$*"; }
 info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
 fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
+case "${1:-}" in
+  -h|--help) printf 'Usage: %s\nInstalls the pinned FiraCode Nerd Font on Linux or its Homebrew cask on macOS.\n' "$0"; exit 0 ;;
+  '') [[ $# == 0 ]] || fatal "Unexpected arguments" ;;
+  *) fatal "Unknown argument: $1" ;;
+esac
+
 install_font_linux() {
   local font_dir="$HOME/.local/share/fonts" cache_dir="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
   local key="firacode" file archive tmpdir
   file="$(pinned_asset_field "$key" file)"
-  archive="$cache_dir/$file"
 
   if fc-list 2>/dev/null | grep -qi "FiraCode Nerd Font"; then
     info "FiraCode Nerd Font already installed."
@@ -24,14 +29,9 @@ install_font_linux() {
   fi
 
   mkdir -p "$font_dir" "$cache_dir"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned FiraCode Nerd Font..."
-    download_pinned_asset "$key" "$cache_dir" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$cache_dir"; then
-    fatal "Checksum failed for cached file: $archive"
-  fi
-
+  archive="$(cached_asset_path "$key" "$cache_dir")" || fatal "Download/checksum failed: $key"
   tmpdir="$(mktemp -d)"
+  trap 'rm -rf "$tmpdir"' RETURN
   unzip -oq "$archive" -d "$tmpdir/FiraCode"
   find "$tmpdir/FiraCode" -name "*.ttf" ! -name "*Windows*" -exec cp {} "$font_dir/" \;
   fc-cache -f "$font_dir"

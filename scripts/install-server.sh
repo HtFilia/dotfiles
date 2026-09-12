@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
 
+# shellcheck source=scripts/preflight.sh
+. "$SCRIPT_DIR/preflight.sh"
 SKIP_PACKAGES=0
 case "${1:-}" in
   -h|--help) printf 'Usage: %s [--skip-packages]\nInstalls SSH shell, terminal tools and Neovim on Debian/Ubuntu x86_64.\n' "$0"; exit 0 ;;
@@ -13,6 +15,7 @@ case "${1:-}" in
   '') ;;
   *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
 esac
+preflight_linux server
 [[ "$(uname -s)" == Linux && "$(pinned_asset_arch)" == x86_64 ]] || {
   printf 'Server installer currently requires Linux x86_64.\n' >&2; exit 1;
 }
@@ -44,20 +47,10 @@ export PATH="$LOCAL_BIN:$PATH"
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
 
-asset_archive() {
-  local key="$1" file
-  file="$(pinned_asset_field "$key" file)"
-  if [[ -f "$DOWNLOAD_DIR/$file" ]]; then
-    require_pinned_file "$key" "$DOWNLOAD_DIR" || { printf 'Invalid cached checksum: %s\n' "$file" >&2; return 1; }
-  else
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || { printf 'Download/checksum failed: %s\n' "$key" >&2; return 1; }
-  fi
-  printf '%s\n' "$DOWNLOAD_DIR/$file"
-}
-
 install_tool() {
   local tool="$1" key="$2" member="$3" archive stage
-  archive="$(asset_archive "$key")"
+  asset_version_matches "$tool" "$key" && return 0
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")"
   stage="$work_dir/$tool"
   mkdir -p "$stage"
   tar -xzf "$archive" -C "$stage"
@@ -65,8 +58,10 @@ install_tool() {
   install -m 755 "$stage/$member" "$LOCAL_BIN/$tool"
 }
 
-ln -sfn /usr/bin/fdfind "$LOCAL_BIN/fd"
-ln -sfn /usr/bin/batcat "$LOCAL_BIN/bat"
+command -v fdfind >/dev/null || { printf "fdfind is required\n" >&2; exit 1; }
+ln -sfn "$(command -v fdfind)" "$LOCAL_BIN/fd"
+command -v batcat >/dev/null || { printf "batcat is required\n" >&2; exit 1; }
+ln -sfn "$(command -v batcat)" "$LOCAL_BIN/bat"
 install_tool starship starship-linux-x86_64 starship
 install_tool eza eza-linux-x86_64 eza
 delta_file="$(pinned_asset_field delta-linux-x86_64 file)"
@@ -76,10 +71,15 @@ install_tool chezmoi chezmoi-linux-amd64 chezmoi
 install_tool just just-linux-x86_64 just
 
 # Extract to a versioned user directory; keep any previous version for rollback.
-nvim_archive="$(asset_archive neovim-linux-x86_64)"
+nvim_archive="$(cached_asset_path neovim-linux-x86_64 "$DOWNLOAD_DIR")"
 nvim_version="$(pinned_asset_field neovim-linux-x86_64 version)"
 nvim_dir="$HOME/.local/opt/nvim-$nvim_version"
-mkdir -p "$nvim_dir"
-tar -xzf "$nvim_archive" -C "$nvim_dir" --strip-components=1
+if [[ ! -x "$nvim_dir/bin/nvim" ]]; then
+  mkdir -p "$HOME/.local/opt"
+  stage="$(mktemp -d "$HOME/.local/opt/nvim-stage.XXXXXX")"
+  tar -xzf "$nvim_archive" -C "$stage" --strip-components=1
+  [[ -x "$stage/bin/nvim" && ! -e "$nvim_dir" ]] || { rm -rf "$stage"; exit 1; }
+  mv "$stage" "$nvim_dir"
+fi
 ln -sfn "$nvim_dir/bin/nvim" "$LOCAL_BIN/nvim"
 printf 'Server tools installed for %s. Fonts belong on the SSH client.\n' "$(id -un)"
