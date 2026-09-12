@@ -89,16 +89,15 @@
     "**/node_modules": true,
     "**/dist": true,
     "**/build": true,
-    "**/target": true,
-    "**/*.lock": true
+    "**/target": true
   },
 
   // ==========================================================================
   // GIT
   // ==========================================================================
   "git.autofetch": true,
-  "git.confirmSync": false,
-  "git.enableSmartCommit": true,
+  "git.confirmSync": true,
+  "git.enableSmartCommit": false,
   "git.openRepositoryInParentFolders": "always",
   "diffEditor.ignoreTrimWhitespace": false,
 
@@ -125,7 +124,7 @@
     "editor.insertSpaces": false
   },
   "go.useLanguageServer": true,
-  "go.toolsManagement.autoUpdate": true,
+  "go.toolsManagement.autoUpdate": false,
   "go.lintTool": "golangci-lint",
   "go.formatTool": "goimports",
 
