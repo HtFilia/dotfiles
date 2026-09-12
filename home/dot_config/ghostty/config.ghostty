@@ -49,7 +49,7 @@ window-decoration = true
 window-theme = dark
 background-opacity = 0.97
 background-blur = 20
-confirm-close-surface = false
+confirm-close-surface = true
 window-save-state = always
 macos-titlebar-style = tabs
 
