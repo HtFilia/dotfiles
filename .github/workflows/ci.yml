@@ -26,7 +26,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y shellcheck zsh python3
+          sudo apt-get install -y shellcheck zsh python3 ripgrep
           . scripts/pinned-assets.sh
           mkdir -p "$HOME/.local/bin"
           for specification in chezmoi:chezmoi-linux-amd64 actionlint:actionlint-linux-amd64 gitleaks:gitleaks-linux-x64; do
@@ -42,7 +42,7 @@ jobs:
 
       - name: Install macOS check tools
         if: runner.os == 'macOS'
-        run: brew install shellcheck chezmoi actionlint gitleaks python
+        run: brew install shellcheck chezmoi actionlint gitleaks python ripgrep
 
       - name: Syntax and ShellCheck
         run: |
