@@ -27,12 +27,15 @@ install_pinned_plugin() {
   commit="$(pinned_plugin_field "$key" commit)" || return 1
   dst="$base_dir/$dir"
 
-  mkdir -p "$base_dir"
+  mkdir -p "$base_dir" || return 1
   if [[ ! -d "$dst/.git" ]]; then
-    git clone --quiet "$repo" "$dst"
+    git clone --quiet "$repo" "$dst" || return 1
   fi
-  git -C "$dst" fetch --quiet --depth=1 origin "$commit"
-  git -C "$dst" checkout --quiet --detach "$commit"
-  actual="$(git -C "$dst" rev-parse HEAD)"
+  local dirty
+  dirty="$(git -C "$dst" status --porcelain)" || return 1
+  [[ -z "$dirty" ]] || { printf "Plugin has local changes: %s\n" "$dst" >&2; return 1; }
+  git -C "$dst" fetch --quiet --depth=1 origin "$commit" || return 1
+  git -C "$dst" checkout --quiet --detach "$commit" || return 1
+  actual="$(git -C "$dst" rev-parse HEAD)" || return 1
   [[ "$actual" == "$commit" ]]
 }
