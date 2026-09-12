@@ -1,0 +1,14 @@
+title = "Dotfiles secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Historical VS Code duplicate-line keyboard shortcut, not a credential"
+condition = "AND"
+regexTarget = "match"
+paths = ['''^home/dot_config/Code/User/keybindings\.json$''']
+regexes = ['''"key":\s*"shift\+alt\+down"''']
