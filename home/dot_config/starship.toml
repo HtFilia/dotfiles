@@ -45,12 +45,12 @@ format = "[$symbol]($style) "
 style = "bold blue"
 
 [os.symbols]
-Arch      = ""
-Debian    = ""
-Linux     = ""
-Macos     = ""
-Ubuntu    = ""
-Windows   = ""
+Arch      = ""
+Debian    = ""
+Linux     = ""
+Macos     = ""
+Ubuntu    = ""
+Windows   = ""
 
 [username]
 show_always = true
@@ -69,13 +69,13 @@ style = "bold cyan"
 truncation_length = 4
 truncate_to_repo = true
 truncation_symbol = "…/"
-read_only = " "
+read_only = " "
 
 [directory.substitutions]
 "Documents" = "󰈙 "
-"Downloads" = " "
-"Projects"  = " "
-"Code"      = " "
+"Downloads" = " Downloads"
+"Projects"  = " Projects"
+"Code"      = " Code"
 
 [git_branch]
 format = "on [ $branch]($style) "
@@ -103,28 +103,28 @@ style = "bold yellow"
 
 [python]
 format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
-symbol = " "
+symbol = " "
 style = "bold yellow"
 
 [golang]
 format = "via [$symbol($version )]($style)"
-symbol = " "
+symbol = " "
 style = "bold cyan"
 
 [rust]
 format = "via [$symbol($version )]($style)"
-symbol = " "
+symbol = " "
 style = "bold red"
 
 [nodejs]
 format = "via [$symbol($version )]($style)"
-symbol = " "
+symbol = " "
 style = "bold green"
 detect_files = ["package.json", ".nvmrc"]
 
 [docker_context]
 format = "via [$symbol$context]($style) "
-symbol = " "
+symbol = " "
 style = "bold blue"
 only_with_files = true
 

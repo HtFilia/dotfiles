@@ -34,6 +34,19 @@ cd ~/.dotfiles
 ./scripts/bootstrap.sh
 ```
 
+For a VPS accessed through Ghostty on a Mac, use the server profile as your
+regular SSH user (not root):
+
+```bash
+./scripts/bootstrap.sh --profile server --configure-shell --yes
+./scripts/verify.sh --profile server
+```
+
+This installs the shell, terminal tools and Neovim without desktop apps, fonts,
+Docker, language runtimes or a system upgrade. Existing managed files are backed
+up before apply. The workstation profile remains the default.
+See [VPS and Mac Ghostty setup](docs/VPS-GHOSTTY.md) for the client setup and rollback.
+
 Useful flags:
 
 ```bash

@@ -1,8 +1,8 @@
 set shell := ["bash", "-uc"]
 
 check:
-    bash -n scripts/*.sh
-    zsh -n home/dot_zshrc
+    for file in scripts/*.sh tests/*.sh; do bash -n "$file"; done
+    for file in home/dot_zsh*; do zsh -n "$file"; done
     shellcheck scripts/*.sh
     bash tests/script-contracts.sh
 

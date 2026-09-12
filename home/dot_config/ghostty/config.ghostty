@@ -1,11 +1,11 @@
-# ~/.config/ghostty/config
+# ~/.config/ghostty/config.ghostty
 # Ghostty terminal — https://ghostty.org/docs/config
 # Theme: Gruvbox Material Dark
 
 # ============================================================================
 # FONT
 # ============================================================================
-font-family = "FiraCode Nerd Font"
+font-family = "FiraCode Nerd Font Mono"
 font-size = 14
 font-feature = +calt
 font-feature = +liga
@@ -48,7 +48,7 @@ window-padding-balance = true
 window-decoration = true
 window-theme = dark
 background-opacity = 0.97
-background-blur-radius = 20
+background-blur = 20
 confirm-close-surface = false
 window-save-state = always
 macos-titlebar-style = tabs
@@ -59,12 +59,15 @@ macos-titlebar-style = tabs
 cursor-style = bar
 cursor-style-blink = true
 shell-integration = detect
-shell-integration-features = cursor,sudo,title
+shell-integration-features = cursor,sudo,title,path,ssh-env,ssh-terminfo
+# Keep the right Option key available for accented characters on macOS.
+macos-option-as-alt = left
 
 # ============================================================================
 # SCROLLING
 # ============================================================================
-scrollback-limit = 100000
+# Bytes, not lines: reserve 64 MiB for local scrollback.
+scrollback-limit = 67108864
 mouse-hide-while-typing = true
 copy-on-select = clipboard
 

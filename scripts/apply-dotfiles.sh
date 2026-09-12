@@ -11,6 +11,7 @@ CHEZMOI_MODE="${DOTFILES_CHEZMOI_MODE:-symlink}"
 CHEZMOI_STATE="${DOTFILES_CHEZMOI_STATE:-}"
 DRY_RUN=0
 FORCE=0
+PROFILE="${DOTFILES_PROFILE:-workstation}"
 
 log() { printf "\033[0;34m==>\033[0m %s\n" "$*"; }
 info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
@@ -23,6 +24,7 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
+  --profile PROFILE        workstation (default) or server
   --destination PATH       apply dotfiles to PATH instead of \$HOME
   --source PATH            use PATH as Chezmoi source state
   --materialize MODE       Chezmoi materialization mode: symlink or file
@@ -34,6 +36,11 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --profile)
+      [[ $# -ge 2 && "$2" != --* ]] || fatal "--profile requires a value"
+      PROFILE="$2"
+      shift
+      ;;
     --destination)
       [[ $# -ge 2 && "$2" != --* ]] || fatal "--destination requires a value"
       DESTINATION="$2"
@@ -56,6 +63,11 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+case "$PROFILE" in
+  workstation|server) ;;
+  *) fatal "Unknown profile: $PROFILE" ;;
+esac
+export DOTFILES_PROFILE="$PROFILE"
 
 case "$CHEZMOI_MODE" in
   symlink|file) ;;
@@ -114,8 +126,6 @@ info "source: $SOURCE_DIR"
 info "destination: $DESTINATION"
 info "materialize: $CHEZMOI_MODE"
 
-configure_git_identity
-
 chezmoi_args=(
   --config /dev/null
   --config-format toml
@@ -128,6 +138,24 @@ chezmoi_args=(
 [[ "$DRY_RUN" == "1" ]] && chezmoi_args+=(--dry-run)
 [[ "$FORCE" == "1" ]] && chezmoi_args+=(--force)
 
+# Save existing managed files before the first write, including forced applies.
+if [[ "$DRY_RUN" == 0 ]]; then
+  managed="$(chezmoi "${chezmoi_args[@]}" managed --include=files,symlinks --path-style=relative)"
+  backup_files=()
+  while IFS= read -r target; do
+    [[ -n "$target" ]] || continue
+    [[ -e "$DESTINATION/$target" || -L "$DESTINATION/$target" ]] && backup_files+=("$target")
+  done <<<"$managed"
+  if (( ${#backup_files[@]} )); then
+    backup_root="$DESTINATION/.local/state/dotfiles/backups"
+    mkdir -p "$backup_root"
+    backup_dir="$(mktemp -d "$backup_root/$(date -u +%Y%m%dT%H%M%SZ).XXXXXX")"
+    chmod 700 "$backup_root" "$backup_dir"
+    (umask 077; tar -C "$DESTINATION" -cpf "$backup_dir/targets.tar" -- "${backup_files[@]}")
+    info "backup: $backup_dir/targets.tar"
+  fi
+fi
+configure_git_identity
 chezmoi "${chezmoi_args[@]}" apply
 refresh_bat_cache
 success "dotfiles deployed"

@@ -14,16 +14,16 @@ return {
   },
   {
     "mason-org/mason.nvim",
-    opts = {
-      ensure_installed = {},
-    },
+    opts = function(_, opts)
+      opts.ensure_installed = {}
+    end,
   },
   {
     "mason-org/mason-lspconfig.nvim",
-    opts = {
-      ensure_installed = {},
-      automatic_enable = false,
-    },
+    opts = function(_, opts)
+      opts.ensure_installed = {}
+      opts.automatic_enable = false
+    end,
   },
   {
     "neovim/nvim-lspconfig",
@@ -36,8 +36,9 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = false,
-    opts = {
-      ensure_installed = {},
-    },
+    opts = function(_, opts)
+      -- Replace LazyVim's list; merging an empty table keeps its defaults.
+      opts.ensure_installed = {}
+    end,
   },
 }

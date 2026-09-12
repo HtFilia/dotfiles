@@ -2,6 +2,20 @@
 # Check installed tools, dotfile links and active Neovim profile.
 
 set -u
+case "${1:-}" in
+  --profile)
+    case "${2:-}" in
+      server) exec bash "$(dirname "${BASH_SOURCE[0]}")/verify-server.sh" ;;
+      workstation) ;;
+      *) printf 'Expected --profile server|workstation\n' >&2; exit 1 ;;
+    esac
+    ;;
+  -h|--help) printf 'Usage: %s [--profile server|workstation]\n' "$0"; exit 0 ;;
+  '')
+    [[ "${DOTFILES_PROFILE:-}" != server ]] || exec bash "$(dirname "${BASH_SOURCE[0]}")/verify-server.sh"
+    ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
+esac
 
 GREEN=$'\033[0;32m'; RED=$'\033[0;31m'; YELLOW=$'\033[0;33m'
 CYAN=$'\033[0;36m'; BOLD=$'\033[1m'; RESET=$'\033[0m'

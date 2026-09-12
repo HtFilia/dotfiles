@@ -197,13 +197,12 @@ OS_CODENAME="${VERSION_CODENAME:-}"
 
 log "Updating apt repositories..."
 sudo apt update
-sudo apt upgrade -y
 
 log "Installing packages from apt..."
 sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo shellcheck
+  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo shellcheck ncurses-term ncurses-bin less bsdextrautils
 success "apt packages installed"
 
 if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then

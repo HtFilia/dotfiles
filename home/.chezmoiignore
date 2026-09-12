@@ -1,0 +1,6 @@
+{{ if eq (env "DOTFILES_PROFILE") "server" }}
+.config/Code
+.config/Code/**
+.config/ghostty
+.config/ghostty/**
+{{ end }}
