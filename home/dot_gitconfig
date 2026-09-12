@@ -87,3 +87,6 @@
 
 [include]
     path = ~/.gitconfig.local
+[user]
+	email = contact@lucaslebihan.dev
+	name = Lucas L.
