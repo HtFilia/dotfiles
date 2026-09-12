@@ -40,6 +40,11 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+[[ "$ENV_TYPE" == linux || "$ENV_TYPE" == wsl ]] || fatal "Expected linux or wsl"
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/preflight.sh"
+preflight_linux workstation
+
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 DOWNLOAD_DIR="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
 mkdir -p "$LOCAL_BIN" "$DOWNLOAD_DIR"
@@ -49,32 +54,20 @@ ARCH="$(pinned_asset_arch)" || fatal "Unsupported architecture: $(uname -m)"
 GO_ARCH="$(pinned_asset_go_arch)" || fatal "Unsupported Go architecture: $(uname -m)"
 [[ "$ARCH" == "x86_64" ]] || fatal "Pinned Linux assets currently support x86_64 only."
 
-extract_archive() {
-  local archive="$1" dest="$2"
-  case "$archive" in
-    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$dest" ;;
-    *.tar.xz) tar -xJf "$archive" -C "$dest" ;;
-    *.zip) unzip -oq "$archive" -d "$dest" ;;
-    *) return 1 ;;
-  esac
-}
+work_dir="$(mktemp -d)"
+trap 'rm -rf "$work_dir"' EXIT
 
 install_from_archive() {
   local key="$1" member="$2" dest="$3" archive tmp file
   file="$(pinned_asset_field "$key" file)"
-  archive="$DOWNLOAD_DIR/$file"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned asset: $key"
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
-    fatal "Checksum failed for cached file: $archive"
-  fi
-  tmp="$(mktemp -d)"
-  extract_archive "$archive" "$tmp" || { rm -rf "$tmp"; fatal "Unsupported archive type: $file"; }
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
+  tmp="$(mktemp -d "$work_dir/extract.XXXXXX")"
+  extract_pinned_archive "$archive" "$tmp" || { rm -rf "$tmp"; fatal "Unsupported archive type: $file"; }
   local found
-  found="$(find "$tmp" -type f -name "$member" | head -1)"
-  [[ -n "$found" ]] || { rm -rf "$tmp"; fatal "Could not find $member in $file"; }
-  install -m 755 "$found" "$dest"
+  local -a matches=()
+  while IFS= read -r -d '' found; do matches+=("$found"); done < <(find "$tmp" -type f -name "$member" -print0)
+  [[ "${#matches[@]}" == 1 ]] || { rm -rf "$tmp"; fatal "Could not find $member in $file"; }
+  install -m 755 "${matches[0]}" "$dest"
   rm -rf "$tmp"
   success "installed $(basename "$dest")"
 }
@@ -82,34 +75,19 @@ install_from_archive() {
 install_binary_asset() {
   local key="$1" dest="$2" archive file
   file="$(pinned_asset_field "$key" file)"
-  archive="$DOWNLOAD_DIR/$file"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned asset: $key"
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
-    fatal "Checksum failed for cached file: $archive"
-  fi
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
   install -m 755 "$archive" "$dest"
   success "installed $(basename "$dest")"
 }
 
-pinned_version_matches() {
-  local tool="$1" key="$2" version_cmd="${3:---version}" expected out
-  command -v "$tool" >/dev/null 2>&1 || return 1
-  expected="$(pinned_asset_field "$key" version 2>/dev/null || true)"
-  [[ -n "$expected" ]] || return 1
-  out="$("$tool" "$version_cmd" 2>&1 | head -1 || true)"
-  [[ "$out" == *"${expected#v}"* ]]
-}
-
 install_archive_if_needed() {
   local tool="$1" key="$2" member="$3" dest="$4" version_cmd="${5:---version}"
-  pinned_version_matches "$tool" "$key" "$version_cmd" || install_from_archive "$key" "$member" "$dest"
+  asset_version_matches "$tool" "$key" "$version_cmd" || install_from_archive "$key" "$member" "$dest"
 }
 
 install_binary_if_needed() {
   local tool="$1" key="$2" dest="$3" version_cmd="${4:---version}"
-  pinned_version_matches "$tool" "$key" "$version_cmd" || install_binary_asset "$key" "$dest"
+  asset_version_matches "$tool" "$key" "$version_cmd" || install_binary_asset "$key" "$dest"
 }
 
 install_yazi() {
@@ -119,72 +97,49 @@ install_yazi() {
 
 install_tokei() {
   command -v cargo >/dev/null 2>&1 || fatal "cargo is required to install tokei"
-  cargo install --locked --version 14.0.0 tokei
+  local rust_version
+  rust_version="$(rustc --version | awk '{print $2}')"
+  if [[ "$(printf '%s\n' 1.85.0 "$rust_version" | sort -V | head -1)" != 1.85.0 ]]; then
+    warn "tokei build needs Rust >=1.85; skipped optional counter (use a project toolchain)."
+    return 0
+  fi
+  cargo install --locked --version "$(pinned_asset_field tokei-cargo version)" tokei
 }
 
 tokei_version_matches() {
   command -v tokei >/dev/null 2>&1 || return 1
-  tokei --version 2>&1 | head -1 | grep -q '14\.0\.0'
+  asset_version_matches tokei tokei-cargo
 }
 
-install_neovim() {
-  local key="neovim-linux-$ARCH" file archive
-  file="$(pinned_asset_field "$key" file)"
-  archive="$DOWNLOAD_DIR/$file"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned Neovim"
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
-    fatal "Checksum failed for cached file: $archive"
-  fi
-  sudo rm -rf /opt/nvim
-  sudo tar -C /opt -xzf "$archive"
-  sudo mv /opt/nvim-linux-* /opt/nvim
-  sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
-  success "installed nvim $(pinned_asset_field "$key" version)"
-}
-
-install_go() {
-  local key="go-linux-$GO_ARCH" file archive
-  file="$(pinned_asset_field "$key" file)"
-  archive="$DOWNLOAD_DIR/$file"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned Go"
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
-    fatal "Checksum failed for cached file: $archive"
-  fi
-  sudo rm -rf /usr/local/go
-  sudo tar -C /usr/local -xzf "$archive"
-  sudo ln -sf /usr/local/go/bin/go /usr/local/bin/go
-  sudo ln -sf /usr/local/go/bin/gofmt /usr/local/bin/gofmt
-  success "installed go $(pinned_asset_field "$key" version)"
-}
-
-install_node() {
-  local key="node-linux-$ARCH" file archive version tmp found
-  file="$(pinned_asset_field "$key" file)"
+install_runtime() {
+  local tool="$1" key="$2" member="$3" version archive stage destination
   version="$(pinned_asset_field "$key" version)"
-  archive="$DOWNLOAD_DIR/$file"
-  if [[ ! -f "$archive" ]]; then
-    log "Downloading pinned Node.js LTS"
-    download_pinned_asset "$key" "$DOWNLOAD_DIR" || fatal "Checksum failed for $file"
-  elif ! require_pinned_file "$key" "$DOWNLOAD_DIR"; then
-    fatal "Checksum failed for cached file: $archive"
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
+  mkdir -p "$HOME/.local/opt"
+  destination="$HOME/.local/opt/$tool-$version"
+  if [[ ! -x "$destination/$member" ]]; then
+    stage="$(mktemp -d "$HOME/.local/opt/$tool-stage.XXXXXX")"
+    if ! tar -xf "$archive" -C "$stage" --strip-components=1 || [[ ! -x "$stage/$member" ]]; then
+      rm -rf "$stage"
+      fatal "Invalid runtime archive: $key"
+    fi
+    [[ ! -e "$destination" ]] || { rm -rf "$stage"; fatal "Incomplete runtime directory: $destination"; }
+    mv "$stage" "$destination"
   fi
-  tmp="$(mktemp -d)"
-  tar -xJf "$archive" -C "$tmp"
-  found="$(find "$tmp" -type f -path '*/bin/node' -perm -111 | head -1)"
-  [[ -n "$found" ]] || { rm -rf "$tmp"; fatal "Could not find node in $file"; }
-  sudo rm -rf /usr/local/node
-  sudo mkdir -p /usr/local/node
-  sudo cp -R "$(dirname "$(dirname "$found")")/." /usr/local/node/
-  sudo ln -sf /usr/local/node/bin/node /usr/local/bin/node
-  sudo ln -sf /usr/local/node/bin/npm /usr/local/bin/npm
-  sudo ln -sf /usr/local/node/bin/npx /usr/local/bin/npx
-  [[ -x /usr/local/node/bin/corepack ]] && sudo ln -sf /usr/local/node/bin/corepack /usr/local/bin/corepack
-  rm -rf "$tmp"
-  success "installed node $version"
+  ln -sfn "$destination/$member" "$LOCAL_BIN/$tool"
+}
+install_neovim() { install_runtime nvim "neovim-linux-$ARCH" bin/nvim; }
+install_go() {
+  install_runtime go "go-linux-$GO_ARCH" bin/go
+  ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
+}
+install_node() {
+  install_runtime node "node-linux-$ARCH" bin/node
+  local binary directory
+  directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
+  for binary in npm npx corepack; do
+    [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
+  done
 }
 
 if [[ -f /etc/os-release ]]; then
@@ -202,7 +157,7 @@ log "Installing packages from apt..."
 sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo shellcheck ncurses-term ncurses-bin less bsdextrautils
+  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck ncurses-term ncurses-bin less bsdextrautils
 success "apt packages installed"
 
 if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
@@ -215,13 +170,13 @@ fi
 install_archive_if_needed starship "starship-linux-$ARCH" starship "$LOCAL_BIN/starship"
 install_archive_if_needed eza "eza-linux-$ARCH" eza "$LOCAL_BIN/eza"
 install_archive_if_needed uv "uv-linux-$ARCH" uv "$LOCAL_BIN/uv"
-[[ -x "$LOCAL_BIN/uv" && ! -e "$LOCAL_BIN/uvx" ]] && ln -sf uv "$LOCAL_BIN/uvx"
+install_archive_if_needed uvx "uv-linux-$ARCH" uvx "$LOCAL_BIN/uvx"
 install_archive_if_needed delta "delta-linux-$ARCH" delta "$LOCAL_BIN/delta"
 install_archive_if_needed lazygit "lazygit-linux-$ARCH" lazygit "$LOCAL_BIN/lazygit"
 install_archive_if_needed chezmoi "chezmoi-linux-$GO_ARCH" chezmoi "$LOCAL_BIN/chezmoi"
 install_archive_if_needed just "just-linux-$ARCH" just "$LOCAL_BIN/just"
 install_binary_if_needed mise "mise-linux-$ARCH" "$LOCAL_BIN/mise"
-if ! pinned_version_matches yazi "yazi-linux-$ARCH" --version || ! command -v ya >/dev/null 2>&1; then
+if ! asset_version_matches yazi "yazi-linux-$ARCH" --version || ! command -v ya >/dev/null 2>&1; then
   install_yazi
 fi
 install_binary_if_needed yq "yq-linux-$GO_ARCH" "$LOCAL_BIN/yq"
@@ -236,17 +191,17 @@ install_archive_if_needed lazydocker "lazydocker-linux-$ARCH" lazydocker "$LOCAL
 install_archive_if_needed gitleaks "gitleaks-linux-x64" gitleaks "$LOCAL_BIN/gitleaks" version
 install_archive_if_needed actionlint "actionlint-linux-$GO_ARCH" actionlint "$LOCAL_BIN/actionlint"
 
-if ! pinned_version_matches nvim "neovim-linux-$ARCH" --version; then
+if ! asset_version_matches nvim "neovim-linux-$ARCH" --version; then
   install_neovim
 fi
-if ! pinned_version_matches go "go-linux-$GO_ARCH" version; then
+if ! asset_version_matches go "go-linux-$GO_ARCH" version; then
   install_go
 fi
-if ! pinned_version_matches node "node-linux-$ARCH" --version; then
+if ! asset_version_matches node "node-linux-$ARCH" --version; then
   install_node
 fi
 if command -v corepack >/dev/null 2>&1; then
-  sudo corepack enable pnpm --install-directory /usr/local/bin >/dev/null 2>&1 || corepack enable pnpm >/dev/null 2>&1 || warn "Could not enable pnpm with Corepack."
+  corepack enable pnpm --install-directory "$LOCAL_BIN" >/dev/null 2>&1 || warn "Could not enable pnpm with Corepack."
 fi
 
 if [[ "$SKIP_DOCKER" == "1" ]]; then
@@ -254,26 +209,32 @@ if [[ "$SKIP_DOCKER" == "1" ]]; then
 elif [[ "$ENV_TYPE" == "wsl" ]]; then
   warn "WSL detected: install Docker Desktop and VS Code on Windows with WSL integration."
 else
-  if ! command -v docker >/dev/null 2>&1; then
+  docker_packages_ready=1
+  for package in docker-ce docker-ce-cli docker-compose-plugin docker-buildx-plugin; do
+    [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" == "install ok installed" ]] || docker_packages_ready=0
+  done
+  if [[ "$docker_packages_ready" == 1 ]] && command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && docker buildx version >/dev/null 2>&1; then
+    :
+  else
     case "$OS_ID" in
       debian|ubuntu) ;;
       *) fatal "Docker apt repository is configured only for Debian/Ubuntu, detected $OS_ID" ;;
     esac
     log "Installing Docker from official apt repository..."
     sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_ID $OS_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    if [[ "$ENABLE_DOCKER_GROUP" == "1" ]]; then
-      warn "Adding $USER to the docker group grants root-equivalent access."
-      sudo usermod -aG docker "$USER"
-      info "Added $USER to docker group; log out/in to take effect."
-    else
-      warn "Did not add $USER to docker group. Re-run with --enable-docker-group if you accept root-equivalent access."
-    fi
+
   fi
+fi
+
+if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]]; then
+  getent group docker >/dev/null || fatal "Docker group is absent; install the engine first."
+  sudo usermod -aG docker "$(id -un)"
+  warn "Docker group grants root-equivalent access; log out/in."
 fi
 
 if ! command -v gh >/dev/null 2>&1; then

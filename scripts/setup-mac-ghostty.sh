@@ -41,6 +41,7 @@ for target in "$config_dir/config.ghostty" "$config_dir/config" "$legacy_dir/con
   if [[ -e "$target" || -L "$target" ]]; then
     if [[ "$target" == "$config_dir/"* ]]; then label=xdg; else label=macos; fi
     cp -pP "$target" "$backup_dir/$label-$(basename "$target")"
+    [[ ! -f "$target" ]] || cp -pL "$target" "$backup_dir/$label-$(basename "$target").contents"
   fi
 done
 # One canonical config with compatibility includes for earlier Ghostty versions.
