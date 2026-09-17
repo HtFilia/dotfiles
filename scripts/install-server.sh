@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
 
+warn() { printf 'Warning: %s\n' "$*" >&2; }
+
 # shellcheck source=scripts/preflight.sh
 . "$SCRIPT_DIR/preflight.sh"
 SKIP_PACKAGES=0
@@ -75,7 +77,7 @@ install_tool() {
 install_runtime() {
   local tool="$1" key="$2" member="$3" version archive stage destination
   version="$(pinned_asset_field "$key" version)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")"
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || return 1
   mkdir -p "$HOME/.local/opt"
   destination="$HOME/.local/opt/$tool-$version"
   if [[ ! -x "$destination/$member" ]]; then
@@ -92,16 +94,48 @@ install_runtime() {
 }
 
 install_go() {
-  install_runtime go "go-linux-$GO_ARCH" bin/go
-  ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
+  if install_runtime go "go-linux-$GO_ARCH" bin/go; then
+    ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
+    return 0
+  fi
+  if command -v go >/dev/null 2>&1; then
+    warn "Pinned Go could not be downloaded; using existing $(go version) for editor setup."
+    ln -sfn "$(command -v go)" "$LOCAL_BIN/go"
+    command -v gofmt >/dev/null 2>&1 && ln -sfn "$(command -v gofmt)" "$LOCAL_BIN/gofmt"
+    return 0
+  fi
+  [[ "$SKIP_PACKAGES" == 0 ]] || return 1
+  warn "Installing Debian's Go package as a fallback for editor setup."
+  "${admin[@]}" apt-get install -y golang-go
+  command -v go >/dev/null 2>&1 || return 1
+  ln -sfn "$(command -v go)" "$LOCAL_BIN/go"
+  command -v gofmt >/dev/null 2>&1 && ln -sfn "$(command -v gofmt)" "$LOCAL_BIN/gofmt"
 }
 
 install_node() {
-  install_runtime node "node-linux-$ARCH" bin/node
-  local binary directory
-  directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
+  if install_runtime node "node-linux-$ARCH" bin/node; then
+    local binary directory
+    directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
+    for binary in npm npx corepack; do
+      [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
+    done
+    return 0
+  fi
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    warn "Pinned Node.js could not be downloaded; using existing $(node --version) for editor setup."
+    ln -sfn "$(command -v node)" "$LOCAL_BIN/node"
+    for binary in npm npx corepack; do
+      command -v "$binary" >/dev/null 2>&1 && ln -sfn "$(command -v "$binary")" "$LOCAL_BIN/$binary"
+    done
+    return 0
+  fi
+  [[ "$SKIP_PACKAGES" == 0 ]] || return 1
+  warn "Installing Debian's Node.js/npm packages as a fallback for editor setup."
+  "${admin[@]}" apt-get install -y nodejs npm
+  command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 || return 1
+  ln -sfn "$(command -v node)" "$LOCAL_BIN/node"
   for binary in npm npx corepack; do
-    [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
+    command -v "$binary" >/dev/null 2>&1 && ln -sfn "$(command -v "$binary")" "$LOCAL_BIN/$binary"
   done
 }
 
