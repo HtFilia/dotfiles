@@ -9,14 +9,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/preflight.sh
 . "$SCRIPT_DIR/preflight.sh"
 SKIP_PACKAGES=0
-case "${1:-}" in
-  -h|--help) printf 'Usage: %s [--skip-packages]\nInstalls SSH shell, terminal tools and Neovim on Debian/Ubuntu x86_64.\n' "$0"; exit 0 ;;
-  --skip-packages) SKIP_PACKAGES=1 ;;
-  '') ;;
-  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
-esac
+SETUP_EDITOR=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) printf 'Usage: %s [--skip-packages] [--setup-editor]\nInstalls SSH shell, terminal tools and Neovim on Debian/Ubuntu x86_64.\n--setup-editor also installs the pinned Go, Node.js and Python build prerequisites used by Mason.\n' "$0"; exit 0 ;;
+    --skip-packages) SKIP_PACKAGES=1 ;;
+    --setup-editor) SETUP_EDITOR=1 ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
+  esac
+  shift
+done
 preflight_linux server
-[[ "$(uname -s)" == Linux && "$(pinned_asset_arch)" == x86_64 ]] || {
+ARCH="$(pinned_asset_arch)" || {
+  printf 'Server installer currently requires Linux x86_64.\n' >&2; exit 1;
+}
+GO_ARCH="$(pinned_asset_go_arch)" || {
+  printf 'Server installer does not support this architecture: %s\n' "$(uname -m)" >&2; exit 1;
+}
+[[ "$ARCH" == x86_64 ]] || {
   printf 'Server installer currently requires Linux x86_64.\n' >&2; exit 1;
 }
 # shellcheck disable=SC1091
@@ -31,11 +41,15 @@ if (( EUID != 0 )) && [[ "$SKIP_PACKAGES" == 0 ]]; then
   admin=(sudo)
 fi
 if [[ "$SKIP_PACKAGES" == 0 ]]; then
+  editor_packages=()
+  if [[ "$SETUP_EDITOR" == 1 ]]; then
+    editor_packages+=(build-essential python3 python3-venv)
+  fi
 "${admin[@]}" apt-get update
 "${admin[@]}" apt-get install -y --no-install-recommends \
   ca-certificates curl git zsh tmux ncurses-bin ncurses-term less man-db \
   bsdextrautils util-linux unzip xz-utils fzf zoxide direnv ripgrep fd-find bat jq \
-  shellcheck shfmt bats
+  shellcheck shfmt bats "${editor_packages[@]}"
 fi
 mkdir -p "$HOME/.terminfo"
 tic -x -o "$HOME/.terminfo" "$SCRIPT_DIR/../assets/terminfo/xterm-ghostty.terminfo"
@@ -56,6 +70,39 @@ install_tool() {
   tar -xzf "$archive" -C "$stage"
   [[ -f "$stage/$member" ]] || { printf 'Missing archive member: %s\n' "$member" >&2; return 1; }
   install -m 755 "$stage/$member" "$LOCAL_BIN/$tool"
+}
+
+install_runtime() {
+  local tool="$1" key="$2" member="$3" version archive stage destination
+  version="$(pinned_asset_field "$key" version)"
+  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")"
+  mkdir -p "$HOME/.local/opt"
+  destination="$HOME/.local/opt/$tool-$version"
+  if [[ ! -x "$destination/$member" ]]; then
+    stage="$(mktemp -d "$HOME/.local/opt/$tool-stage.XXXXXX")"
+    if ! tar -xf "$archive" -C "$stage" --strip-components=1 || [[ ! -x "$stage/$member" ]]; then
+      rm -rf "$stage"
+      printf 'Invalid runtime archive: %s\n' "$key" >&2
+      return 1
+    fi
+    [[ ! -e "$destination" ]] || { rm -rf "$stage"; printf 'Incomplete runtime directory: %s\n' "$destination" >&2; return 1; }
+    mv "$stage" "$destination"
+  fi
+  ln -sfn "$destination/$member" "$LOCAL_BIN/$tool"
+}
+
+install_go() {
+  install_runtime go "go-linux-$GO_ARCH" bin/go
+  ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
+}
+
+install_node() {
+  install_runtime node "node-linux-$ARCH" bin/node
+  local binary directory
+  directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
+  for binary in npm npx corepack; do
+    [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
+  done
 }
 
 command -v fdfind >/dev/null || { printf "fdfind is required\n" >&2; exit 1; }
@@ -82,4 +129,12 @@ if [[ ! -x "$nvim_dir/bin/nvim" ]]; then
   mv "$stage" "$nvim_dir"
 fi
 ln -sfn "$nvim_dir/bin/nvim" "$LOCAL_BIN/nvim"
+if [[ "$SETUP_EDITOR" == 1 ]]; then
+  if ! asset_version_matches go "go-linux-$GO_ARCH" version; then
+    install_go
+  fi
+  if ! asset_version_matches node "node-linux-$ARCH" --version; then
+    install_node
+  fi
+fi
 printf 'Server tools installed for %s. Fonts belong on the SSH client.\n' "$(id -un)"

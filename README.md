@@ -61,6 +61,10 @@ grants root-equivalent access. See [installation](docs/INSTALLATION.md).
 ./scripts/apply-dotfiles.sh --dry-run
 ./scripts/apply-dotfiles.sh
 ./scripts/update-dotfiles.sh
+# or, after deployment, from any directory:
+dotfiles-update
+# after a manual git pull:
+UPDATE
 ```
 
 The selected profile and materialization mode are saved under
@@ -70,8 +74,11 @@ independent files. Choose a mode explicitly with `--materialize file` or
 paths. Dry runs do not create destination files or persistent state.
 
 The update helper requires a clean checkout and GitHub SSH origin. It snapshots
-live contents before a fast-forward pull, then applies the saved profile. This
-matters for symlinks: source edits take effect immediately. See
+live contents before a fast-forward pull, then applies the saved profile. Use
+`dotfiles-update --after-pull` when the pull was already performed manually.
+The installed `UPDATE` command is the explicit post-pull form. The saved source
+path, profile and materialization mode make repeated updates safe and
+predictable. This matters for symlinks: source edits take effect immediately. See
 [deployment and recovery](docs/DEPLOYMENT.md).
 
 ## Personal settings

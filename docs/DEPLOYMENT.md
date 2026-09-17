@@ -45,12 +45,22 @@ inspect timestamps and remove snapshots you no longer need.
 ```sh
 ./scripts/apply-dotfiles.sh --snapshot-only
 ./scripts/update-dotfiles.sh
+# If you already pulled manually:
+./scripts/update-dotfiles.sh --after-pull
+# After deployment, the installed command resolves the saved checkout:
+dotfiles-update
+# Or use the explicit post-pull command:
+git pull --ff-only
+UPDATE
 ```
 
 The update command snapshots before `git pull --ff-only` and applies afterward.
-It requires a clean checkout and SSH GitHub origin. For a manual source update,
-take a snapshot first; an apply after the pull cannot recover previous linked
-contents. Keep server file materialization when deliberate activation matters.
+It requires a clean checkout and SSH GitHub origin. `--after-pull` skips the pull
+when it was already done manually. The installed `dotfiles-update` command reads
+the checkout path saved during apply, so it can be run from any directory. The
+`UPDATE` wrapper is the post-pull equivalent. The saved profile and
+materialization mode are reused on every apply, making repeat runs safe and
+preserving server file materialization when deliberate activation matters.
 
 ## Restore
 

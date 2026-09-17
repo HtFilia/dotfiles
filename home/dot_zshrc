@@ -178,6 +178,7 @@ alias mkd='mkdir -p' df='df -h' du='du -h'
 alias reload='exec zsh' zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
 alias dotfiles='cd "${DOTFILES_DIR:-$HOME/dotfiles}"'
+alias dotupdate='dotfiles-update'
 
 if [[ "$DOTFILES_OS" == "macos" ]]; then
   alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'

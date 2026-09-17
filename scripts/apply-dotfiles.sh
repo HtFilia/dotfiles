@@ -186,5 +186,6 @@ if [[ "$DRY_RUN" == 0 ]]; then
   mkdir -p "$DESTINATION/.local/state/dotfiles"
   printf '%s\n' "$PROFILE" >"$DESTINATION/.local/state/dotfiles/profile"
   printf '%s\n' "$CHEZMOI_MODE" >"$DESTINATION/.local/state/dotfiles/materialize"
+  printf '%s\n' "$REPO_ROOT" >"$DESTINATION/.local/state/dotfiles/source"
 fi
 success "dotfiles deployed"

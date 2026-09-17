@@ -15,10 +15,11 @@ BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, and Bash.
 
 ### Explicit provisioning
 
-Install workstation runtimes first. Node/npm and a C compiler are required for
-the full selection. Selecting `python` also requires `python3` with virtual
-environment support because the current Mason registry installs BasedPyright
-and Ruff in isolated Python environments:
+Install runtimes first. `bootstrap.sh --setup-editor` installs the pinned Go and
+Node runtimes on both workstation and server profiles, plus the server's Python
+virtual-environment and compiler prerequisites. Selecting `python` requires
+`python3` with virtual environment support because the current Mason registry
+installs BasedPyright and Ruff in isolated Python environments:
 
 ```sh
 sudo apt install python3 python3-venv  # Debian/Ubuntu VPS
@@ -41,8 +42,9 @@ more languages does not uninstall earlier tools. Project tools may take priority
 according to the formatter/server configuration; inspect `:checkhealth`,
 `:Mason`, and `<leader>cl` when diagnosing a project.
 
-Server bootstrap installs neither language runtimes nor parsers. Run selected
-setup only after supplying its prerequisites. This keeps the SSH profile small.
+Without `--setup-editor`, server bootstrap keeps the SSH profile small and does
+not download language runtimes or parsers. Run the explicit setup command after
+installing any prerequisites yourself when you choose that mode.
 
 ## VS Code
 

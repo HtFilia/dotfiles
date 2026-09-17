@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Update a deployed dotfiles checkout and reapply its saved state.
+set -euo pipefail
+
+die() { printf 'dotfiles-update: %s\n' "$*" >&2; exit 1; }
+
+repo="${DOTFILES_DIR:-}"
+state="$HOME/.local/state/dotfiles/source"
+if [[ -z "$repo" && -r "$state" ]]; then
+  IFS= read -r repo <"$state" || true
+fi
+
+if [[ -n "$repo" && -x "$repo/scripts/update-dotfiles.sh" ]]; then
+  :
+elif [[ -x "$HOME/dotfiles/scripts/update-dotfiles.sh" ]]; then
+  repo="$HOME/dotfiles"
+elif [[ -x "$HOME/.dotfiles/scripts/update-dotfiles.sh" ]]; then
+  repo="$HOME/.dotfiles"
+else
+  die "could not find a dotfiles checkout; set DOTFILES_DIR"
+fi
+
+exec "$repo/scripts/update-dotfiles.sh" "$@"
