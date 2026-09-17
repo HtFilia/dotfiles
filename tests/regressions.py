@@ -159,7 +159,17 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
         (ssh / "config").write_text("Host github.com\n  IdentityFile ~/.ssh/personal-key\n")
         self.apply("--destination", str(self.home), "--profile", "server", "--force")
         self.assertIn("personal-key", (ssh / "config.local").read_text())
-        self.assertIn("Include ~/.ssh/config.local", (ssh / "config").read_text())
+        managed = (ssh / "config").read_text()
+        self.assertIn("Host github.com", managed)
+        self.assertIn("IdentityFile ~/.ssh/github", managed)
+        self.assertIn("IdentitiesOnly yes", managed)
+        self.assertIn("IdentityAgent none", managed)
+        self.assertIn("Include ~/.ssh/config.local", managed)
+        rewrites = self.run_command(
+            "git", "config", "--file", str(self.home / ".gitconfig"),
+            "--get-all", "url.git@github.com:.insteadOf",
+        ).stdout.splitlines()
+        self.assertEqual(set(rewrites), {"https://github.com/", "http://github.com/", "git://github.com/"})
 
     def test_cache_is_versioned_and_replaces_corruption(self):
         script = r'''source "$1"
