@@ -145,7 +145,9 @@ main() {
       ;;
     linux|wsl)
       if [[ "$profile" == server ]]; then
-        bash "$SCRIPT_DIR/install-server.sh"
+        server_args=()
+        [[ "$setup_editor" == "1" ]] && server_args+=(--setup-editor)
+        bash "$SCRIPT_DIR/install-server.sh" "${server_args[@]}"
       else
       debian_args=("$os")
       [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)

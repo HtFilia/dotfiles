@@ -68,6 +68,7 @@ class Contracts(unittest.TestCase):
         self.apply("--destination", str(self.home))
         self.assertFalse((self.home / ".config/Code").exists())
         self.assertEqual((self.home / ".local/state/dotfiles/profile").read_text().strip(), "server")
+        self.assertEqual((self.home / ".local/state/dotfiles/source").read_text().strip(), str(ROOT))
 
     def test_link_and_content_backups(self):
         source = self.work / "source"

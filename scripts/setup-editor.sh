@@ -4,17 +4,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$PATH"
 case "${1:-}" in
-  -h|--help) printf 'Usage: %s [lua|python|go|rust|node|shell ...]\nDefault: lua python go rust node shell. Python setup requires python3 with venv support; Node/npm and a C compiler are also required.\n' "$0"; exit 0 ;;
+  -h|--help) printf 'Usage: %s [lua|python|go|rust|node|shell ...]\nDefault: lua python go rust node shell. Python requires python3 with venv support; Go requires Go; Node or shell requires Node/npm; Treesitter requires a C compiler.\n' "$0"; exit 0 ;;
 esac
 [[ $# -gt 0 ]] || set -- lua python go rust node shell
 for language in "$@"; do
   case "$language" in lua|python|go|rust|node|shell) ;; *) printf 'Unknown language: %s\n' "$language" >&2; exit 1 ;; esac
 done
 needs_python=0
+needs_go=0
+needs_node=0
 for language in "$@"; do
   [[ "$language" == python ]] && needs_python=1
+  [[ "$language" == go ]] && needs_go=1
+  [[ "$language" == node || "$language" == shell ]] && needs_node=1
 done
-required_tools=(nvim git node npm cc)
+required_tools=(nvim git cc)
+(( needs_node == 1 )) && required_tools+=(node npm)
+(( needs_go == 1 )) && required_tools+=(go)
 (( needs_python == 1 )) && required_tools+=(python3)
 for tool in "${required_tools[@]}"; do
   command -v "$tool" >/dev/null || { printf 'Required tool missing: %s\n' "$tool" >&2; exit 1; }

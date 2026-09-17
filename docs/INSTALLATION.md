@@ -33,6 +33,14 @@ relocate Chezmoi's managed `.config` targets; use the conventional layout.
 | `--enable-docker-group` | Join Linux Docker group; root-equivalent access |
 | `--setup-editor` | Explicitly download language servers, formatters and parsers |
 
+For a VPS that will run the Neovim language tooling, include `--setup-editor` so
+bootstrap installs its Go, Node.js, Python, and compiler prerequisites before
+Mason runs:
+
+```sh
+./scripts/bootstrap.sh --profile server --setup-editor --yes
+```
+
 Fonts live on the terminal client. WSL uses Windows-hosted terminal/fonts,
 VS Code with Remote WSL, and optional Docker Desktop integration. macOS's
 container runtime is Colima. Native Linux uses Docker's signed apt repository.
@@ -52,8 +60,10 @@ PATH. If you keep a custom location, add it to your persistent shell PATH too.
 clone URL for the bootstrap fallback; an existing checkout is used directly.
 
 `install-server.sh --skip-packages` assumes an administrator has already
-installed its declared apt dependencies. It still compiles terminfo and installs
-user-owned binaries. Apply afterward with `--profile server`.
+installed its declared apt dependencies. With `--setup-editor`, that includes
+`build-essential`, `python3`, and `python3-venv`; the pinned Go and Node archives
+are still installed into the user's `~/.local/opt`. It still compiles terminfo
+and installs user-owned binaries. Apply afterward with `--profile server`.
 
 Linux fonts/VS Code/Ghostty, assistant CLIs, and local atuin installation are
 separate choices where they are not supplied by the profile's package manager.

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Reapply the saved dotfiles state after a manual git pull.
+set -euo pipefail
+exec dotfiles-update --after-pull "$@"
