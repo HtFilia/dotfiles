@@ -1,0 +1,25 @@
+# Executable	Asset key	Archive member basename/path or @binary/@tmux
+fzf	fzf-linux-x86_64	fzf
+rg	rg-linux-x86_64	rg
+bat	bat-linux-x86_64	bat
+fd	fd-linux-x86_64	fd
+zoxide	zoxide-linux-x86_64	zoxide
+atuin	atuin-linux-x86_64	atuin
+direnv	direnv-linux-x86_64	@binary
+jq	jq-linux-x86_64	@binary
+btop	btop-linux-x86_64	btop
+tmux	tmux-linux-x86_64	@tmux
+ouch	ouch-linux-x86_64	ouch
+ov	ov-linux-x86_64	ov
+hexyl	hexyl-linux-x86_64	hexyl
+dua	dua-linux-x86_64	dua
+broot	broot-linux-x86_64	x86_64-unknown-linux-musl/broot
+czkawka_cli	czkawka_cli-linux-x86_64	@binary
+xcp	xcp-linux-x86_64	xcp
+viu	viu-linux-x86_64	@binary
+vivid	vivid-linux-x86_64	vivid
+pastel	pastel-linux-x86_64	pastel
+tldr	tldr-linux-x86_64	@binary
+jc	jc-linux-x86_64	jc
+jless	jless-linux-x86_64	jless
+fastfetch	fastfetch-linux-x86_64	usr/bin/fastfetch

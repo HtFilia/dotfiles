@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Explicit visual effects and a real local telemetry workspace.
+set -euo pipefail
+case "${1:-}" in
+  -h|--help)
+  printf 'Usage: dotfiles-deck [info|rain|spectrum]\nNo argument opens an Operator three-pane workspace. Detach: Ctrl-a d.\nEffects: q quits rain; Ctrl-c quits spectrum.\n'; exit 0 ;;
+  info) exec fastfetch ;;
+  rain) exec cmatrix -b ;;
+  spectrum) exec cava ;;
+  '') ;;
+  *) printf 'Unknown mode; run dotfiles-deck --help\n' >&2; exit 1 ;;
+esac
+command -v tmux >/dev/null
+command -v btop >/dev/null
+command -v fastfetch >/dev/null
+if ! tmux -L dotfiles-deck has-session -t operator 2>/dev/null; then
+  tmux -L dotfiles-deck new-session -d -s operator -n control -x 160 -y 44 'zsh -i'
+  trap 'tmux -L dotfiles-deck kill-session -t operator 2>/dev/null || true' ERR
+  tmux -L dotfiles-deck split-window -v -t operator:1.0 -p 30 'btop'
+  tmux -L dotfiles-deck split-window -h -t operator:1.1 -p 50 'fastfetch --logo none; exec zsh -i'
+  tmux -L dotfiles-deck select-pane -t operator:1.0
+  trap - ERR
+fi
+exec env TMUX= tmux -L dotfiles-deck attach-session -t operator

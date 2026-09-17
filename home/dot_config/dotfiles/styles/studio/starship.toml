@@ -1,0 +1,67 @@
+# Studio: quiet graphite surfaces with teal, blue and amber accents.
+add_newline = false
+command_timeout = 500
+format = "$username$hostname$directory$git_branch$git_status$line_break$character"
+right_format = "$python$nodejs$rust$golang$cmd_duration"
+
+[username]
+show_always = false
+format = "[$user]($style)@"
+style_user = "#9aa7b4"
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) "
+style = "#82aaff"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold #69d1c5"
+read_only = " "
+read_only_style = "#e4b86a"
+truncation_length = 4
+truncate_to_repo = true
+truncation_symbol = "…/"
+
+[git_branch]
+format = "on [$branch]($style) "
+style = "#82aaff"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "#e4b86a"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[cmd_duration]
+min_time = 2_000
+format = "[$duration]($style) "
+style = "#9aa7b4"
+
+[python]
+format = "[py $version]($style) "
+style = "#e4b86a"
+
+[nodejs]
+format = "[js $version]($style) "
+style = "#69d1c5"
+
+[rust]
+format = "[rs $version]($style) "
+style = "#e06c75"
+
+[golang]
+format = "[go $version]($style) "
+style = "#82aaff"
+
+[character]
+success_symbol = "[❯](bold #69d1c5)"
+error_symbol = "[✗](bold #e06c75)"
+vimcmd_symbol = "[❮](bold #69d1c5)"

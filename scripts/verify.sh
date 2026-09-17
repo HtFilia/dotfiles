@@ -65,14 +65,21 @@ if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
   check 'TPM pin and clean checkout' plugin_matches tmux-tpm "$HOME/.tmux/plugins"
 fi
 if [[ "$profile" == workstation ]]; then
-  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck; do
+  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm biome ouch zstd sponge ts vidir parallel chafa ov hexyl dua broot czkawka_cli xcp viu vivid pastel tldr jc jless fastfetch cmatrix cava; do
     check "$tool available" available "$tool"
   done
   if [[ "$(uname -s)" == Linux ]]; then
     for pair in uv:uv-linux-x86_64 uvx:uv-linux-x86_64 mise:mise-linux-x86_64 yazi:yazi-linux-x86_64 yq:yq-linux-amd64 sd:sd-linux-x86_64 dust:dust-linux-x86_64 duf:duf-linux-x86_64 hyperfine:hyperfine-linux-x86_64 watchexec:watchexec-linux-x86_64 xh:xh-linux-x86_64 lazydocker:lazydocker-linux-x86_64 actionlint:actionlint-linux-amd64 node:node-linux-x86_64; do
       check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
     done
-    check 'Go pin' asset_version_matches go go-linux-amd64 version
+    while IFS=$'\t' read -r tool key _member; do
+      [[ -n "$tool" && "$tool" != \#* ]] || continue
+      argument=--version
+      [[ "$tool" != tmux ]] || argument=-V
+      check "$tool extra pin" asset_version_matches "$tool" "$key" "$argument"
+    done < "$SCRIPT_DIR/extra-tools.tsv"
+    check 'pnpm executes' pnpm --version
+    check 'Go pin'  asset_version_matches go go-linux-amd64 version
     check 'Gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
   fi
   if available tokei; then check "tokei version" asset_version_matches tokei tokei-cargo --version; else printf "optional - tokei (Rust >=1.85 build)\n"; fi
