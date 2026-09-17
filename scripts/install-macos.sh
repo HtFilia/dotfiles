@@ -59,7 +59,7 @@ awk -v fonts="$SKIP_FONTS" -v docker="$SKIP_DOCKER" '
 ' "$BREWFILE" >"$temporary_brewfile"
 BREWFILE="$temporary_brewfile"
 log "Installing Homebrew bundle..."
-brew bundle check --file "$BREWFILE" >/dev/null 2>&1 || brew bundle install --file "$BREWFILE"
+brew bundle install --file "$BREWFILE"
 success "Homebrew bundle satisfied"
 
 if command -v rustup-init >/dev/null 2>&1 && ! rustup show active-toolchain >/dev/null 2>&1; then

@@ -198,6 +198,53 @@ second=$(cached_asset_path tool "$2")
         result = self.run_command(str(ROOT / "scripts/asset-manifest.sh"))
         self.assertEqual(result.stdout, (ROOT / "docs/ASSET-MANIFEST.md").read_text())
 
+    def test_binary_upgrade_replaces_symlink_without_overwriting_system_target(self):
+        original = self.work / "system-binary"
+        original.write_text("original")
+        link = self.work / "tool"
+        link.symlink_to(original)
+        replacement = self.work / "replacement"
+        replacement.write_text("updated")
+        self.run_command("bash", "-euc", 'source "$1"; atomic_install_binary "$2" "$3"',
+                         "_", str(ROOT / "scripts/pinned-assets.sh"), str(replacement), str(link))
+        self.assertEqual(original.read_text(), "original")
+        self.assertFalse(link.is_symlink())
+        self.assertEqual(link.read_text(), "updated")
+
+    def test_visual_switch_does_not_edit_managed_source(self):
+        self.apply("--destination", str(self.home), "--profile", "workstation")
+        script = str(ROOT / "home/dot_local/bin/executable_dotfiles-style")
+        source = ROOT / "home/dot_config/dotfiles/styles/operator/tmux.conf"
+        before = source.read_text()
+        self.run_command("python3", script, "operator", "--crt")
+        self.assertIn("custom-shader", (self.home / ".config/dotfiles/ghostty-style.conf").read_text())
+        self.run_command("python3", script, "classic")
+        self.assertNotIn("custom-shader =", (self.home / ".config/dotfiles/ghostty-style.conf").read_text())
+        self.assertEqual(source.read_text(), before)
+
+    def test_workbooks_reject_noninteractive_menu(self):
+        script = str(ROOT / "home/dot_local/share/dotfiles/workbooks/lab.py")
+        result = self.run_command("python3", script, "--list")
+        self.assertIn("archives", result.stdout)
+        result = self.run_command("python3", script, success=False)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("needs a terminal", result.stderr)
+
+    def test_windows_style_preserves_other_profiles_and_creates_backup(self):
+        config = {"profiles": {"list": [
+            {"name": "Debian", "source": "Microsoft.WSL", "font": {"face": "My Font"}},
+            {"name": "PowerShell", "colorScheme": "Existing"}]}, "defaultProfile": "unchanged"}
+        path = self.work / "settings.json"
+        path.write_text(json.dumps(config))
+        self.run_command("python3", str(ROOT / "scripts/setup-windows-terminal.py"), str(path), "--profile", "Debian")
+        result = json.loads(path.read_text())
+        self.assertEqual(result["profiles"]["list"][1], config["profiles"]["list"][1])
+        self.assertEqual(result["profiles"]["list"][0]["font"], {"face": "My Font"})
+        self.assertEqual(result["defaultProfile"], "unchanged")
+        backups = list(self.work.glob("settings.dotfiles-backup-*.json"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(json.loads(backups[0].read_text()), config)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

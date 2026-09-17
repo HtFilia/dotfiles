@@ -7,7 +7,7 @@ files. This separation avoids installing every project's versions globally.
 | Runtime | Machine source | Project control |
 |---|---|---|
 | Python | Homebrew/apt; uv available | `pyproject.toml`, `uv.lock`, `.python-version` |
-| Node | Homebrew Node 24/pinned Linux Node 24 | mise version and package-manager lockfile |
+| Node | Homebrew Node/current stable pinned Linux Node | mise version and package-manager lockfile |
 | Go | Homebrew/pinned Linux Go | `go.mod`, optional mise version |
 | Rust | Homebrew rustup/apt compiler | `rust-toolchain.toml`, Cargo.lock |
 
@@ -16,7 +16,7 @@ replace machine defaults without configuration. Example project `mise.toml`:
 
 ```toml
 [tools]
-node = "24.21.0"
+node = "26.9.0"
 ```
 
 Trust project configuration only after reviewing it. Use explicit versions for
@@ -43,9 +43,8 @@ you leave; read `.envrc` before approving it.
 
 ## Node, Go and Rust
 
-pnpm is supplied by Homebrew or enabled through available Corepack on Linux.
-If Corepack is absent, install your chosen package manager explicitly using the
-project's required version. Node installation does not select an unrequested
+pnpm is supplied by Homebrew or explicitly installed at the version in
+`scripts/runtime-versions.sh` on Linux. Respect each project's package-manager version. Node installation does not select an unrequested
 package manager for every project.
 
 Go binaries installed by `go install` use GOPATH/GOBIN, which remain overrideable.

@@ -1,0 +1,26 @@
+{
+  "logo": {
+    "type": "small"
+  },
+  "display": {
+    "separator": "  \u25b8  ",
+    "color": {
+      "keys": "cyan",
+      "title": "green"
+    }
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "kernel",
+    "uptime",
+    "shell",
+    "terminal",
+    "cpu",
+    "memory",
+    "disk",
+    "break",
+    "colors"
+  ]
+}

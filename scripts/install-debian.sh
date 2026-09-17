@@ -10,6 +10,7 @@ if [[ $# -gt 0 && "$1" != --* ]]; then
 fi
 ENABLE_DOCKER_GROUP=0
 SKIP_DOCKER=0
+SKIP_PACKAGES=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
@@ -22,7 +23,7 @@ fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 [linux|wsl] [--enable-docker-group] [--skip-docker]
+Usage: $0 [linux|wsl] [--enable-docker-group] [--skip-docker] [--skip-packages]
 
 Options:
   --enable-docker-group   add the current user to the root-equivalent docker group
@@ -34,6 +35,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --enable-docker-group) ENABLE_DOCKER_GROUP=1 ;;
     --skip-docker) SKIP_DOCKER=1 ;;
+    --skip-packages) SKIP_PACKAGES=1 ;;
     -h|--help) usage; exit 0 ;;
     *) fatal "Unknown argument: $1" ;;
   esac
@@ -67,7 +69,7 @@ install_from_archive() {
   local -a matches=()
   while IFS= read -r -d '' found; do matches+=("$found"); done < <(find "$tmp" -type f -name "$member" -print0)
   [[ "${#matches[@]}" == 1 ]] || { rm -rf "$tmp"; fatal "Could not find $member in $file"; }
-  install -m 755 "${matches[0]}" "$dest"
+  atomic_install_binary "${matches[0]}" "$dest"
   rm -rf "$tmp"
   success "installed $(basename "$dest")"
 }
@@ -76,7 +78,7 @@ install_binary_asset() {
   local key="$1" dest="$2" archive file
   file="$(pinned_asset_field "$key" file)"
   archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
-  install -m 755 "$archive" "$dest"
+  atomic_install_binary "$archive" "$dest"
   success "installed $(basename "$dest")"
 }
 
@@ -150,6 +152,7 @@ fi
 OS_ID="${ID:-debian}"
 OS_CODENAME="${VERSION_CODENAME:-}"
 
+if [[ "$SKIP_PACKAGES" == 0 ]]; then
 log "Updating apt repositories..."
 sudo apt update
 
@@ -157,8 +160,10 @@ log "Installing packages from apt..."
 sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck ncurses-term ncurses-bin less bsdextrautils
+  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck shfmt bats btop zstd moreutils chafa parallel cmatrix cava ffmpeg 7zip \
+  libevent-dev libncurses-dev byacc ncurses-term ncurses-bin less bsdextrautils
 success "apt packages installed"
+fi
 
 if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
   ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"
@@ -200,9 +205,17 @@ fi
 if ! asset_version_matches node "node-linux-$ARCH" --version; then
   install_node
 fi
-if command -v corepack >/dev/null 2>&1; then
-  corepack enable pnpm --install-directory "$LOCAL_BIN" >/dev/null 2>&1 || warn "Could not enable pnpm with Corepack."
-fi
+"$SCRIPT_DIR/install-extra-tools.sh"
+# Explicit versions avoid a nonfunctional, uncached Corepack shim.
+# shellcheck source=scripts/runtime-versions.sh
+. "$SCRIPT_DIR/runtime-versions.sh"
+node_prefix="$(dirname "$(dirname "$(readlink "$LOCAL_BIN/node")")")"
+npm install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION" "@biomejs/biome@$BIOME_VERSION"
+for tool in pnpm pnpx biome; do
+  [[ ! -e "$node_prefix/bin/$tool" ]] || ln -sfn "$node_prefix/bin/$tool" "$LOCAL_BIN/$tool"
+done
+pnpm --version
+biome --version
 
 if [[ "$SKIP_DOCKER" == "1" ]]; then
   warn "Skipped Docker installation."
@@ -247,6 +260,6 @@ if ! command -v gh >/dev/null 2>&1; then
   sudo apt install -y gh
 fi
 
-warn "Claude Code and atuin are not installed automatically; install them manually if you accept their upstream installer."
+warn "Claude Code is not installed automatically."
 warn "Ghostty has no official Debian package; install it manually from your trusted channel."
 success "Debian/WSL setup complete."

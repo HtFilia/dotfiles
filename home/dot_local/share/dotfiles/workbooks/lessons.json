@@ -1,0 +1,439 @@
+[
+  {
+    "id": "navigation",
+    "title": "01 / Find your way",
+    "goal": "Search names and contents, then move through a visual file tree.",
+    "challenge": "Find only Python files; search for alpha case-insensitively; open a result in your editor.",
+    "steps": [
+      {
+        "title": "Readable tree",
+        "why": "eza shows the small fixture tree.",
+        "command": "eza --tree --level=2 .",
+        "tools": [
+          "eza"
+        ],
+        "contains": "source"
+      },
+      {
+        "title": "Name search",
+        "why": "fd searches names; ripgrep searches file contents.",
+        "command": "fd --extension py . source && rg -n alpha source",
+        "tools": [
+          "fd",
+          "rg"
+        ],
+        "contains": "demo.py"
+      },
+      {
+        "title": "Fuzzy selection",
+        "why": "Tab selects multiple files; Enter accepts.",
+        "command": "fd --type f | fzf --multi --preview \"bat --color=always -- {}\"",
+        "tools": [
+          "fd",
+          "fzf",
+          "bat"
+        ],
+        "interactive": true,
+        "exit": "Esc cancels; Enter prints your selection."
+      },
+      {
+        "title": "Broot tree",
+        "why": "Search within the tree. The lab isolates broot configuration.",
+        "command": "broot --no-install .",
+        "tools": [
+          "broot"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      },
+      {
+        "title": "Yazi manager",
+        "why": "Use j/k, Enter and parent navigation on disposable files.",
+        "command": "yazi .",
+        "tools": [
+          "yazi"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      }
+    ]
+  },
+  {
+    "id": "viewers",
+    "title": "02 / Inspect text, JSON and bytes",
+    "goal": "Choose a viewer that matches the data.",
+    "challenge": "Locate the unhealthy service and identify the PNG file signature.",
+    "steps": [
+      {
+        "title": "Text preview",
+        "why": "bat adds syntax highlighting and line numbers.",
+        "command": "bat --paging=never source/demo.py",
+        "tools": [
+          "bat"
+        ],
+        "contains": "hello"
+      },
+      {
+        "title": "Hex view",
+        "why": "The PNG signature is visible in the first bytes.",
+        "command": "hexyl --length 48 signal.png",
+        "tools": [
+          "hexyl"
+        ],
+        "contains": "PNG"
+      },
+      {
+        "title": "JSON tree",
+        "why": "Expand services, inspect booleans, search for worker.",
+        "command": "jless data.json",
+        "tools": [
+          "jless"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      },
+      {
+        "title": "Wide-file pager",
+        "why": "Use a pager with structured-output navigation.",
+        "command": "ov events.csv",
+        "tools": [
+          "ov"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      }
+    ]
+  },
+  {
+    "id": "structured",
+    "title": "03 / Make structured pipelines",
+    "goal": "Parse supported command output with jc, then use jq and yq.",
+    "challenge": "Change the jq filter to select unhealthy services and return their ports.",
+    "steps": [
+      {
+        "title": "CSV to JSON",
+        "why": "jc has parsers for many commands and file types.",
+        "command": "jc --csv < events.csv | jq .",
+        "tools": [
+          "jc",
+          "jq"
+        ],
+        "contains": "requests"
+      },
+      {
+        "title": "Filter JSON",
+        "why": "jq keeps structure while selecting records.",
+        "command": "jq -r \".services[] | select(.healthy) | .name\" data.json",
+        "tools": [
+          "jq"
+        ],
+        "contains": "api"
+      },
+      {
+        "title": "JSON to YAML",
+        "why": "Mike Farah yq understands both formats.",
+        "command": "yq -P -p=json . data.json",
+        "tools": [
+          "yq"
+        ],
+        "contains": "services"
+      },
+      {
+        "title": "Simple replacement",
+        "why": "sd transforms stdin without modifying the source.",
+        "command": "printf \"hello worker\\n\" | sd worker operator",
+        "tools": [
+          "sd"
+        ],
+        "contains": "hello operator"
+      }
+    ]
+  },
+  {
+    "id": "archives",
+    "title": "04 / Copy, compress and compose",
+    "goal": "Create archives, copy files and compose small UNIX pipeline helpers.",
+    "challenge": "Compare the restored notes with the original; timestamp a pipeline with ts.",
+    "steps": [
+      {
+        "title": "Archive a directory",
+        "why": "ouch selects the format from the extension.",
+        "command": "ouch compress source bundle.tar.gz && ouch decompress bundle.tar.gz --dir restored",
+        "tools": [
+          "ouch"
+        ],
+        "contains": "bundle"
+      },
+      {
+        "title": "Fast compression",
+        "why": "zstd keeps the source here; -f makes reruns safe.",
+        "command": "zstd -q -f source/notes.txt -o notes.zst && zstd -q -d -f notes.zst -o decoded.txt && cmp source/notes.txt decoded.txt",
+        "tools": [
+          "zstd",
+          "cmp"
+        ]
+      },
+      {
+        "title": "Extended copy",
+        "why": "Copy only within the temporary workbook.",
+        "command": "xcp source/notes.txt copied.txt && cmp source/notes.txt copied.txt",
+        "tools": [
+          "xcp",
+          "cmp"
+        ]
+      },
+      {
+        "title": "Safe in-place pipeline",
+        "why": "sponge reads input before opening the output file.",
+        "command": "cp source/notes.txt sorted.txt && sort -u sorted.txt | sponge sorted.txt && cat sorted.txt",
+        "tools": [
+          "sponge",
+          "sort",
+          "cp",
+          "cat"
+        ],
+        "contains": "Gamma"
+      },
+      {
+        "title": "Timestamp lines",
+        "why": "ts is part of moreutils.",
+        "command": "printf \"pipeline ready\\n\" | ts",
+        "tools": [
+          "ts"
+        ],
+        "contains": "pipeline ready"
+      },
+      {
+        "title": "Batch jobs",
+        "why": "Parallel runs independent jobs; --keep-order preserves input order.",
+        "command": "printf \"alpha\\nbeta\\n\" | parallel --will-cite --keep-order echo job:{}",
+        "tools": [
+          "parallel"
+        ],
+        "contains": "job:alpha"
+      },
+      {
+        "title": "Edit directory entries",
+        "why": "vidir can rename/delete entries: only use the sample directory here.",
+        "command": "EDITOR=\"nvim\" vidir duplicates",
+        "tools": [
+          "vidir",
+          "nvim"
+        ],
+        "interactive": true,
+        "exit": "Use :q! to leave without changes, or :wq to apply changes to the sample directory."
+      }
+    ]
+  },
+  {
+    "id": "storage",
+    "title": "05 / Understand disk usage",
+    "goal": "Inspect size and duplicate content before deciding what to remove.",
+    "challenge": "Find both duplicate files; do not delete them until you understand the report.",
+    "steps": [
+      {
+        "title": "Disk usage tree",
+        "why": "dust presents directory sizes.",
+        "command": "dust .",
+        "tools": [
+          "dust"
+        ],
+        "contains": "source"
+      },
+      {
+        "title": "Filesystem overview",
+        "why": "duf shows capacity and mount points.",
+        "command": "duf --only local",
+        "tools": [
+          "duf"
+        ]
+      },
+      {
+        "title": "Interactive usage",
+        "why": "dua provides navigation and explicit cleanup controls.",
+        "command": "dua interactive .",
+        "tools": [
+          "dua"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      },
+      {
+        "title": "Duplicate scan",
+        "why": "No deletion option is used. These are generated sample files.",
+        "command": "czkawka_cli dup --directories duplicates",
+        "tools": [
+          "czkawka_cli"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "graphics",
+    "title": "06 / Pictures and terminal color",
+    "goal": "View a generated image and inspect color choices.",
+    "challenge": "Try a smaller image width and choose an accent color you can read comfortably.",
+    "steps": [
+      {
+        "title": "Portable graphics",
+        "why": "chafa renders the image using terminal symbols.",
+        "command": "chafa --format symbols --size 32x8 signal.png",
+        "tools": [
+          "chafa"
+        ]
+      },
+      {
+        "title": "Image viewer",
+        "why": "viu uses the terminal graphics capabilities it detects.",
+        "command": "viu -w 32 signal.png",
+        "tools": [
+          "viu"
+        ]
+      },
+      {
+        "title": "Color conversion",
+        "why": "pastel converts named colors into a portable hex value.",
+        "command": "pastel format hex cyan",
+        "tools": [
+          "pastel"
+        ],
+        "contains": "#00ffff"
+      },
+      {
+        "title": "Listing colors",
+        "why": "vivid generates LS_COLORS rules.",
+        "command": "vivid generate molokai | cut -c 1-160",
+        "tools": [
+          "vivid",
+          "cut"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "help",
+    "title": "07 / Learn without memorizing",
+    "goal": "Use concise command examples, a readable pager and searchable help.",
+    "challenge": "After running tldr --update outside the lab, compare tldr tar with tar --help.",
+    "steps": [
+      {
+        "title": "Tealdeer help",
+        "why": "The executable is tldr. Cache updates are explicit, not startup side effects.",
+        "command": "tldr --help",
+        "tools": [
+          "tldr"
+        ],
+        "contains": "Usage"
+      },
+      {
+        "title": "Discover jc parsers",
+        "why": "Read which outputs can be transformed before building pipelines.",
+        "command": "jc --help",
+        "tools": [
+          "jc"
+        ],
+        "contains": "JSON"
+      },
+      {
+        "title": "Explore archive options",
+        "why": "Read compression flags and supported formats.",
+        "command": "ouch --help",
+        "tools": [
+          "ouch"
+        ],
+        "contains": "compress"
+      }
+    ]
+  },
+  {
+    "id": "dev",
+    "title": "08 / Repeatable development loops",
+    "goal": "Use task recipes, source counts, measurements and file watching.",
+    "challenge": "Change the sample Python file and observe the watcher rerun.",
+    "steps": [
+      {
+        "title": "Task recipe",
+        "why": "just runs a named project command.",
+        "command": "just hello",
+        "tools": [
+          "just"
+        ],
+        "contains": "repeatable"
+      },
+      {
+        "title": "Source statistics",
+        "why": "tokei counts the sample Python source.",
+        "command": "tokei source",
+        "tools": [
+          "tokei"
+        ],
+        "contains": "Python"
+      },
+      {
+        "title": "Measure a command",
+        "why": "Use repeated measurements rather than one wall-clock observation.",
+        "command": "hyperfine --runs 3 \"rg alpha source/notes.txt\"",
+        "tools": [
+          "hyperfine"
+        ],
+        "contains": "Benchmark"
+      },
+      {
+        "title": "Watch changes",
+        "why": "Open a second pane to edit source/demo.py while this runs.",
+        "command": "watchexec --watch source -- \"printf\" \"source changed\\n\"",
+        "tools": [
+          "watchexec"
+        ],
+        "interactive": true,
+        "exit": "Ctrl-c stops the watcher and returns to the workbook."
+      }
+    ]
+  },
+  {
+    "id": "operator",
+    "title": "09 / Build an operator deck",
+    "goal": "Keep useful telemetry visible while leaving decorative effects optional.",
+    "challenge": "Use dotfiles-style operator, restart Zsh, then launch dotfiles-deck outside the lab.",
+    "steps": [
+      {
+        "title": "System card",
+        "why": "fastfetch reports actual local machine information.",
+        "command": "fastfetch --logo none",
+        "tools": [
+          "fastfetch"
+        ]
+      },
+      {
+        "title": "Live monitor",
+        "why": "btop shows real resource usage.",
+        "command": "btop",
+        "tools": [
+          "btop"
+        ],
+        "interactive": true,
+        "exit": "Press q (or Escape) to return."
+      },
+      {
+        "title": "Digital rain",
+        "why": "This is a decorative effect, not monitoring or network activity.",
+        "command": "cmatrix -b",
+        "tools": [
+          "cmatrix"
+        ],
+        "interactive": true,
+        "exit": "Press q to leave the animation."
+      },
+      {
+        "title": "Audio spectrum",
+        "why": "Cava requires an available audio capture source; WSL availability varies.",
+        "command": "cava",
+        "tools": [
+          "cava"
+        ],
+        "interactive": true,
+        "exit": "Ctrl-c returns; an unavailable audio source is not a dotfiles failure."
+      }
+    ]
+  }
+]

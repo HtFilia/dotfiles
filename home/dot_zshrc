@@ -19,7 +19,7 @@ for _prefix in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
     export HOMEBREW_PREFIX="$_prefix"
     path=("$_prefix/bin" "$_prefix/sbin" $path)
     fpath=("$_prefix/share/zsh/site-functions" $fpath)
-    [[ -d "$_prefix/opt/node@24/bin" ]] && path=("$_prefix/opt/node@24/bin" $path)
+    [[ -d "$_prefix/opt/node/bin" ]] && path=("$_prefix/opt/node/bin" $path)
     [[ -d "$_prefix/opt/python@3.14/libexec/bin" ]] && path=("$_prefix/opt/python@3.14/libexec/bin" $path)
     break
   fi
@@ -89,6 +89,17 @@ _dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.z
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374"
 
+# Saved style can be overridden for this session before starting Zsh.
+if [[ -z "${DOTFILES_STYLE:-}" ]]; then
+  DOTFILES_STYLE=operator
+  [[ ! -f "$HOME/.config/dotfiles/style" ]] || IFS= read -r DOTFILES_STYLE < "$HOME/.config/dotfiles/style"
+fi
+case "$DOTFILES_STYLE" in operator|studio|neon|matrix|classic) ;; *) DOTFILES_STYLE=operator ;; esac
+if [[ "$DOTFILES_STYLE" == classic ]]; then
+  export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+else
+  export STARSHIP_CONFIG="$HOME/.config/dotfiles/styles/$DOTFILES_STYLE/starship.toml"
+fi
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh)"
@@ -113,6 +124,14 @@ if command -v fzf &>/dev/null; then
   export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
   fi
 fi
+if [[ "$DOTFILES_STYLE" == operator ]]; then
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=bg:#142727,bg+:#1b3533,fg:#e5f0ea,hl:#75d1c2,hl+:#e5bc70,prompt:#75d1c2,pointer:#e5bc70,border:#294742"
+elif [[ "$DOTFILES_STYLE" == studio ]]; then
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=bg:#111418,bg+:#1a2026,fg:#d6dde5,hl:#69d1c5,hl+:#e4b86a,prompt:#69d1c5,pointer:#e4b86a,border:#29323b"
+elif [[ "$DOTFILES_STYLE" != classic ]]; then
+  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=bg:#080d16,bg+:#132335,fg:#c8e6ee,hl:#59ffb1,hl+:#ff59cf,prompt:#49d7ff,pointer:#ff59cf,border:#245268"
+fi
+command -v vivid &>/dev/null && export LS_COLORS="$(vivid generate molokai)"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
@@ -158,7 +177,7 @@ alias mkd='mkdir -p' df='df -h' du='du -h'
 [[ "$DOTFILES_OS" == macos ]] || alias free='free -h'
 alias reload='exec zsh' zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
-alias dotfiles='cd "${DOTFILES_DIR:-$HOME/.dotfiles}"'
+alias dotfiles='cd "${DOTFILES_DIR:-$HOME/dotfiles}"'
 
 if [[ "$DOTFILES_OS" == "macos" ]]; then
   alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
@@ -283,3 +302,8 @@ command -v claude &>/dev/null && alias ai='claude' air='claude --resume'
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 # Syntax highlighting must be loaded after widgets from fzf/atuin/local config.
 _dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$ZSH_PLUGIN_DIR" || true
+
+# Explicit commands: no animation, network fetch or dashboard at shell startup.
+alias lab='dotfiles-lab' deck='dotfiles-deck'
+alias helpme='tldr' jsonview='jless'
+termstyle() { dotfiles-style "$@" && { print 'Style saved. Run: exec zsh'; }; }

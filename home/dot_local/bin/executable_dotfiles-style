@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+"""Select coordinated terminal accents without modifying managed theme sources."""
+import argparse
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+
+
+def write_atomic(path, content):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w") as stream:
+            stream.write(content)
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("style", choices=("operator", "studio", "neon", "matrix", "classic"))
+    parser.add_argument("--crt", action="store_true", help="Enable subtle, static Ghostty scan lines")
+    args = parser.parse_args()
+    root = Path.home() / ".config/dotfiles"
+    if args.style == "classic":
+        ghostty = "# Use the managed Gruvbox theme.\n"
+        tmux = "# Use the managed Gruvbox theme.\n"
+    else:
+        source = root / "styles" / args.style
+        ghostty = (source / "ghostty.conf").read_text()
+        tmux = (source / "tmux.conf").read_text()
+    if args.crt:
+        ghostty += 'custom-shader = "' + str(root / "shaders/scanlines.glsl") + '"\ncustom-shader-animation = false\n'
+    write_atomic(root / "ghostty-style.conf", ghostty)
+    write_atomic(root / "tmux-style.conf", tmux)
+    write_atomic(root / "style", args.style + "\n")
+    if os.environ.get("TMUX"):
+        subprocess.run(["tmux", "source-file", str(Path.home() / ".tmux.conf")], check=True)
+    print(f"Selected {args.style}. Run exec zsh; reload Ghostty configuration if using Ghostty.")
+    print("Windows Terminal: choose the matching Dotfiles scheme in its profile Appearance settings.")
+
+
+if __name__ == "__main__":
+    main()

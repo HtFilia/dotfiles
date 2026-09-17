@@ -1,0 +1,40 @@
+# Local telemetry only; no custom commands or network calls.
+add_newline = true
+command_timeout = 500
+format = "[╭─ ❮ SYSTEM ❯](bold #43ff75) $username$hostname$directory$git_branch$git_status$cmd_duration$line_break[╰─](bold #43ff75)$character"
+right_format = "$python$nodejs$rust$golang$time"
+[username]
+show_always = true
+style_user = "bold #b4ff59"
+format = "[$user]($style) "
+[hostname]
+ssh_only = true
+style = "bold #22bba9"
+format = "[@$hostname]($style) "
+[directory]
+style = "bold #43ff75"
+truncation_length = 3
+format = "[▰ $path]($style) "
+[git_branch]
+style = "bold #22bba9"
+format = "[⎇ $branch]($style) "
+[git_status]
+style = "bold #b4ff59"
+[cmd_duration]
+min_time = 1000
+format = "[⏱ $duration](bold #43ff75) "
+[character]
+success_symbol = "[ ❯](bold #b4ff59)"
+error_symbol = "[ ✗ ❯](bold #ff667a)"
+[time]
+disabled = false
+time_format = "%H:%M:%S"
+format = "[ ◷ $time](#43ff75)"
+[python]
+format = "[py $version](#b4ff59) "
+[nodejs]
+format = "[js $version](#b4ff59) "
+[rust]
+format = "[rs $version](#22bba9) "
+[golang]
+format = "[go $version](#43ff75) "

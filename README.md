@@ -1,8 +1,11 @@
 # Personal dotfiles
 
 A practical development environment for macOS, Debian/Ubuntu, WSL, and SSH
-servers. Bash installs packages; Chezmoi deploys the files in `home/`. The shell,
-terminal, editors, prompt, and Git diffs share a Gruvbox dark palette.
+servers. Bash installs packages; Chezmoi deploys the files in `home/`. The shell
+and terminal use a compact Operator layout with deep green graphite, teal and
+amber accents; classic Gruvbox, Studio and two legacy accent profiles remain
+available.
+Editors and Git diffs retain Gruvbox.
 
 ## Supported environments
 
@@ -125,3 +128,20 @@ Checks do not install packages or alter active dotfiles. Full package
 installation and language-tool downloads are separate from offline tests.
 
 MIT licensed; vendored terminfo retains its upstream license.
+
+## Modern tools, terminal layouts and workbooks
+
+```sh
+just tools-update        # packages and managed tools, separate from git/config updates
+just tools-update --skip-packages
+lab                      # nine interactive tool workbooks after deployment
+deck                     # shell + live resources + system card
+termstyle operator       # control-room layout for active work
+```
+
+The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
+Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
+jc and jless. Fastfetch, cmatrix and cava provide explicit visual modes.
+See [workbooks](docs/WORKBOOKS.md), [visual styles](docs/VISUALS.md), and
+[tool upgrades](docs/UPGRADES.md). Run `dotfiles-style operator` after first deployment
+and `tldr --update` once to populate the help cache.
