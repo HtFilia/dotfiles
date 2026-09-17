@@ -302,6 +302,7 @@ download_pinned_asset() {
     --retry 3 --connect-timeout 15 "$url" -o "$partial" && verify_sha256 "$partial" "$sha"; then
     mv "$partial" "$dest_dir/$file"
   else
+    printf 'Pinned asset download failed: %s\n  URL: %s\n' "$key" "$url" >&2
     rm -f "$partial"
     return 1
   fi
