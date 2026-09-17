@@ -16,14 +16,18 @@ local function provision()
   end)
   assert(vim.wait(120000, function() return refreshed ~= nil end, 100), "Mason registry refresh timed out")
   assert(refreshed, vim.inspect(refresh_error))
-  local parsers, packages = {}, {}
+  local parsers, packages, failures = {}, {}, {}
   for language in vim.env.DOTFILES_EDITOR_LANGUAGES:gmatch("%S+") do
     local target = assert(targets[language], "Unknown language")
     vim.list_extend(parsers, target.parsers)
     for _, name in ipairs(target.tools) do
       local package = registry.get_package(name)
       packages[#packages + 1] = package
-      if not package:is_installed() then package:install() end
+      if not package:is_installed() then
+        package:install({}, function(success, install_error)
+          if not success then failures[package.name] = tostring(install_error or "unknown Mason error") end
+        end)
+      end
     end
   end
   assert(vim.wait(600000, function()
@@ -33,7 +37,10 @@ local function provision()
     return true
   end, 100), "Mason installation timed out")
   for _, package in ipairs(packages) do
-    assert(package:is_installed(), "Failed package: " .. package.name)
+    if not package:is_installed() then
+      local detail = failures[package.name] or ("see " .. vim.fn.stdpath("state") .. "/mason.log")
+      error("Failed package: " .. package.name .. " (" .. detail .. ")")
+    end
   end
   local ts = require("nvim-treesitter")
   ts.install(parsers):wait(600000)

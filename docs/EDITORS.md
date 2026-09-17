@@ -15,9 +15,13 @@ BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, and Bash.
 
 ### Explicit provisioning
 
-Install workstation runtimes first. Node/npm and a C compiler are required:
+Install workstation runtimes first. Node/npm and a C compiler are required for
+the full selection. Selecting `python` also requires `python3` with virtual
+environment support because the current Mason registry installs BasedPyright
+and Ruff in isolated Python environments:
 
 ```sh
+sudo apt install python3 python3-venv  # Debian/Ubuntu VPS
 ./scripts/setup-editor.sh lua python go rust node shell
 # Select only languages you use:
 ./scripts/setup-editor.sh python shell
