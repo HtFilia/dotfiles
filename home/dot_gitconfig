@@ -43,6 +43,12 @@
     autoSetupRemote = true
     followTags = true
 
+# Keep GitHub remotes on SSH so clone, fetch, pull and push use ~/.ssh/github.
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+    insteadOf = http://github.com/
+    insteadOf = git://github.com/
+
 [rebase]
     autoStash = true
     autoSquash = true

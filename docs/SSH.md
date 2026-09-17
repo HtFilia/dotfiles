@@ -1,9 +1,10 @@
 # SSH hosts and identities
 
-The managed private `~/.ssh/config` includes `~/.ssh/config.local`. Keep actual
-hostnames, user accounts, and key paths in that untracked local file. Apply backs up an existing config and copies its host entries into an absent
-local include. When a local include already exists, merge any additional host
-entries from the backup explicitly. Existing key files are not managed.
+The managed private `~/.ssh/config` defines GitHub explicitly and includes
+`~/.ssh/config.local` for machine-specific hosts. GitHub uses `~/.ssh/github`
+with `IdentitiesOnly yes` and `IdentityAgent none`, so Git can authenticate
+without first adding that key to an SSH agent. Existing key files are not
+managed.
 
 Example, adapted to your own key and host:
 
@@ -11,8 +12,10 @@ Example, adapted to your own key and host:
 Host github.com
   HostName github.com
   User git
-  IdentityFile ~/.ssh/id_ed25519_github
+  IdentityFile ~/.ssh/github
   IdentitiesOnly yes
+  IdentityAgent none
+  AddKeysToAgent no
 
 Host dev-vps
   HostName your-server.example
@@ -31,9 +34,10 @@ git remote -v
 ```
 
 GitHub's authentication test reports successful authentication but does not offer
-an interactive shell. Your repository uses
-`git@github.com:HtFilia/dotfiles.git`; the update helper requires an SSH origin.
-No global HTTPS-to-SSH rewrite is imposed on other repositories.
+an interactive shell. Your repository uses `git@github.com:HtFilia/dotfiles.git`;
+the update helper requires an SSH origin. Git rewrites GitHub HTTPS and git
+protocol URLs to `git@github.com:` through the managed Git config, so new and
+existing GitHub remotes use SSH automatically.
 
 Host verification remains OpenSSH's default. Verify fingerprints through a
 trusted channel for new or changed servers. Agent forwarding is not globally
