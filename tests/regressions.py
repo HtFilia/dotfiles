@@ -56,6 +56,21 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
 
+    def test_server_fallback_preserves_existing_launchers(self):
+        source = (ROOT / "scripts/install-server.sh").read_text()
+        functions = source[source.index("install_go() {"):source.index('\ncommand -v fdfind')]
+        local_bin = self.home / ".local/bin"
+        local_bin.mkdir(parents=True)
+        for tool in ("go", "node", "npm"):
+            executable = local_bin / tool
+            executable.write_text("#!/bin/sh\necho fixture\n")
+            executable.chmod(0o755)
+        script = 'install_runtime() { return 1; }; warn() { :; }; SKIP_PACKAGES=1; ARCH=x86_64; GO_ARCH=amd64\n' + functions + '\ninstall_go || true; install_node || true'
+        env = dict(self.env, LOCAL_BIN=str(local_bin), PATH=str(local_bin) + ":/usr/bin:/bin")
+        self.run_command("bash", "-euc", script, env=env)
+        for tool in ("go", "node", "npm"):
+            self.assertFalse((local_bin / tool).is_symlink())
+
     def test_bootstrap_requires_complete_checkout(self):
         script = self.work / "bootstrap.sh"
         shutil.copy2(ROOT / "scripts/bootstrap.sh", script)
