@@ -70,8 +70,8 @@ the prerequisites for the selected languages. Pinned Node is required for
 Python and shell Mason tools; pinned Go is required only for Go tooling. It still compiles terminfo
 and installs user-owned binaries. Apply afterward with `--profile server`.
 
-Linux fonts/VS Code/Ghostty and assistant CLIs are separate choices where they
-are not supplied by the profile's package manager.
+Linux VS Code/Ghostty and assistant CLIs require separate installation. The
+workstation installer supplies atuin; fonts are optional and belong on the client.
 The server profile installs Atuin, ncdu, tealdeer and htop from Debian packages.
 Atuin history stays local and Ctrl-r returns selections for editing. `tldr`
 may need an explicit `tldr --update` to populate general pages.

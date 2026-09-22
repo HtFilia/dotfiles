@@ -10,7 +10,7 @@ paths, sets pager/history defaults, checks completion permissions with compinit,
 loads trusted plugins, and initializes available tool integrations.
 
 Homebrew's prefix is selected from its standard installed locations without
-running brew on every startup. Node 24 and Homebrew Python paths are explicit.
+running brew on every startup. Homebrew runtime paths are explicit.
 uv completion is cached and regenerated when its executable changes.
 
 ## Customize

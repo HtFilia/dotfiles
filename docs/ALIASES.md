@@ -34,7 +34,7 @@ Git's internal aliases are documented in [Git](GIT.md).
 | `lt`, `ltt` | eza trees limited to two/three levels |
 | `..`, `...`, `....`, `-` | Parent directories; previous directory |
 | `mkd`, `mkcd DIRECTORY` | Create directories; create and enter |
-| `dotfiles` | Enter `$DOTFILES_DIR` or `~/.dotfiles` |
+| `dotfiles` | Enter `$DOTFILES_DIR` or `~/dotfiles` |
 | `fe`, `fcd` | Select and edit a file; select and enter a directory |
 | `frg PATTERN` | Structured ripgrep matches, fzf selection, open editor at line |
 | `fga` | Select unstaged/untracked files and stage them |
