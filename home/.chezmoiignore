@@ -10,10 +10,6 @@
 .config/tealdeer/pages
 .config/tealdeer/pages/**
 .config/dotfiles/windows-terminal.json
-.local/share/dotfiles/workbooks
-.local/share/dotfiles/workbooks/**
-.local/bin/dotfiles-deck
-.local/bin/dotfiles-lab
 Library
 Library/**
 {{ else if eq .chezmoi.os "darwin" }}

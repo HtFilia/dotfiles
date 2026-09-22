@@ -58,8 +58,7 @@ publisher signature. All downloads are checked against their recorded hashes.
 After a bat upgrade, rebuild user syntax caches with `bat cache --build` if needed.
 After a tealdeer installation, explicitly run `tldr --update` to populate examples.
 Restart shells to discard cached executable paths. Existing tmux servers can keep
-running their old executable until their sessions finish; the cockpit uses its own
-socket, avoiding disruption to existing sessions.
+running their old executable until their sessions finish.
 
 ## The sd release label
 

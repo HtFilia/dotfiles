@@ -33,6 +33,3 @@ update:
 # Upgrade packages and managed user tools; --skip-packages avoids sudo.
 tools-update *options:
     ./scripts/update-tools.sh {{options}}
-
-lab *options:
-    python3 home/dot_local/share/dotfiles/workbooks/lab.py {{options}}

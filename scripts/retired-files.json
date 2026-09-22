@@ -161,5 +161,41 @@
       "matrix\n",
       "classic\n"
     ]
+  },
+  {
+    "target": ".config/tealdeer/pages/dotfiles-lab.page.md",
+    "source": "dot_config/tealdeer/pages/dotfiles-lab.page.md",
+    "sha256": [
+      "56d930c68e187f36e8766ddc5ef76e7cc462ddd20de1455f8915103366372f1a"
+    ]
+  },
+  {
+    "target": ".local/bin/dotfiles-deck",
+    "source": "dot_local/bin/executable_dotfiles-deck",
+    "sha256": [
+      "930aeb926f730dacf8f51219e6e64ada9bc3a10cc909b5b67c8a0149510bcea4"
+    ]
+  },
+  {
+    "target": ".local/bin/dotfiles-lab",
+    "source": "dot_local/bin/executable_dotfiles-lab",
+    "sha256": [
+      "cb1a52c48296cd79101a4b020358d61624a6e18cfeebc399566f18896f3764c4"
+    ]
+  },
+  {
+    "target": ".local/share/dotfiles/workbooks/lab.py",
+    "source": "dot_local/share/dotfiles/workbooks/lab.py",
+    "sha256": [
+      "8a5c08254793f28ecdbbc34d820ebf552e86fa6f837236c5fe26802f72d0415e"
+    ]
+  },
+  {
+    "target": ".local/share/dotfiles/workbooks/lessons.json",
+    "source": "dot_local/share/dotfiles/workbooks/lessons.json",
+    "sha256": [
+      "cd068b35752e9c180ca9697744041b30bca9a19e03a04fb1907bdd3bb33541ba",
+      "b298ccd0ada953dbf4db2ed7787dd5e94f177b3ba64d0db301bf7df56b8b43e1"
+    ]
   }
 ]

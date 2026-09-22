@@ -170,20 +170,13 @@ installation and language-tool downloads are separate from offline tests.
 
 MIT licensed; vendored terminfo retains its upstream license.
 
-## Optional workstation tools and layouts
+## Tool updates
 
 ```sh
-just tools-update        # packages and managed tools, separate from git/config updates
-just tools-update --skip-packages
-lab                      # nine interactive tool workbooks after deployment
-deck                     # shell + live resources + system card
+just tools-update
+just tools-update --skip-packages --skip-docker
 ```
 
-The Operator shell layout uses graphite, teal and amber; editor and diff views
-use Gruvbox. It adds no startup animation or network call.
-
-The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
-Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
-jc and jless. Fastfetch, cmatrix and cava provide explicit visual modes.
-See [workbooks](docs/WORKBOOKS.md), [visual styles](docs/VISUALS.md), and
-[tool upgrades](docs/UPGRADES.md). Run `tldr --update` once to populate the help cache.
+Tool provisioning is separate from configuration updates. See
+[tool upgrades](docs/UPGRADES.md) and [Operator appearance](docs/VISUALS.md).
+Run `tldr --update` once to populate the help cache.

@@ -34,6 +34,5 @@ built-in `gruvbox-dark` syntax themes for bat/delta. fzf shares matching colors.
 Palette values remain local to their native configuration files so each is easy
 to read and adjust.
 
-New file utilities, graphical options and data helpers are detailed in
-[the interactive workbooks](WORKBOOKS.md). See [visual profiles](VISUALS.md)
-and [version/update policy](UPGRADES.md) for deployment and maintenance.
+See [Operator appearance](VISUALS.md) and [version/update policy](UPGRADES.md)
+for deployment and maintenance.

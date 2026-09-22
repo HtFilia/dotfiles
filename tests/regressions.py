@@ -465,14 +465,6 @@ second=$(cached_asset_path tool "$2")
         self.assertFalse((root / "ghostty-style.conf").exists())
         self.assertEqual((root / "tmux-style.conf").read_text(), "custom settings\n")
 
-    def test_workbooks_reject_noninteractive_menu(self):
-        script = str(ROOT / "home/dot_local/share/dotfiles/workbooks/lab.py")
-        result = self.run_command("python3", script, "--list")
-        self.assertIn("archives", result.stdout)
-        result = self.run_command("python3", script, success=False)
-        self.assertEqual(result.returncode, 2)
-        self.assertIn("needs a terminal", result.stderr)
-
     def test_windows_style_preserves_other_profiles_and_creates_backup(self):
         config = {"profiles": {"list": [
             {"name": "Debian", "source": "Microsoft.WSL", "font": {"face": "My Font"}},

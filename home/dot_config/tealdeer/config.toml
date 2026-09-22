@@ -3,6 +3,3 @@ auto_update = false
 [display]
 compact = false
 use_pager = false
-
-[directories]
-custom_pages_dir = "~/.config/tealdeer/pages"
