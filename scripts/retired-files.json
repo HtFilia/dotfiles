@@ -217,5 +217,14 @@
     "sha256": [
       "980700ba5ec00fe8ca4ff23187a032d46c80b2744d2f4f6384d4571e6a50edd4"
     ]
+  },
+  {
+    "target": ".config/dotfiles/windows-terminal.json",
+    "source": "dot_config/dotfiles/windows-terminal.json",
+    "profile": "server",
+    "sha256": [
+      "c7814db27c6954f634a1910ae5c6e9540f2852390b25f7e5a3eae6306d82e862",
+      "f2317727bde5587b19ea7eb1de03701ef372887c75d8e4f2c09c5a4324bc6279"
+    ]
   }
 ]

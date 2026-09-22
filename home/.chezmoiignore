@@ -1,4 +1,5 @@
 {{ if eq (env "DOTFILES_PROFILE") "server" }}
+.config/dotfiles/windows-terminal.json
 .config/Code
 .config/Code/**
 .config/ghostty

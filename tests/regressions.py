@@ -398,7 +398,10 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
         (fixture / "scripts/install-server.sh").write_text('mkdir -p "$HOME/.local/bin"\nprintf "#!/bin/sh\\nexit 0\\n" >"$HOME/.local/bin/chezmoi"\nchmod +x "$HOME/.local/bin/chezmoi"\n')
         (fixture / "scripts/apply-dotfiles.sh").write_text('#!/bin/sh\ncommand -v chezmoi >"$HOME/found"\n')
         self.env.update(PATH="/usr/bin:/bin", SHELL="/bin/bash")
-        self.run_command("bash", str(fixture / "scripts/bootstrap.sh"), "--yes", "--profile", "server", "--no-shell-plugins")
+        state = self.home / ".local/state/dotfiles"
+        state.mkdir(parents=True)
+        (state / "profile").write_text("server\n")
+        self.run_command("bash", str(fixture / "scripts/bootstrap.sh"), "--yes", "--no-shell-plugins")
         self.assertEqual((self.home / "found").read_text().strip(), str(self.home / ".local/bin/chezmoi"))
 
     def test_verification_fails_when_required_tools_missing(self):

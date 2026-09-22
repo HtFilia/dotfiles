@@ -6,6 +6,7 @@ VS Code extensions when its CLI is available, and optionally changes the shell.
 It does not run a system upgrade.
 An explicit `--profile` wins, followed by `DOTFILES_PROFILE`, the saved profile,
 then `workstation` on a new host. An invalid saved profile stops before changes.
+A plain rerun therefore does not turn a server into a workstation.
 
 ## Prerequisites
 
