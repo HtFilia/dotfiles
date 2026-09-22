@@ -56,6 +56,55 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
 
+    def test_profile_retirement_backs_up_and_restores(self):
+        target = self.home / ".config/ghostty/config.ghostty"
+        target.parent.mkdir(parents=True)
+        original = (ROOT / "home/dot_config/ghostty/config.ghostty").read_bytes()
+        target.write_bytes(original)
+        self.apply("--profile", "server", "--dry-run")
+        self.assertEqual(target.read_bytes(), original)
+        self.assertFalse((self.home / ".local/state/dotfiles/backups").exists())
+        self.apply("--profile", "server", "--force")
+        self.assertFalse(target.exists())
+        backups = list((self.home / ".local/state/dotfiles/backups").glob("retired-*"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].stat().st_mode & 0o777, 0o700)
+        self.assertEqual((backups[0] / "contents.tar").stat().st_mode & 0o777, 0o600)
+        self.apply("--profile", "server")
+        self.assertEqual(len(list(backups[0].parent.glob("retired-*"))), 1)
+        self.run_command(str(ROOT / "scripts/restore-dotfiles.sh"), str(backups[0]), str(self.home))
+        self.assertEqual(target.read_bytes(), original)
+
+    def test_retirement_preserves_modified_and_unknown_targets(self):
+        target = self.home / ".config/ghostty/config.ghostty"
+        target.parent.mkdir(parents=True)
+        target.write_text("custom config\n")
+        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "server", success=False)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Unresolved cleanup", result.stderr)
+        self.assertEqual(target.read_text(), "custom config\n")
+        target.unlink()
+        unknown = self.work / "unknown"
+        shutil.copy2(ROOT / "home/dot_config/ghostty/config.ghostty", unknown)
+        target.symlink_to(unknown)
+        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "server", success=False)
+        self.assertEqual(result.returncode, 2)
+        self.assertTrue(target.is_symlink())
+
+    def test_retirement_handles_old_checkout_dangling_links(self):
+        target = self.home / ".config/ghostty/config.ghostty"
+        target.parent.mkdir(parents=True)
+        old = self.work / "moved-checkout"
+        target.symlink_to(old / "home/dot_config/ghostty/config.ghostty")
+        state = self.home / ".local/state/dotfiles"
+        state.mkdir(parents=True)
+        (state / "source").write_text(str(old) + "\n")
+        self.apply("--profile", "server")
+        self.assertFalse(target.is_symlink())
+        backup = next((state / "backups").glob("retired-*"))
+        with tarfile.open(backup / "targets.tar") as archive:
+            self.assertTrue(archive.getmember(".config/ghostty/config.ghostty").issym())
+
     def test_tool_update_dispatch_and_package_boundaries(self):
         scripts = self.work / "scripts"
         shutil.copytree(ROOT / "scripts", scripts)

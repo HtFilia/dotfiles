@@ -15,8 +15,16 @@ remain symlinks in either mode. Templates are rendered files.
 
 Profile and mode are persisted under `~/.local/state/dotfiles` for subsequent
 apply and verification. Override with `--profile` and `--materialize`.
-Files excluded by a new profile are not automatically deleted; review desktop
-files manually when switching an existing workstation to server.
+Apply retires known old desktop targets when switching to server. The explicit
+`scripts/retired-files.json` list records old content fingerprints and source
+paths; modified or unfamiliar targets are preserved and reported. Apply exits
+with status 2 after deployment when cleanup remains unresolved.
+
+Recognized retired files are backed up under `backups/retired-*` before unlinking.
+Both metadata and independent readable contents are saved. Dry runs only report
+actions; repeated apply is harmless. Empty parent directories may be removed,
+but nonempty application directories and local overrides are preserved. Package
+uninstallation is separate: bootstrap does not purge old installed packages.
 
 ```sh
 ./scripts/apply-dotfiles.sh --dry-run

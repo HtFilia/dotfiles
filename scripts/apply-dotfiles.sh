@@ -180,6 +180,11 @@ if [[ "$DRY_RUN" == 0 ]]; then
   fi
 fi
 [[ "$SNAPSHOT_ONLY" != 1 ]] || { success "snapshot complete"; exit 0; }
+retire_args=(--destination "$DESTINATION" --source "$SOURCE_DIR" --profile "$PROFILE")
+[[ "$DRY_RUN" != 1 ]] || retire_args+=(--dry-run)
+cleanup_status=0
+python3 "$SCRIPT_DIR/retire-dotfiles.py" "${retire_args[@]}" || cleanup_status=$?
+[[ "$cleanup_status" == 0 || "$cleanup_status" == 2 ]] || fatal "Retirement failed; no new configuration applied."
 # Preserve existing host identities when introducing the local SSH include.
 if [[ "$DRY_RUN" == 0 && -f "$DESTINATION/.ssh/config" && ! -e "$DESTINATION/.ssh/config.local" && ! -L "$DESTINATION/.ssh/config.local" ]]; then
   if ! grep -Eq '^[[:space:]]*Include[[:space:]]+~/.ssh/config.local' "$DESTINATION/.ssh/config"; then
@@ -200,3 +205,7 @@ if [[ "$DRY_RUN" == 0 ]]; then
   printf '%s\n' "$REPO_ROOT" >"$DESTINATION/.local/state/dotfiles/source"
 fi
 success "dotfiles deployed"
+if [[ "$cleanup_status" == 2 ]]; then
+  warn "Configuration deployed, but cleanup is incomplete: review the preserved targets above."
+  exit 2
+fi

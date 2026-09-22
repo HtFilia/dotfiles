@@ -1,0 +1,35 @@
+[
+  {
+    "target": ".config/Code/User/settings.json",
+    "source": "dot_config/Code/User/settings.json",
+    "profile": "server",
+    "sha256": [
+      "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b"
+    ]
+  },
+  {
+    "target": ".config/Code/User/keybindings.json",
+    "source": "dot_config/Code/User/keybindings.json",
+    "profile": "server",
+    "sha256": [
+      "74fda8b404481350eccff02675c3ff45579112a1615423047f0d17d5951bd16f"
+    ]
+  },
+  {
+    "target": ".config/ghostty/config.ghostty",
+    "source": "dot_config/ghostty/config.ghostty",
+    "profile": "server",
+    "sha256": [
+      "fcbedb73fe7f6525252141c08f75b9c28c15d33f13969ea11dd51ef80326bd70"
+    ]
+  },
+  {
+    "target": "Library/Application Support/Code/User",
+    "source": "dot_config/Code/User",
+    "profile": "server",
+    "children": {
+      "settings.json": "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b",
+      "keybindings.json": "74fda8b404481350eccff02675c3ff45579112a1615423047f0d17d5951bd16f"
+    }
+  }
+]
