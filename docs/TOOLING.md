@@ -17,6 +17,7 @@ repeating every version pin.
 | jq, yq, sd | Structured JSON/YAML processing; simple text substitutions |
 | xh, curl, wget | Interactive HTTP requests and conventional downloads |
 | dust, duf, hyperfine, tokei | Disk usage, filesystem overview, benchmarks, optional code counts |
+| htop | Interactive resource monitor; 500 ms refresh, compact CPU/memory display |
 | watchexec | Rerun commands when files change |
 | uv, mise | Python project/tool environments; explicit project runtime selection |
 | direnv, atuin | Approved per-project environment; contextual history when installed |

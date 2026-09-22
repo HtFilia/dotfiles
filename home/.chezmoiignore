@@ -3,8 +3,6 @@
 .config/Code/**
 .config/ghostty
 .config/ghostty/**
-.config/btop
-.config/btop/**
 .config/fastfetch
 .config/fastfetch/**
 .config/tealdeer/pages

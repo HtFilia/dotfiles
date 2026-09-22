@@ -197,5 +197,12 @@
       "cd068b35752e9c180ca9697744041b30bca9a19e03a04fb1907bdd3bb33541ba",
       "b298ccd0ada953dbf4db2ed7787dd5e94f177b3ba64d0db301bf7df56b8b43e1"
     ]
+  },
+  {
+    "target": ".config/btop/btop.conf",
+    "source": "dot_config/btop/btop.conf",
+    "sha256": [
+      "d33cc0a472e37873cdff0ed1c3e8488514da2ab9c74b18d732ba450a0641316d"
+    ]
   }
 ]

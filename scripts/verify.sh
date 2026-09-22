@@ -33,10 +33,10 @@ plugin_matches() {
   actual="$(git -C "$directory" rev-parse HEAD 2>/dev/null)" || return 1
   [[ "$actual" == "$expected" && -z "$(git -C "$directory" status --porcelain)" ]]
 }
-for tool in zsh starship tmux chezmoi eza delta lazygit just bat fd rg fzf zoxide direnv nvim git jq; do
+for tool in zsh starship tmux htop chezmoi eza delta lazygit just bat fd rg fzf zoxide direnv nvim git jq; do
   check "$tool available" available "$tool"
 done
-for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/nvim/init.lua .config/nvim/lazy-lock.json; do
+for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/htop/htoprc .config/nvim/init.lua .config/nvim/lazy-lock.json; do
   check "$target deployed" test -f "$HOME/$target"
 done
 if [[ -f "$HOME/.local/state/dotfiles/materialize" ]] && [[ "$(cat "$HOME/.local/state/dotfiles/materialize")" == file ]]; then
@@ -111,7 +111,7 @@ if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
   check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
 fi
 if [[ "$profile" == workstation ]]; then
-  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm biome ouch zstd sponge ts vidir parallel chafa ov hexyl dua broot czkawka_cli xcp viu vivid pastel tldr jc jless fastfetch; do
+  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm biome ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
     check "$tool available" available "$tool"
   done
   if [[ "$(uname -s)" == Linux ]]; then

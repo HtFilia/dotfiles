@@ -168,10 +168,6 @@ pinned_asset_field() {
     jq-linux-x86_64:file) printf '%s\n' 'jq-linux-amd64' ;;
     jq-linux-x86_64:sha256) printf '%s\n' 'b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f' ;;
 
-    btop-linux-x86_64:version) printf '%s\n' '1.4.7' ;;
-    btop-linux-x86_64:url) printf '%s\n' 'https://github.com/aristocratos/btop/releases/download/v1.4.7/btop-x86_64-unknown-linux-musl.tar.gz' ;;
-    btop-linux-x86_64:file) printf '%s\n' 'btop-x86_64-unknown-linux-musl.tar.gz' ;;
-    btop-linux-x86_64:sha256) printf '%s\n' '5099054dd6a101bd12eb6ff3702a9a6a3f57aaa27923a0da478ae5b517faf335' ;;
 
     tmux-linux-x86_64:version) printf '%s\n' '3.7c' ;;
     tmux-linux-x86_64:url) printf '%s\n' 'https://github.com/tmux/tmux/releases/download/3.7c/tmux-3.7c.tar.gz' ;;
@@ -213,10 +209,6 @@ pinned_asset_field() {
     xcp-linux-x86_64:file) printf '%s\n' 'xcp-v0.24.8-x86_64-unknown-linux-gnu.tar.gz' ;;
     xcp-linux-x86_64:sha256) printf '%s\n' 'b7163f44c837fe8f7e3cc147bfe5db96841c9f65252f0f17cda885db3bc97331' ;;
 
-    viu-linux-x86_64:version) printf '%s\n' '1.6.1' ;;
-    viu-linux-x86_64:url) printf '%s\n' 'https://github.com/atanunq/viu/releases/download/v1.6.1/viu-x86_64-unknown-linux-musl' ;;
-    viu-linux-x86_64:file) printf '%s\n' 'viu-x86_64-unknown-linux-musl' ;;
-    viu-linux-x86_64:sha256) printf '%s\n' 'f108265ff0441406290d5f53f64a2b88d4db530a7389a5dcd771bf782aa3ec6e' ;;
 
     vivid-linux-x86_64:version) printf '%s\n' '0.11.1' ;;
     vivid-linux-x86_64:url) printf '%s\n' 'https://github.com/sharkdp/vivid/releases/download/v0.11.1/vivid-v0.11.1-x86_64-unknown-linux-musl.tar.gz' ;;
