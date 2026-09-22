@@ -115,30 +115,18 @@ pinned_asset_field() {
     node-linux-x86_64:file) printf '%s\n' 'node-v26.9.0-linux-x64.tar.xz' ;;
     node-linux-x86_64:sha256) printf '%s\n' 'c6ecd8efc1c1d395265891675319da7a7b3785c6be174bd78933cf4f057624d1' ;;
 
-    node-linux-arm64:version) printf '%s\n' 'v26.9.0' ;;
-    node-linux-arm64:url) printf '%s\n' 'https://nodejs.org/dist/v26.9.0/node-v26.9.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:file) printf '%s\n' 'node-v26.9.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:sha256) printf '%s\n' '686d07ed3bc5d68d9f7bd4939b7e8849a87d0664ac19c8c5474474f44cc956db' ;;
 
     chezmoi-linux-amd64:version) printf '%s\n' 'v2.72.2' ;;
     chezmoi-linux-amd64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.72.2/chezmoi_2.72.2_linux_amd64.tar.gz' ;;
     chezmoi-linux-amd64:file) printf '%s\n' 'chezmoi_2.72.2_linux_amd64.tar.gz' ;;
     chezmoi-linux-amd64:sha256) printf '%s\n' 'a2be1b8bcdf06c6f173e070bb3ddbcc52c50478fe9b57f6e6c63d15c7cff4f03' ;;
 
-    chezmoi-linux-arm64:version) printf '%s\n' 'v2.72.2' ;;
-    chezmoi-linux-arm64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.72.2/chezmoi_2.72.2_linux_arm64.tar.gz' ;;
-    chezmoi-linux-arm64:file) printf '%s\n' 'chezmoi_2.72.2_linux_arm64.tar.gz' ;;
-    chezmoi-linux-arm64:sha256) printf '%s\n' '499925fd10804b7c1a5dc4b4a275c8935261d02a4be0c18bbd41b7747810de67' ;;
 
     go-linux-amd64:version) printf '%s\n' '1.27.1' ;;
     go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.27.1.linux-amd64.tar.gz' ;;
     go-linux-amd64:file) printf '%s\n' 'go1.27.1.linux-amd64.tar.gz' ;;
     go-linux-amd64:sha256) printf '%s\n' '63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445' ;;
 
-    go-linux-arm64:version) printf '%s\n' '1.27.1' ;;
-    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.27.1.linux-arm64.tar.gz' ;;
-    go-linux-arm64:file) printf '%s\n' 'go1.27.1.linux-arm64.tar.gz' ;;
-    go-linux-arm64:sha256) printf '%s\n' '3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec' ;;
 
     fzf-linux-x86_64:version) printf '%s\n' '0.74.4' ;;
     fzf-linux-x86_64:url) printf '%s\n' 'https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz' ;;
@@ -267,7 +255,6 @@ pinned_asset_field() {
 pinned_asset_arch() {
   case "$(uname -m)" in
     x86_64|amd64) printf '%s\n' 'x86_64' ;;
-    aarch64|arm64) printf '%s\n' 'arm64' ;;
     *) return 1 ;;
   esac
 }
@@ -275,7 +262,6 @@ pinned_asset_arch() {
 pinned_asset_go_arch() {
   case "$(uname -m)" in
     x86_64|amd64) printf '%s\n' 'amd64' ;;
-    aarch64|arm64) printf '%s\n' 'arm64' ;;
     *) return 1 ;;
   esac
 }

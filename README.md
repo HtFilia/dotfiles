@@ -41,8 +41,7 @@ restore.
 | Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
 | Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
-Linux ARM asset entries are metadata for selected upstream downloads, not a
-supported installation profile. Linux Ghostty and VS Code installation are
+Linux profiles support x86_64 only. Linux Ghostty and VS Code installation are
 manual. Homebrew/apt versions follow their repositories; direct Linux downloads
 and plugin checkouts are pinned. See [supply chain](docs/SUPPLY-CHAIN.md).
 
