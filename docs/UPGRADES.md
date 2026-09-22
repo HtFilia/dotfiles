@@ -12,6 +12,11 @@ just verify
 `just update` continues to update configuration only. `just tools-update` updates
 the supported OS packages and provisions the versions recorded in this checkout.
 It does not silently rewrite pins to whatever upstream publishes next week.
+The saved server/workstation profile selects the installer. Server updates do
+not provision workstation runtimes or editor tools. `--skip-packages` skips all
+apt/Homebrew operations (on macOS this leaves nothing separately managed to
+update). Use `--skip-docker` and `--skip-fonts` again when updating a workstation
+that should omit those components; bootstrap flags are not saved preferences.
 Review newer versions and checksums in `scripts/pinned-assets.sh`, regenerate
 `docs/ASSET-MANIFEST.md` with `just assets`, and test before committing changes.
 

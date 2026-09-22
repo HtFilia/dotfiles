@@ -43,6 +43,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "$ENV_TYPE" == linux || "$ENV_TYPE" == wsl ]] || fatal "Expected linux or wsl"
+[[ "$SKIP_PACKAGES" != 1 || "$ENABLE_DOCKER_GROUP" != 1 ]] || fatal "--enable-docker-group cannot be combined with --skip-packages"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/preflight.sh"
 preflight_linux workstation
@@ -231,6 +232,7 @@ else
   if [[ "$docker_packages_ready" == 1 ]] && command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && docker buildx version >/dev/null 2>&1; then
     :
   else
+    [[ "$SKIP_PACKAGES" == 0 ]] || fatal "Docker prerequisites missing; install them first or use --skip-docker."
     case "$OS_ID" in
       debian|ubuntu) ;;
       *) fatal "Docker apt repository is configured only for Debian/Ubuntu, detected $OS_ID" ;;
@@ -255,9 +257,8 @@ if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]
   warn "Docker group grants root-equivalent access; log out/in."
 fi
 
-if [[ "$SKIP_PACKAGES" == 1 ]]; then
-  warn "Skipped GitHub CLI package/repository changes (--skip-packages)."
-elif ! command -v gh >/dev/null 2>&1; then
+if ! command -v gh >/dev/null 2>&1; then
+  [[ "$SKIP_PACKAGES" == 0 ]] || fatal "GitHub CLI missing; install gh before using --skip-packages."
   log "Installing GitHub CLI from official apt repository..."
   sudo mkdir -p -m 755 /etc/apt/keyrings
   wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null

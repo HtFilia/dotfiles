@@ -56,6 +56,41 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
 
+    def test_tool_update_dispatch_and_package_boundaries(self):
+        scripts = self.work / "scripts"
+        shutil.copytree(ROOT / "scripts", scripts)
+        (scripts / "preflight.sh").write_text("preflight_linux() { :; }\n")
+        binaries = self.work / "bin"
+        binaries.mkdir()
+        log = self.work / "calls"
+        def stub(path, body):
+            path.write_text("#!/bin/sh\n" + body + "\n")
+            path.chmod(0o755)
+        for name in ("sudo", "rustup", "uv"):
+            stub(binaries / name, 'printf "%s %s\\n" "' + name + '" "$*" >> "$CALLS"')
+        for name in ("install-debian.sh", "install-server.sh", "install-macos.sh"):
+            stub(scripts / name, 'printf "%s %s\\n" "' + name + '" "$*" >> "$CALLS"')
+        stub(binaries / "uname", 'printf "%s\\n" "$TEST_OS"')
+        state = self.home / ".local/state/dotfiles"
+        state.mkdir(parents=True)
+        env = dict(self.env, PATH=str(binaries) + ":/usr/bin:/bin", CALLS=str(log), TEST_OS="Linux")
+        (state / "profile").write_text("server\n")
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", env=env)
+        self.assertEqual(log.read_text(), "install-server.sh --skip-packages\n")
+        log.unlink()
+        (state / "profile").write_text("workstation\n")
+        env["WSL_DISTRO_NAME"] = "Debian"
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", "--skip-docker", env=env)
+        calls = log.read_text()
+        self.assertIn("install-debian.sh wsl --skip-packages --skip-docker", calls)
+        self.assertNotIn("sudo", calls)
+        log.unlink()
+        env["TEST_OS"] = "Darwin"
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", env=env)
+        self.assertFalse(log.exists())
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-fonts", "--skip-docker", env=env)
+        self.assertEqual(log.read_text(), "install-macos.sh --skip-fonts --skip-docker\n")
+
     def test_server_fallback_preserves_existing_launchers(self):
         source = (ROOT / "scripts/install-server.sh").read_text()
         functions = source[source.index("install_go() {"):source.index('\ncommand -v fdfind')]

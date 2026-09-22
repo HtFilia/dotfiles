@@ -7,12 +7,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
 skip_packages=0 dry_run=0 explicit_profile=""
+options=()
 while (( $# )); do
   case "$1" in
     --skip-packages) skip_packages=1 ;;
+    --skip-docker|--skip-fonts) options+=("$1") ;;
     --dry-run) dry_run=1 ;;
     --profile) [[ $# -ge 2 ]] || { printf 'Missing profile\n' >&2; exit 2; }; explicit_profile="$2"; shift ;;
-    -h|--help) printf 'Usage: %s [--profile server|workstation] [--skip-packages] [--dry-run]\n' "$0"; exit 0 ;;
+    -h|--help) printf 'Usage: %s [--profile server|workstation] [--skip-packages] [--skip-docker] [--skip-fonts] [--dry-run]\nPackage exclusions are explicit per invocation.\n' "$0"; exit 0 ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
   esac
   shift
@@ -41,8 +43,11 @@ printf 'Tool update: profile=%s, packages=%s\n' "$profile" "$([[ "$skip_packages
 case "$(uname -s)" in
   Darwin)
     [[ "$profile" == workstation ]] || { printf 'Server profile requires Linux\n' >&2; exit 2; }
-    [[ "$skip_packages" == 0 ]] || { printf '%s\n' '--skip-packages is unavailable on macOS' >&2; exit 2; }
-    run "$SCRIPT_DIR/install-macos.sh"
+    if (( skip_packages )); then
+      printf 'No separately managed macOS tools to update with --skip-packages.\n'
+    else
+      run "$SCRIPT_DIR/install-macos.sh" ${options[@]+"${options[@]}"}
+    fi
     ;;
   Linux)
     if (( ! skip_packages )); then
@@ -66,6 +71,9 @@ case "$(uname -s)" in
       args=(linux)
       if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/sys/kernel/osrelease; then args=(wsl); fi
       (( skip_packages )) && args+=(--skip-packages)
+      for option in ${options[@]+"${options[@]}"}; do
+        [[ "$option" != --skip-docker ]] || args+=("$option")
+      done
       run "$SCRIPT_DIR/install-debian.sh" "${args[@]}"
       # shellcheck source=scripts/runtime-versions.sh
       . "$SCRIPT_DIR/runtime-versions.sh"
