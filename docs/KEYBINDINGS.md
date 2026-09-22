@@ -18,8 +18,6 @@ Prefix: **`Ctrl-a`**
 | Start selection | `v` (in copy mode) |
 | Copy selection | `y` (in copy mode) |
 | Reload config | `prefix` + `r` |
-| Install plugins (optional TPM) | `prefix` + `I` |
-| Update plugins (optional TPM; review pin drift) | `prefix` + `U` |
 
 ## Neovim
 

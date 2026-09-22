@@ -54,7 +54,6 @@ Options:
   --skip-docker            do not install container packages
   --skip-fonts             do not install FiraCode Nerd Font
   --no-shell-plugins       skip zsh plugin installation
-  --with-tpm               install optional tmux plugin manager
   --setup-editor           explicitly download language tools and parsers
   --editor-languages LIST  comma-separated subset: lua,python,go,rust,node,shell
   --skip-vscode-extensions skip VS Code extension installation
@@ -87,7 +86,7 @@ install_vscode_extensions() {
 }
 
 main() {
-  local install_shell_plugins=1 install_tpm=0 configure_shell=0 start_colima=0 enable_docker_group=0
+  local install_shell_plugins=1 configure_shell=0 start_colima=0 enable_docker_group=0
   local install_code_extensions=1 skip_docker=0 skip_fonts=0 setup_editor=0
   local profile="" editor_languages="" system_baseline=0 dry_run=0
   while [[ $# -gt 0 ]]; do
@@ -103,7 +102,6 @@ main() {
       --skip-fonts) skip_fonts=1 ;;
       --setup-editor) setup_editor=1 ;;
       --editor-languages) [[ $# -ge 2 ]] || fatal "--editor-languages requires a value"; editor_languages="$2"; setup_editor=1; shift ;;
-      --with-tpm) install_tpm=1 ;;
       --no-shell-plugins) install_shell_plugins=0 ;;
       --skip-vscode-extensions) install_code_extensions=0 ;;
       --configure-shell) configure_shell=1 ;;
@@ -167,7 +165,6 @@ main() {
       info 'would run workstation installer and selected optional tools'
     fi
     (( install_shell_plugins == 0 )) || info 'would install pinned Zsh plugins'
-    (( install_tpm == 0 )) || info 'would install pinned tmux TPM'
     info 'would apply Chezmoi source'
     if command -v chezmoi >/dev/null 2>&1; then "$SCRIPT_DIR/apply-dotfiles.sh" --profile "$profile" --dry-run; fi
     return 0
@@ -234,15 +231,6 @@ main() {
     warn "Skipped Zsh plugin installation."
   fi
 
-    if [[ "$install_tpm" == 1 ]]; then
-    log "Installing pinned tmux plugin manager..."
-    if install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; then
-      success "installed tmux TPM"
-    else
-      fatal "Could not install pinned tmux TPM"
-    fi
-    fi
-
   log "Applying dotfiles..."
   "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
 
@@ -261,7 +249,6 @@ main() {
   fi
   mkdir -p "$HOME/.local/state/dotfiles"
   if [[ "$install_shell_plugins" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/shell-plugins"; else printf 'skipped\n' > "$HOME/.local/state/dotfiles/shell-plugins"; fi
-  if [[ "$install_tpm" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/tpm"; fi
 
   if [[ "$os" == macos ]]; then
     current_shell="$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')"

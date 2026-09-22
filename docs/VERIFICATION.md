@@ -38,7 +38,7 @@ use the CI version when validating this repository's allowlist configuration.
 The saved profile determines required tools and deployed leaf files. Linux
 upstream binary pins are compared as complete version tokens. Existing plugins
 must match pins and have clean working trees. Verification returns nonzero for
-required failures. Plugins/TPM deliberately skipped during installation are
+required failures. Plugins deliberately skipped during installation are
 optional. Docker checks validate CLI plugins, not daemon startup; a skipped
 Docker installation is optional. Explicitly provisioned editor tools have markers
 and are checked independently, including selected runtime pins. Server checks

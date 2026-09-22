@@ -17,7 +17,7 @@ cd ~/.dotfiles
 The profile installs shell/Git/navigation tools, tmux, pinned Neovim and Ghostty
 terminfo. It omits desktop settings, fonts, Docker and runtimes. Neovim lives in
 `~/.local/opt/nvim-VERSION`. Configuration materializes as independent files.
-TPM and language provisioning are optional. The server's GitHub SSH key/account
+Language provisioning is optional. The server's GitHub SSH key/account
 must already be configured for cloning this repository.
 
 ## Mac client

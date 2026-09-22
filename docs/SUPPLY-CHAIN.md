@@ -21,7 +21,7 @@ exact version and `--locked`, with crates.io's dependency integrity mechanisms.
 
 ## Executed plugins and editor tools
 
-Zsh/TPM checkouts have exact commits and installers reject dirty checkouts and
+Zsh checkouts have exact commits and installers reject dirty checkouts and
 propagate Git errors. Zsh checks ownership and directory permissions before
 sourcing plugin entrypoints. Neovim pins its manager/distribution/theme and locks
 its plugin graph; missing plugins may be downloaded on first launch, and plugin

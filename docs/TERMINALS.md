@@ -7,7 +7,7 @@ according to your workflow; neither needs to duplicate every layout.
 
 ## Ghostty
 
-The managed configuration uses FiraCode Nerd Font Mono, Gruvbox colors, a 64 MiB
+The managed configuration uses FiraCode Nerd Font Mono, Operator colors, a 64 MiB
 scrollback limit, and process-aware close confirmation. Transparency/blur are
 personal presentation settings; lower scrollback or disable blur if memory/GPU
 use matters on your machine. Copy-on-select writes to the clipboard.
@@ -29,10 +29,8 @@ extended keys and clipboard capabilities. `set-clipboard external` supports
 OSC 52 copying to the terminal client without X11 utilities on a remote server.
 Client clipboard permissions still apply.
 
-TPM is optional (`bootstrap --with-tpm`). Add selected plugins to
-`~/.tmux.conf.local` and use prefix I to install them. TPM updates can change
-checkouts; review pin drift rather than assuming updates remain reproducible.
-No reboot restoration plugins or automatic tmux attachment are part of the base.
+Local bindings belong in `~/.tmux.conf.local`. No plugin manager, reboot
+restoration plugins, or automatic attachment are part of the base.
 `tm [NAME]` creates or attaches a session when you want one.
 
 [Keybindings](KEYBINDINGS.md) lists the managed shortcuts;

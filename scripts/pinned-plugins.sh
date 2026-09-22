@@ -22,9 +22,6 @@ pinned_plugin_field() {
     zsh-syntax-highlighting:dir) printf '%s\n' 'zsh-syntax-highlighting' ;;
     zsh-syntax-highlighting:commit) printf '%s\n' '1d85c692615a25fe2293bdd44b34c217d5d2bf04' ;;
 
-    tmux-tpm:repo) printf '%s\n' 'https://github.com/tmux-plugins/tpm.git' ;;
-    tmux-tpm:dir) printf '%s\n' 'tpm' ;;
-    tmux-tpm:commit) printf '%s\n' '99469c4a9b1ccf77fade25842dc7bafbc8ce9946' ;;
 
     *) return 1 ;;
   esac

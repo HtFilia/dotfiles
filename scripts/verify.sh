@@ -104,9 +104,6 @@ done
 if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed || ( -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" && -d "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting" ) ]]; then
   check 'Zsh plugins actually load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
 fi
-if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
-  check 'TPM pin and clean checkout' plugin_matches tmux-tpm "$HOME/.tmux/plugins"
-fi
 if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
   check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
 fi

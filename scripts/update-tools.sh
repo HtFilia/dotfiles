@@ -93,8 +93,4 @@ if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" =
     done
   fi
 fi
-if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
-  if (( dry_run )); then printf "would update pinned tmux TPM checkout\n";
-  else install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; fi
-fi
 (( dry_run )) || printf 'Tool update complete. Open a new shell, then run scripts/verify.sh.\n'

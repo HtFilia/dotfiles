@@ -82,7 +82,7 @@ Useful workstation choices:
 ./scripts/bootstrap.sh --setup-editor
 ```
 
-Shell plugins are installed by default. TPM is optional through `--with-tpm`.
+Shell plugins are installed by default.
 `--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
 extensions. Docker-group membership is opt-in with `--enable-docker-group` and
 grants root-equivalent access. See [installation](docs/INSTALLATION.md).

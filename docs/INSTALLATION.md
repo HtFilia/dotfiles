@@ -32,7 +32,6 @@ relocate Chezmoi's managed `.config` targets; use the conventional layout.
 | `--skip-fonts` | Omit font installation, including the macOS font cask |
 | `--skip-vscode-extensions` | Omit extension installation |
 | `--no-shell-plugins` | Omit Zsh plugin installation |
-| `--with-tpm` | Install pinned TPM for explicitly selected tmux plugins |
 | `--start-colima` | Start Colima and enable its Homebrew service |
 | `--enable-docker-group` | Join Linux Docker group; root-equivalent access |
 | `--setup-editor` | Explicitly download language servers, formatters and parsers |
