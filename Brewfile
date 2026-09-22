@@ -44,7 +44,6 @@ brew "pnpm"
 
 brew "shellcheck"
 brew "shfmt"
-brew "bats-core"
 brew "actionlint"
 brew "gitleaks"
 

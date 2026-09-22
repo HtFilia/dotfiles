@@ -22,7 +22,7 @@ repeating every version pin.
 | uv, mise | Python project/tool environments; explicit project runtime selection |
 | direnv, atuin | Approved per-project environment; contextual history when installed |
 | Docker, Compose, Buildx, Colima, LazyDocker | Container CLI/plugins, macOS runtime, interactive inspection |
-| ShellCheck, shfmt, Bats, actionlint, gitleaks | Shell quality, formatting/testing, workflow lint, secret detection |
+| ShellCheck, shfmt, actionlint, gitleaks | Shell quality, formatting, workflow lint, secret detection |
 | VS Code, Neovim | GUI and terminal editing; language tools provisioned explicitly |
 
 Several tools intentionally overlap for different modes of use: bat versus a

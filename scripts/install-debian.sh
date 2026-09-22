@@ -161,7 +161,7 @@ log "Installing packages from apt..."
 sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck shfmt bats zstd moreutils parallel ffmpeg 7zip \
+  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck shfmt zstd moreutils parallel ffmpeg 7zip \
   libevent-dev libncurses-dev byacc ncurses-term ncurses-bin less bsdextrautils
 success "apt packages installed"
 fi

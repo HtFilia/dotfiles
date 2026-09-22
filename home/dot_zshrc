@@ -14,7 +14,7 @@ esac
 [[ -f "$HOME/.zshrc.settings" ]] && source "$HOME/.zshrc.settings"
 typeset -U path PATH
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/go/bin" $path)
-for _prefix in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+for _prefix in /opt/homebrew /usr/local; do
   if [[ -x "$_prefix/bin/brew" ]]; then
     export HOMEBREW_PREFIX="$_prefix"
     path=("$_prefix/bin" "$_prefix/sbin" $path)
@@ -102,8 +102,6 @@ if command -v fzf &>/dev/null; then
   else
     [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
     [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
-    [[ -f ~/.fzf/shell/key-bindings.zsh ]] && source ~/.fzf/shell/key-bindings.zsh
-    [[ -f ~/.fzf/shell/completion.zsh ]] && source ~/.fzf/shell/completion.zsh
   fi
   unset _fzf_init
   export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded"
@@ -152,8 +150,7 @@ if command -v docker &>/dev/null; then
   alias dpsa='docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"'
   alias di='docker images' dex='docker exec -it' dlog='docker logs -f'
   alias dprune='docker system prune'
-elif command -v podman &>/dev/null; then
-  alias d='podman' dc='podman compose' dps='podman ps' di='podman images'
+
 fi
 
 alias ..='cd ..' ...='cd ../..' ....='cd ../../..' -- -='cd -'

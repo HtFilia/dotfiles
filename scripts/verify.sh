@@ -111,7 +111,7 @@ if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
   check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
 fi
 if [[ "$profile" == workstation ]]; then
-  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
+  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt pnpm ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
     check "$tool available" available "$tool"
   done
   if [[ "$(uname -s)" == Linux ]]; then
