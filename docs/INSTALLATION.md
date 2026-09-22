@@ -61,8 +61,8 @@ explicit error rather than being silently reused.
 
 `LOCAL_BIN` changes the direct-tool directory and is exported in bootstrap's
 PATH. If you keep a custom location, add it to your persistent shell PATH too.
-`DOTFILES_DOWNLOAD_DIR` changes the cache root. `DOTFILES_REPO` supplies the SSH
-clone URL for the bootstrap fallback; an existing checkout is used directly.
+`DOTFILES_DOWNLOAD_DIR` changes the cache root. Bootstrap requires a complete
+checkout and uses that checkout directly.
 
 `install-server.sh --skip-packages` assumes an administrator has already
 installed its declared apt dependencies. With `--setup-editor`, that includes

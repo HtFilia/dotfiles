@@ -12,9 +12,10 @@ success() { printf "%s  +%s %s\n" "$GREEN" "$RESET" "$*"; }
 warn() { printf "%s  !%s %s\n" "$YELLOW" "$RESET" "$*" >&2; }
 fatal() { printf "%s  x%s %s\n" "$RED" "$RESET" "$*" >&2; exit 1; }
 
-DOTFILES_REPO="${DOTFILES_REPO:-git@github.com:HtFilia/dotfiles.git}"
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dotfiles_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
+[[ -f "$dotfiles_dir/home/dot_zshrc" && -f "$SCRIPT_DIR/pinned-plugins.sh" ]] ||
+  fatal "Run bootstrap from a complete dotfiles checkout."
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
 # shellcheck source=scripts/profile.sh
@@ -243,12 +244,6 @@ main() {
     fi
 
   log "Applying dotfiles..."
-  if [[ -f "$SCRIPT_DIR/../home/dot_zshrc" ]]; then
-    dotfiles_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
-  else
-    dotfiles_dir="$DOTFILES_DIR"
-    [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
-  fi
   "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
 
   if [[ "$install_code_extensions" == "1" ]]; then

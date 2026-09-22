@@ -56,6 +56,13 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
 
+    def test_bootstrap_requires_complete_checkout(self):
+        script = self.work / "bootstrap.sh"
+        shutil.copy2(ROOT / "scripts/bootstrap.sh", script)
+        result = self.run_command("bash", str(script), "--yes", success=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("complete dotfiles checkout", result.stderr)
+
     def test_dry_run_has_no_destination_writes(self):
         destination = self.work / "dry"
         self.apply("--destination", str(destination), "--dry-run")
