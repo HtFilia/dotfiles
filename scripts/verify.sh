@@ -87,6 +87,7 @@ if [[ "$profile" == server ]]; then
   fi
 fi
 if [[ "$(uname -s)" == Linux ]]; then
+  check 'distro tmux selected (no retired local build shadowing it)' bash -c '[[ "$(command -v tmux)" -ef /usr/bin/tmux ]]'
   for pair in starship:starship-linux-x86_64 eza:eza-linux-x86_64 delta:delta-linux-x86_64 lazygit:lazygit-linux-x86_64 chezmoi:chezmoi-linux-amd64 just:just-linux-x86_64 nvim:neovim-linux-x86_64; do
     check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
   done
@@ -118,7 +119,6 @@ if [[ "$profile" == workstation ]]; then
     while IFS=$'\t' read -r tool key _member; do
       [[ -n "$tool" && "$tool" != \#* ]] || continue
       argument=--version
-      [[ "$tool" != tmux ]] || argument=-V
       check "$tool extra pin" asset_version_matches "$tool" "$key" "$argument"
     done < "$SCRIPT_DIR/extra-tools.tsv"
     check 'pnpm executes' pnpm --version

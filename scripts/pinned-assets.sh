@@ -169,10 +169,6 @@ pinned_asset_field() {
     jq-linux-x86_64:sha256) printf '%s\n' 'b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f' ;;
 
 
-    tmux-linux-x86_64:version) printf '%s\n' '3.7c' ;;
-    tmux-linux-x86_64:url) printf '%s\n' 'https://github.com/tmux/tmux/releases/download/3.7c/tmux-3.7c.tar.gz' ;;
-    tmux-linux-x86_64:file) printf '%s\n' 'tmux-3.7c.tar.gz' ;;
-    tmux-linux-x86_64:sha256) printf '%s\n' '7c60cae9a0e25288e2e24750aafc9e8800fc7fd4555e447e1b29ee4201cfb3bf' ;;
 
     ouch-linux-x86_64:version) printf '%s\n' '0.8.3' ;;
     ouch-linux-x86_64:url) printf '%s\n' 'https://github.com/ouch-org/ouch/releases/download/0.8.3/ouch-x86_64-unknown-linux-musl.tar.gz' ;;

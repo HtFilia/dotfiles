@@ -1,5 +1,6 @@
 """Offline behavioral checks. All mutable state is confined to temporary homes."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -55,6 +56,23 @@ class Contracts(unittest.TestCase):
         result = self.run_command(str(ROOT / "scripts/bootstrap.sh"), "--profile", "invalid", "--yes", success=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
+
+    def test_retired_binary_is_backed_up_without_execution(self):
+        scripts = self.work / "scripts"
+        scripts.mkdir()
+        shutil.copy2(ROOT / "scripts/retire-dotfiles.py", scripts)
+        binary = self.home / ".local/bin/tmux"
+        binary.parent.mkdir(parents=True)
+        payload = b"old compiled executable fixture"
+        binary.write_bytes(payload)
+        (scripts / "retired-files.json").write_text(json.dumps([{
+            "target": ".local/bin/tmux", "sha256": [hashlib.sha256(payload).hexdigest()]}]))
+        self.run_command("python3", str(scripts / "retire-dotfiles.py"), "--destination", str(self.home),
+                         "--source", str(ROOT / "home"), "--profile", "workstation")
+        self.assertFalse(binary.exists())
+        backup = next((self.home / ".local/state/dotfiles/backups").glob("retired-*"))
+        with tarfile.open(backup / "contents.tar") as archive:
+            self.assertEqual(archive.extractfile(".local/bin/tmux").read(), payload)
 
     def test_profile_retirement_backs_up_and_restores(self):
         target = self.home / ".config/ghostty/config.ghostty"

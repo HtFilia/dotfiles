@@ -211,5 +211,11 @@
     "sha256": [
       "d33cc0a472e37873cdff0ed1c3e8488514da2ab9c74b18d732ba450a0641316d"
     ]
+  },
+  {
+    "target": ".local/bin/tmux",
+    "sha256": [
+      "980700ba5ec00fe8ca4ff23187a032d46c80b2744d2f4f6384d4571e6a50edd4"
+    ]
   }
 ]

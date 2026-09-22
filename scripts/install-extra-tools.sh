@@ -19,7 +19,6 @@ trap 'rm -rf "$work_dir"' EXIT
 while IFS=$'\t' read -r tool key member; do
   [[ -n "$tool" && "$tool" != \#* ]] || continue
   argument=--version
-  [[ "$tool" != tmux ]] || argument=-V
   if asset_version_matches "$tool" "$key" "$argument"; then continue; fi
   printf 'Installing %s %s\n' "$tool" "$(pinned_asset_field "$key" version)"
   archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")"
@@ -27,14 +26,6 @@ while IFS=$'\t' read -r tool key member; do
   mkdir -p "$stage"
   if [[ "$member" == @binary ]]; then
     atomic_install_binary "$archive" "$LOCAL_BIN/$tool"
-  elif [[ "$member" == @tmux ]]; then
-    pkg-config --exists libevent ncursesw || {
-      printf 'tmux build needs libevent-dev, libncurses-dev, pkg-config and a compiler.\n' >&2
-      exit 1
-    }
-    tar -xf "$archive" -C "$stage" --strip-components=1
-    (cd "$stage" && ./configure --prefix="$HOME/.local" && make -j2)
-    atomic_install_binary "$stage/tmux" "$LOCAL_BIN/tmux"
   else
     extract_pinned_archive "$archive" "$stage"
     matches=()
