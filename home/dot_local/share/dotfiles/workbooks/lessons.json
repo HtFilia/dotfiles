@@ -394,7 +394,7 @@
     "id": "operator",
     "title": "09 / Build an operator deck",
     "goal": "Keep useful telemetry visible while leaving decorative effects optional.",
-    "challenge": "Use dotfiles-style operator, restart Zsh, then launch dotfiles-deck outside the lab.",
+    "challenge": "Restart Zsh, then launch dotfiles-deck outside the lab.",
     "steps": [
       {
         "title": "System card",

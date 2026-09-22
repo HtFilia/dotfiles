@@ -12,8 +12,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("settings", type=Path, help="Windows Terminal settings.json (JSON, not JSONC)")
     parser.add_argument("--profile", default=os.environ.get("WSL_DISTRO_NAME", "Debian"))
-    parser.add_argument("--style", choices=("operator", "studio", "neon", "matrix"), default="operator")
-    parser.add_argument("--crt", action="store_true")
     args = parser.parse_args()
     original = args.settings.read_text(encoding="utf-8-sig")
     try:
@@ -28,9 +26,9 @@ def main():
     names = {s["name"] for s in schemes}
     config["schemes"] = [s for s in config.get("schemes", []) if s.get("name") not in names] + schemes
     for profile in targets:
-        profile.update(colorScheme="Dotfiles " + args.style.title(), cursorShape="filledBox",
+        profile.update(colorScheme="Dotfiles Operator", cursorShape="filledBox",
                        padding="14, 10", opacity=94, useAcrylic=True)
-        profile["experimental.retroTerminalEffect"] = args.crt
+        profile["experimental.retroTerminalEffect"] = False
     rendered = json.dumps(config, ensure_ascii=False, indent=4) + "\n"
     if json.loads(original) == config:
         print("Windows Terminal style already matches.")

@@ -20,7 +20,8 @@
     "source": "dot_config/ghostty/config.ghostty",
     "profile": "server",
     "sha256": [
-      "fcbedb73fe7f6525252141c08f75b9c28c15d33f13969ea11dd51ef80326bd70"
+      "fcbedb73fe7f6525252141c08f75b9c28c15d33f13969ea11dd51ef80326bd70",
+      "16e36106a607e07ddeee31bbad8617fea99f15018c644852b33c269bb5c27eb3"
     ]
   },
   {
@@ -31,5 +32,134 @@
       "settings.json": "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b",
       "keybindings.json": "74fda8b404481350eccff02675c3ff45579112a1615423047f0d17d5951bd16f"
     }
+  },
+  {
+    "target": ".config/dotfiles/shaders/scanlines.glsl",
+    "source": "dot_config/dotfiles/shaders/scanlines.glsl",
+    "sha256": [
+      "dd386cb01e4e6d3eaaa6734cb143ffc6c5a0dd59b310a51c4dc285190d7add13"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/matrix/ghostty.conf",
+    "source": "dot_config/dotfiles/styles/matrix/ghostty.conf",
+    "sha256": [
+      "494575f82cd4474644cd00cf015ef8d126e5122942a4b5c2d98737bdfa11d9d5"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/matrix/starship.toml",
+    "source": "dot_config/dotfiles/styles/matrix/starship.toml",
+    "sha256": [
+      "6d06d6b1d4cee07b2d1bd7e163968f4c48d3eefb500f49810533e09af8d032db"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/matrix/tmux.conf",
+    "source": "dot_config/dotfiles/styles/matrix/tmux.conf",
+    "sha256": [
+      "0f4fda57d777b57d41b0fe631e362bdbd8a67a84332238b4a1f33bf658a3089e"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/neon/ghostty.conf",
+    "source": "dot_config/dotfiles/styles/neon/ghostty.conf",
+    "sha256": [
+      "2156c69c82c6feece3f5b625a17fcd5b4357e476f8eece88d4bd66083d65476f"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/neon/starship.toml",
+    "source": "dot_config/dotfiles/styles/neon/starship.toml",
+    "sha256": [
+      "9092fd20b0ac4336fab51ecaafc1c17a05ff5e55d423247d00ee2d19834a41b7"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/neon/tmux.conf",
+    "source": "dot_config/dotfiles/styles/neon/tmux.conf",
+    "sha256": [
+      "1be8c86a11245cfa81a43fcb1f53946598c4afa8e0dbc50ffb4a8e373b0bfb56"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/operator/ghostty.conf",
+    "source": "dot_config/dotfiles/styles/operator/ghostty.conf",
+    "sha256": [
+      "a3eff86cbb0c006392bef9a7c7f448a8af08bf1edc1f5910113ccf479ce5589b"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/operator/starship.toml",
+    "source": "dot_config/dotfiles/styles/operator/starship.toml",
+    "sha256": [
+      "91a36da0eaa3d821dcacb4674e14482b4402bb5d8ac2ed8b86b02436a942fbc2"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/operator/tmux.conf",
+    "source": "dot_config/dotfiles/styles/operator/tmux.conf",
+    "sha256": [
+      "e5c11b82ae84aede92cb2cda99bf09fe07fa09d936f49d7979e8763cf8cc53cc"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/studio/ghostty.conf",
+    "source": "dot_config/dotfiles/styles/studio/ghostty.conf",
+    "sha256": [
+      "22748802eaaac539393420f7ad62ecf7b9cbd57a407d5132a57790be3f3c9f94"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/studio/starship.toml",
+    "source": "dot_config/dotfiles/styles/studio/starship.toml",
+    "sha256": [
+      "9b6efc6b50e47e3ff2e78381c17fc6513e2945fcffe8f62312fc311d9c52f1d1"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/styles/studio/tmux.conf",
+    "source": "dot_config/dotfiles/styles/studio/tmux.conf",
+    "sha256": [
+      "952d83f855feef0cbae1b336bb39e9c5333aa8db307a431b13405a0bfb253ef5"
+    ]
+  },
+  {
+    "target": ".local/bin/dotfiles-style",
+    "source": "dot_local/bin/executable_dotfiles-style",
+    "sha256": [
+      "9c47b295af05336f8cc6b384811e381de267cf7b16eaef6e29158a8ff5ca73ac"
+    ]
+  },
+  {
+    "target": ".config/dotfiles/ghostty-style.conf",
+    "sha256": [
+      "494575f82cd4474644cd00cf015ef8d126e5122942a4b5c2d98737bdfa11d9d5",
+      "2156c69c82c6feece3f5b625a17fcd5b4357e476f8eece88d4bd66083d65476f",
+      "a3eff86cbb0c006392bef9a7c7f448a8af08bf1edc1f5910113ccf479ce5589b",
+      "22748802eaaac539393420f7ad62ecf7b9cbd57a407d5132a57790be3f3c9f94"
+    ],
+    "classic": true,
+    "crt": true
+  },
+  {
+    "target": ".config/dotfiles/tmux-style.conf",
+    "sha256": [
+      "0f4fda57d777b57d41b0fe631e362bdbd8a67a84332238b4a1f33bf658a3089e",
+      "1be8c86a11245cfa81a43fcb1f53946598c4afa8e0dbc50ffb4a8e373b0bfb56",
+      "e5c11b82ae84aede92cb2cda99bf09fe07fa09d936f49d7979e8763cf8cc53cc",
+      "952d83f855feef0cbae1b336bb39e9c5333aa8db307a431b13405a0bfb253ef5"
+    ],
+    "classic": true
+  },
+  {
+    "target": ".config/dotfiles/style",
+    "contents": [
+      "operator\n",
+      "studio\n",
+      "neon\n",
+      "matrix\n",
+      "classic\n"
+    ]
   }
 ]

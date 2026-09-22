@@ -177,16 +177,13 @@ just tools-update        # packages and managed tools, separate from git/config 
 just tools-update --skip-packages
 lab                      # nine interactive tool workbooks after deployment
 deck                     # shell + live resources + system card
-termstyle operator       # control-room layout for active work
 ```
 
-The default Operator shell layout uses graphite, teal and amber; editor and
-diff views use Gruvbox. Styles are selected explicitly and do not add startup
-animations or network calls.
+The Operator shell layout uses graphite, teal and amber; editor and diff views
+use Gruvbox. It adds no startup animation or network call.
 
 The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
 Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
 jc and jless. Fastfetch, cmatrix and cava provide explicit visual modes.
 See [workbooks](docs/WORKBOOKS.md), [visual styles](docs/VISUALS.md), and
-[tool upgrades](docs/UPGRADES.md). Run `dotfiles-style operator` after first deployment
-and `tldr --update` once to populate the help cache.
+[tool upgrades](docs/UPGRADES.md). Run `tldr --update` once to populate the help cache.

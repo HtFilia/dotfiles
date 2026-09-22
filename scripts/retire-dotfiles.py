@@ -18,7 +18,7 @@ def parent_is_link(path, destination):
     return any(p.is_symlink() for p in path.parents if p != destination and destination in p.parents)
 
 
-def recognized(path, entry, sources):
+def recognized(path, entry, sources, destination):
     if path.is_symlink():
         # Compare lexical destinations, including dangling links after git pull.
         target = Path(os.path.abspath(path.parent / os.readlink(path)))
@@ -28,7 +28,15 @@ def recognized(path, entry, sources):
         if not path.exists():
             return True
     if path.is_file():
-        return digest(path) in entry.get("sha256", [])
+        content = path.read_bytes()
+        if entry.get("crt"):
+            suffix = ('custom-shader = "' + str(destination / ".config/dotfiles/shaders/scanlines.glsl") +
+                      '"\ncustom-shader-animation = false\n').encode()
+            if content.endswith(suffix):
+                content = content[:-len(suffix)]
+        return (hashlib.sha256(content).hexdigest() in entry.get("sha256", []) or
+                content in [text.encode() for text in entry.get("contents", [])] or
+                (entry.get("classic", False) and content == b"# Use the managed Gruvbox theme.\n"))
     if path.is_symlink() and path.is_dir() and "children" in entry:
         # Only a known directory link, with no extra application/user files.
         actual = {str(p.relative_to(path)): digest(p) for p in path.rglob("*") if p.is_file() and not p.is_symlink()}
@@ -55,7 +63,7 @@ def retire(destination, source, profile, dry_run=False):
         path = destination / relative
         if not path.exists() and not path.is_symlink():
             continue
-        if parent_is_link(path, destination) or not recognized(path, entry, sources):
+        if parent_is_link(path, destination) or not recognized(path, entry, sources, destination):
             unresolved.append(str(relative))
         else:
             eligible.append((path, entry))
@@ -86,7 +94,7 @@ def retire(destination, source, profile, dry_run=False):
             os.umask(old_umask)
         for path, entry in eligible:
             # Recheck after backup; never follow a newly changed parent/link.
-            if parent_is_link(path, destination) or not recognized(path, entry, sources):
+            if parent_is_link(path, destination) or not recognized(path, entry, sources, destination):
                 unresolved.append(str(path))
                 print("Unresolved cleanup (changed during backup): " + str(path), file=sys.stderr)
                 continue

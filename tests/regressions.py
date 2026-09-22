@@ -446,23 +446,24 @@ second=$(cached_asset_path tool "$2")
         self.assertFalse(link.is_symlink())
         self.assertEqual(link.read_text(), "updated")
 
-    def test_visual_switch_does_not_edit_managed_source(self):
-        self.apply("--destination", str(self.home), "--profile", "workstation")
-        script = str(ROOT / "home/dot_local/bin/executable_dotfiles-style")
-        source = ROOT / "home/dot_config/dotfiles/styles/operator/tmux.conf"
-        before = source.read_text()
-        self.run_command("python3", script, "operator", "--crt")
-        self.assertIn("custom-shader", (self.home / ".config/dotfiles/ghostty-style.conf").read_text())
-        self.run_command("python3", script, "classic")
-        self.assertNotIn("custom-shader =", (self.home / ".config/dotfiles/ghostty-style.conf").read_text())
-        self.assertEqual(source.read_text(), before)
+    def test_operator_is_native_without_style_initialization(self):
+        self.apply("--profile", "workstation")
+        self.assertIn("142727", (self.home / ".config/ghostty/config.ghostty").read_text())
+        self.assertIn("142727", (self.home / ".tmux.conf").read_text())
+        self.assertNotIn("DOTFILES_STYLE", (self.home / ".zshrc").read_text())
+        self.assertFalse((self.home / ".config/dotfiles/style").exists())
 
-    def test_server_style_uses_terminal_only_assets(self):
-        self.apply("--destination", str(self.home), "--profile", "server")
-        script = str(ROOT / "home/dot_local/bin/executable_dotfiles-style")
-        self.run_command("python3", script, "operator")
-        self.assertTrue((self.home / ".config/dotfiles/tmux-style.conf").exists())
-        self.assertFalse((self.home / ".config/dotfiles/ghostty-style.conf").exists())
+    def test_generated_style_cleanup_and_unknown_preservation(self):
+        root = self.home / ".config/dotfiles"
+        root.mkdir(parents=True)
+        (root / "style").write_text("operator\n")
+        (root / "ghostty-style.conf").write_text('# Use the managed Gruvbox theme.\ncustom-shader = "' + str(root / 'shaders/scanlines.glsl') + '"\ncustom-shader-animation = false\n')
+        (root / "tmux-style.conf").write_text("custom settings\n")
+        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "workstation", success=False)
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse((root / "style").exists())
+        self.assertFalse((root / "ghostty-style.conf").exists())
+        self.assertEqual((root / "tmux-style.conf").read_text(), "custom settings\n")
 
     def test_workbooks_reject_noninteractive_menu(self):
         script = str(ROOT / "home/dot_local/share/dotfiles/workbooks/lab.py")
