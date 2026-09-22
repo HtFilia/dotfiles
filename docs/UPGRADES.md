@@ -35,6 +35,9 @@ builds are preserved and reported; running tmux sessions are not terminated.
 Debian/Ubuntu packages follow the latest available versions in the configured
 supported distribution repositories; they are not all the latest upstream source
 releases. This deliberately preserves distro ownership of system components.
+Workstations request fzf, ripgrep, fd, bat, zoxide, direnv, and jq only through
+the pinned user-tool installer. Servers retain their distro versions. Old distro
+copies are not automatically uninstalled; package dependencies may still need them.
 
 macOS runs `brew update` and `brew bundle install`, allowing upgrades even when
 all declared tools were already installed. Homebrew formula/cask versions follow

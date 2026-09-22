@@ -160,17 +160,10 @@ sudo apt update
 log "Installing packages from apt..."
 sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
-  pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck shfmt zstd moreutils parallel ffmpeg 7zip \
+  pkg-config libssl-dev python3 python3-pip python3-venv tree htop fontconfig \
+  xclip rustc cargo rustfmt rust-clippy shellcheck shfmt zstd moreutils parallel ffmpeg 7zip \
   ncurses-term ncurses-bin less bsdextrautils
 success "apt packages installed"
-fi
-
-if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
-  ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"
-fi
-if command -v batcat >/dev/null 2>&1 && ! command -v bat >/dev/null 2>&1; then
-  ln -sf "$(command -v batcat)" "$LOCAL_BIN/bat"
 fi
 
 install_archive_if_needed starship "starship-linux-$ARCH" starship "$LOCAL_BIN/starship"
