@@ -104,6 +104,17 @@ configure_git_identity() {
   fi
 
   local name="${DOTFILES_GIT_NAME:-}" email="${DOTFILES_GIT_EMAIL:-}"
+  # Preserve a previous file deployment's identity before replacing its config.
+  if [[ -f "$DESTINATION/.gitconfig" ]]; then
+    [[ -n "$name" ]] || name="$(git config --file "$DESTINATION/.gitconfig" --includes user.name || true)"
+    [[ -n "$email" ]] || email="$(git config --file "$DESTINATION/.gitconfig" --includes user.email || true)"
+  fi
+  # A pull already changed symlink-backed contents. This exact former managed
+  # target used the identity below before the local-identity migration.
+  if [[ -L "$DESTINATION/.gitconfig" && "$(readlink "$DESTINATION/.gitconfig")" == "$SOURCE_DIR/dot_gitconfig" ]]; then
+    name="${name:-Lucas L.}"
+    email="${email:-contact@lucaslebihan.dev}"
+  fi
   if [[ -z "$name" && -t 0 && "$DESTINATION" == "$HOME" ]]; then
     printf "Git user.name: "
     read -r name

@@ -194,6 +194,22 @@ class Contracts(unittest.TestCase):
         self.assertEqual(result.stdout.strip(), self.env["DOTFILES_GIT_NAME"])
         self.assertEqual((self.home / ".gitconfig.local").stat().st_mode & 0o777, 0o600)
 
+    def test_effective_identity_survives_migration(self):
+        (self.home / ".gitconfig").write_text('[user]\n name = Existing User\n email = existing@example.com\n')
+        self.apply("--profile", "server", "--force")
+        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.name")
+        self.assertEqual(result.stdout.strip(), "Existing User")
+        (self.home / ".gitconfig.local").write_text('[user]\n name = Local Override\n email = local@example.com\n')
+        self.apply("--profile", "server", "--force")
+        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.name")
+        self.assertEqual(result.stdout.strip(), "Local Override")
+
+    def test_symlink_identity_survives_post_pull_migration(self):
+        (self.home / ".gitconfig").symlink_to(ROOT / "home/dot_gitconfig")
+        self.apply("--profile", "server", "--force")
+        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.email")
+        self.assertEqual(result.stdout.strip(), "contact@lucaslebihan.dev")
+
     def test_fga_handles_spaces_and_dashes(self):
         self.run_command("git", "init", "-q", str(self.work))
         for name in ["space name.txt", "-leading.txt", "colon:name.txt"]:
