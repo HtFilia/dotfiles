@@ -57,6 +57,24 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown profile", result.stderr)
 
+    def test_node_launchers_repair_without_download_when_runtime_exists(self):
+        local_bin = self.home / ".local/bin"
+        local_bin.mkdir(parents=True)
+        runtime = self.home / ".local/opt/node-vfixture/bin"
+        runtime.mkdir(parents=True)
+        for binary in ("node", "npm", "npx"):
+            target = runtime / binary
+            target.write_text("#!/bin/sh\nprintf fixture\\\\n\n")
+            target.chmod(0o755)
+        (local_bin / "node").symlink_to(self.work / "missing")
+        for installer in ("install-debian.sh", "install-server.sh"):
+            source = (ROOT / "scripts" / installer).read_text()
+            functions = source[source.index("install_runtime() {"):source.index('\nif [[ -f /etc/os-release') if installer == "install-debian.sh" else source.index('\ncommand -v fdfind')]
+            script = 'pinned_asset_field() { echo vfixture; }; cached_asset_path() { return 99; }; fatal() { exit 1; }; ARCH=x86_64; SKIP_PACKAGES=1\n' + functions + '\ninstall_node; install_node'
+            self.run_command("bash", "-euc", script, env=dict(self.env, LOCAL_BIN=str(local_bin)))
+            for binary in ("node", "npm", "npx"):
+                self.assertEqual((local_bin / binary).resolve(), runtime / binary)
+
     def test_retired_binary_is_backed_up_without_execution(self):
         scripts = self.work / "scripts"
         scripts.mkdir()

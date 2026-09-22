@@ -82,10 +82,10 @@ install_tool() {
 install_runtime() {
   local tool="$1" key="$2" member="$3" version archive stage destination
   version="$(pinned_asset_field "$key" version)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || return 1
   mkdir -p "$HOME/.local/opt"
   destination="$HOME/.local/opt/$tool-$version"
   if [[ ! -x "$destination/$member" ]]; then
+    archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || return 1
     stage="$(mktemp -d "$HOME/.local/opt/$tool-stage.XXXXXX")"
     if ! tar -xf "$archive" -C "$stage" --strip-components=1 || [[ ! -x "$stage/$member" ]]; then
       rm -rf "$stage"
@@ -145,7 +145,8 @@ if [[ "$SETUP_EDITOR" == 1 ]]; then
     [[ "$language" == node || "$language" == shell ]] && need_node=1
   done
   if (( need_go )) && ! asset_version_matches go "go-linux-$GO_ARCH" version; then install_go; fi
-  if (( need_node )) && ! asset_version_matches node "node-linux-$ARCH" --version; then install_node; fi
+  # Always relink: a matching runtime can still have stale npm/npx launchers.
+  if (( need_node )); then install_node; fi
 fi
 if command -v tldr >/dev/null 2>&1 && ! tldr tar >/dev/null 2>&1; then
   tldr --update || warn 'Could not populate tldr pages; rerun tldr --update when online.'

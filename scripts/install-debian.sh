@@ -117,10 +117,10 @@ tokei_version_matches() {
 install_runtime() {
   local tool="$1" key="$2" member="$3" version archive stage destination
   version="$(pinned_asset_field "$key" version)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
   mkdir -p "$HOME/.local/opt"
   destination="$HOME/.local/opt/$tool-$version"
   if [[ ! -x "$destination/$member" ]]; then
+    archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
     stage="$(mktemp -d "$HOME/.local/opt/$tool-stage.XXXXXX")"
     if ! tar -xf "$archive" -C "$stage" --strip-components=1 || [[ ! -x "$stage/$member" ]]; then
       rm -rf "$stage"
@@ -196,15 +196,14 @@ fi
 if ! asset_version_matches go "go-linux-$GO_ARCH" version; then
   install_go
 fi
-if ! asset_version_matches node "node-linux-$ARCH" --version; then
-  install_node
-fi
+# Repair every launcher even when another Node on PATH reports the same version.
+install_node
 "$SCRIPT_DIR/install-extra-tools.sh"
 # Explicit versions avoid a nonfunctional, uncached Corepack shim.
 # shellcheck source=scripts/runtime-versions.sh
 . "$SCRIPT_DIR/runtime-versions.sh"
-node_prefix="$(dirname "$(dirname "$(readlink "$LOCAL_BIN/node")")")"
-npm install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION"
+node_prefix="$HOME/.local/opt/node-$(pinned_asset_field "node-linux-$ARCH" version)"
+"$node_prefix/bin/npm" install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION"
 for tool in pnpm pnpx; do
   [[ ! -e "$node_prefix/bin/$tool" ]] || ln -sfn "$node_prefix/bin/$tool" "$LOCAL_BIN/$tool"
 done

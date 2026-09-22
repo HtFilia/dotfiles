@@ -44,8 +44,11 @@ you leave; read `.envrc` before approving it.
 ## Node, Go and Rust
 
 pnpm is supplied by Homebrew or explicitly installed at the version in
-`scripts/runtime-versions.sh` on Linux. Respect each project's package-manager version. Node installation does not select an unrequested
-package manager for every project.
+`scripts/runtime-versions.sh` on Linux. Linux Node/npm/npx launchers are repaired
+on each installation, even if another Node on PATH reports the same version.
+The shell uses stable `~/.local/bin` launchers instead of versioned PATH entries.
+Respect each project's package-manager version. Node installation does not select
+an unrequested package manager for every project.
 
 Go binaries installed by `go install` use GOPATH/GOBIN, which remain overrideable.
 Linux rustfmt and Clippy come from distro packages; rustup toolchains need their
