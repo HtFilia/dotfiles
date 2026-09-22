@@ -60,9 +60,10 @@ VS Code. Assistant functionality may require accounts; repository-level telemetr
 settings do not govern every extension's service behavior.
 
 Python uses Ruff formatting and Pylance basic checking. Go uses goimports, Rust
-uses rust-analyzer/Clippy. JSON/YAML/Markdown use Prettier. Select a JavaScript/
-TypeScript formatter explicitly per workspace (Prettier, Biome, or ESLint) rather
-than running overlapping fixes. Project configuration overrides personal defaults.
+uses rust-analyzer/Clippy. No global JavaScript/JSON/YAML/Markdown formatter is
+selected. Choose formatting tools explicitly in projects that need them.
+Prettier, Biome, and ESLint are not provisioned by this repository. Existing
+extension/Mason installations are not uninstalled automatically.
 
 Saving formats files; focus changes autosave. Code actions configured as
 `explicit` are for explicit saves. Sync confirmation is enabled, and automatic

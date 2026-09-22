@@ -4,7 +4,7 @@ local targets = {
   python = { tools = { "basedpyright", "ruff" }, parsers = { "python" } },
   go = { tools = { "gopls", "goimports" }, parsers = { "go", "gomod", "gowork" } },
   rust = { tools = { "rust-analyzer" }, parsers = { "rust" } },
-  node = { tools = { "typescript-language-server", "prettier" }, parsers = { "javascript", "typescript", "tsx", "json" } },
+  node = { tools = { "typescript-language-server" }, parsers = { "javascript", "typescript", "tsx", "json" } },
   shell = { tools = { "bash-language-server", "shfmt", "shellcheck" }, parsers = { "bash" } },
 }
 local function provision()
@@ -54,7 +54,7 @@ local function provision()
   local binaries = {
     lua = { "lua-language-server", "stylua" }, python = { "basedpyright-langserver", "ruff" },
     go = { "gopls", "goimports" }, rust = { "rust-analyzer" },
-    node = { "typescript-language-server", "prettier" }, shell = { "bash-language-server", "shfmt", "shellcheck" },
+    node = { "typescript-language-server" }, shell = { "bash-language-server", "shfmt", "shellcheck" },
   }
   local tools = {}
   for language in vim.env.DOTFILES_EDITOR_LANGUAGES:gmatch("%S+") do vim.list_extend(tools, binaries[language]) end

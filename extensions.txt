@@ -3,9 +3,6 @@ PKief.material-icon-theme
 PKief.material-product-icons
 usernamehw.errorlens
 eamodio.gitlens
-esbenp.prettier-vscode
-biomejs.biome
-dbaeumer.vscode-eslint
 editorconfig.editorconfig
 christian-kohler.path-intellisense
 streetsidesoftware.code-spell-checker

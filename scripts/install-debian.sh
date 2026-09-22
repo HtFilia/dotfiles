@@ -211,12 +211,11 @@ fi
 # shellcheck source=scripts/runtime-versions.sh
 . "$SCRIPT_DIR/runtime-versions.sh"
 node_prefix="$(dirname "$(dirname "$(readlink "$LOCAL_BIN/node")")")"
-npm install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION" "@biomejs/biome@$BIOME_VERSION"
-for tool in pnpm pnpx biome; do
+npm install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION"
+for tool in pnpm pnpx; do
   [[ ! -e "$node_prefix/bin/$tool" ]] || ln -sfn "$node_prefix/bin/$tool" "$LOCAL_BIN/$tool"
 done
 pnpm --version
-biome --version
 
 if [[ "$SKIP_DOCKER" == "1" ]]; then
   warn "Skipped Docker installation."

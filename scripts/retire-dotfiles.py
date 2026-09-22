@@ -40,7 +40,7 @@ def recognized(path, entry, sources, destination):
     if path.is_symlink() and path.is_dir() and "children" in entry:
         # Only a known directory link, with no extra application/user files.
         actual = {str(p.relative_to(path)): digest(p) for p in path.rglob("*") if p.is_file() and not p.is_symlink()}
-        return actual == entry["children"] and not any(p.is_symlink() for p in path.rglob("*"))
+        return actual in [entry["children"], *entry.get("children_alternatives", [])] and not any(p.is_symlink() for p in path.rglob("*"))
     return False
 
 

@@ -111,7 +111,7 @@ if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
   check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
 fi
 if [[ "$profile" == workstation ]]; then
-  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm biome ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
+  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
     check "$tool available" available "$tool"
   done
   if [[ "$(uname -s)" == Linux ]]; then
@@ -142,6 +142,8 @@ if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
   check 'editor tool manifest exists' test -s "$HOME/.local/state/dotfiles/editor-tools"
   check 'selected editor parsers load' env DOTFILES_EDITOR_LANGUAGES="$(cat "$HOME/.local/state/dotfiles/editor-languages")" nvim --headless -u NONE "+lua dofile('$SCRIPT_DIR/verify-parsers.lua')"
   while IFS= read -r tool; do
+    # Old setup markers may name a formatter no longer managed here.
+    [[ "$tool" != prettier ]] || continue
     check "editor tool $tool" test -x "$HOME/.local/share/nvim/mason/bin/$tool"
   done <"$HOME/.local/state/dotfiles/editor-tools"
 fi

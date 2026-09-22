@@ -41,7 +41,6 @@ brew "go"
 brew "rustup"
 brew "node"
 brew "pnpm"
-brew "biome"
 
 brew "shellcheck"
 brew "shfmt"

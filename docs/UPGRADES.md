@@ -39,7 +39,7 @@ all declared tools were already installed. Homebrew formula/cask versions follow
 Homebrew. Windows host application updates are separate from WSL package updates.
 
 The current runtime selections are Node 26.9.0, Go 1.27.1, managed Python 3.14.7,
-pnpm 12.4.2 and Biome 2.5.14. Existing rustup installations update their stable
+and pnpm 12.4.2. Existing rustup installations update their stable
 toolchain; project `rust-toolchain.toml` overrides still win. Python is installed
 with uv under the user account; `/usr/bin/python3` remains owned by the distro.
 Node moves from the previous Node 24 baseline to current stable Node 26. Projects

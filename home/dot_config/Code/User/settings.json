@@ -137,11 +137,7 @@
   "rust-analyzer.inlayHints.chainingHints.enable": true,
 
   // JSON / YAML / Markdown
-  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "on"
   },
 
@@ -158,11 +154,6 @@
   // GitLens
   "gitlens.codeLens.enabled": false,
   "gitlens.hovers.enabled": true,
-
-  // Prettier
-  "prettier.singleQuote": true,
-  "prettier.semi": true,
-  "prettier.trailingComma": "all",
 
   // Telemetry
   "telemetry.telemetryLevel": "off",

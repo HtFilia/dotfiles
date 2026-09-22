@@ -4,7 +4,8 @@
     "source": "dot_config/Code/User/settings.json",
     "profile": "server",
     "sha256": [
-      "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b"
+      "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b",
+      "7f969f93e07b88568359d961e10614e953cbb6aa495024490f275ee4f5350631"
     ]
   },
   {
@@ -31,7 +32,13 @@
     "children": {
       "settings.json": "431a7f365e01651c66054b0429f9947cf071ae717f7a3e70eaa7923e94a71a5b",
       "keybindings.json": "74fda8b404481350eccff02675c3ff45579112a1615423047f0d17d5951bd16f"
-    }
+    },
+    "children_alternatives": [
+      {
+        "settings.json": "7f969f93e07b88568359d961e10614e953cbb6aa495024490f275ee4f5350631",
+        "keybindings.json": "74fda8b404481350eccff02675c3ff45579112a1615423047f0d17d5951bd16f"
+      }
+    ]
   },
   {
     "target": ".config/dotfiles/shaders/scanlines.glsl",
