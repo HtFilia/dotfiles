@@ -177,7 +177,7 @@ alias mkd='mkdir -p' df='df -h' du='du -h'
 [[ "$DOTFILES_OS" == macos ]] || alias free='free -h'
 alias reload='exec zsh' zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
-alias dotfiles='cd "${DOTFILES_DIR:-$HOME/dotfiles}"'
+alias dotfiles='cd "${DOTFILES_DIR:-$(cat "$HOME/.local/state/dotfiles/source" 2>/dev/null || printf "%s" "$HOME/dotfiles")}"'
 alias dotupdate='dotfiles-update'
 
 if [[ "$DOTFILES_OS" == "macos" ]]; then
@@ -287,6 +287,7 @@ if command -v uv &>/dev/null; then
   alias pyi='uv pip install' pyls='uv pip list'
 fi
 yy() {
+  command -v yazi >/dev/null || { print -u2 'yazi is not installed'; return 127; }
   local tmp cwd
   tmp=$(mktemp) || return
   yazi "$@" --cwd-file="$tmp"
@@ -306,5 +307,6 @@ _dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highli
 
 # Explicit commands: no animation, network fetch or dashboard at shell startup.
 alias lab='dotfiles-lab' deck='dotfiles-deck'
-alias helpme='tldr' jsonview='jless'
+command -v tldr &>/dev/null && alias helpme='tldr'
+command -v jless &>/dev/null && alias jsonview='jless'
 termstyle() { dotfiles-style "$@" && { print 'Style saved. Run: exec zsh'; }; }

@@ -3,6 +3,20 @@
 .config/Code/**
 .config/ghostty
 .config/ghostty/**
+.config/btop
+.config/btop/**
+.config/fastfetch
+.config/fastfetch/**
+.config/tealdeer/pages
+.config/tealdeer/pages/**
+.config/dotfiles/windows-terminal.json
+.config/dotfiles/shaders
+.config/dotfiles/shaders/**
+.config/dotfiles/styles/*/ghostty.conf
+.local/share/dotfiles/workbooks
+.local/share/dotfiles/workbooks/**
+.local/bin/dotfiles-deck
+.local/bin/dotfiles-lab
 Library
 Library/**
 {{ else if eq .chezmoi.os "darwin" }}

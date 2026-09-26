@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 # Pinned shell/tmux plugin repositories.
 
+prepare_zsh_plugin_parents() {
+  local directory
+  for directory in "$HOME/.local" "$HOME/.local/share" "$HOME/.local/share/zsh" "$HOME/.local/share/zsh/plugins"; do
+    [[ ! -L "$directory" ]] || { printf 'Plugin parent is a symlink: %s\n' "$directory" >&2; return 1; }
+    [[ -d "$directory" ]] || mkdir -m 700 "$directory" || return 1
+    [[ -O "$directory" ]] || { printf 'Plugin parent is not user-owned: %s\n' "$directory" >&2; return 1; }
+    chmod go-w "$directory" || return 1
+  done
+}
+
 pinned_plugin_field() {
   local key="$1" field="$2"
   case "$key:$field" in

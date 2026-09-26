@@ -5,6 +5,7 @@ Standalone release pins were reviewed on **2026-09-16**. Use:
 ```sh
 just tools-update
 just tools-update --skip-packages  # system packages already handled; no apt/sudo
+just tools-update --dry-run         # show profile-specific actions
 just verify
 ```
 
@@ -13,6 +14,12 @@ the supported OS packages and provisions the versions recorded in this checkout.
 It does not silently rewrite pins to whatever upstream publishes next week.
 Review newer versions and checksums in `scripts/pinned-assets.sh`, regenerate
 `docs/ASSET-MANIFEST.md` with `just assets`, and test before committing changes.
+
+On Linux, tool updates use the saved profile. Server updates run the smaller
+server installer and repeat only editor-language provisioning already recorded
+under `~/.local/state/dotfiles`. `--skip-packages` avoids apt, repository edits
+and sudo; it still updates pinned user binaries. Use the preview to inspect
+commands before a package update. Reboots remain operator decisions.
 
 On Linux, direct binary tools install under `~/.local/bin`. Replacement is atomic
 and replaces existing symlinks rather than overwriting their targets in `/usr`.

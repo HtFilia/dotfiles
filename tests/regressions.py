@@ -49,7 +49,7 @@ class Contracts(unittest.TestCase):
 
     def test_cli_validation(self):
         for script in (ROOT / "scripts").glob("*.sh"):
-            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "asset-manifest.sh"}:
+            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "asset-manifest.sh"}:
                 continue
             self.run_command(str(script), "--help")
         result = self.run_command(str(ROOT / "scripts/bootstrap.sh"), "--profile", "invalid", "--yes", success=False)
@@ -65,10 +65,62 @@ class Contracts(unittest.TestCase):
         self.apply("--destination", str(self.home), "--profile", "server", "--force")
         self.assertFalse((self.home / ".zshrc").is_symlink())
         self.assertFalse((self.home / ".config/Code").exists())
+        self.assertFalse((self.home / ".local/bin/dotfiles-deck").exists())
+        self.assertFalse((self.home / ".local/share/dotfiles/workbooks").exists())
+        self.assertFalse((self.home / ".config/dotfiles/windows-terminal.json").exists())
+        self.assertFalse((self.home / ".config/dotfiles/shaders").exists())
+        self.assertFalse((self.home / ".config/dotfiles/styles/operator/ghostty.conf").exists())
         self.apply("--destination", str(self.home))
         self.assertFalse((self.home / ".config/Code").exists())
         self.assertEqual((self.home / ".local/state/dotfiles/profile").read_text().strip(), "server")
         self.assertEqual((self.home / ".local/state/dotfiles/source").read_text().strip(), str(ROOT))
+
+    def test_profile_update_preview_never_uses_workstation_installer(self):
+        state = self.home / ".local/state/dotfiles"
+        state.mkdir(parents=True)
+        (state / "profile").write_text("server\n")
+        (state / "editor-languages").write_text("python shell\n")
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
+        self.assertIn("install-server.sh --skip-packages --setup-editor", result.stdout)
+        self.assertIn("setup-editor.sh python shell", result.stdout)
+        self.assertNotIn("sudo", result.stdout)
+        self.assertNotIn("install-debian.sh", result.stdout)
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--skip-packages", "--dry-run")
+        self.assertIn("install-debian.sh", result.stdout)
+        (state / "profile").write_text("broken\n")
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn("would run:", result.stdout)
+
+    def test_local_git_and_ssh_overrides(self):
+        self.apply("--destination", str(self.home), "--profile", "server")
+        local = self.home / ".gitconfig.local"
+        self.run_command("git", "config", "--file", str(local), "user.name", "Local Person")
+        name = self.run_command("git", "config", "--includes", "--file", str(self.home / ".gitconfig"), "user.name")
+        self.assertEqual(name.stdout.strip(), "Local Person")
+        ssh_local = self.home / ".ssh/config.local"
+        ssh_local.write_text("Host audit-alias\n  HostName 192.0.2.1\n  User audit-user\n")
+        config = self.home / ".ssh/config"
+        config.write_text(config.read_text().replace("~/.ssh/config.local", str(ssh_local)))
+        options = self.run_command("ssh", "-G", "-F", str(config), "audit-alias").stdout
+        self.assertIn("hostname 192.0.2.1\n", options)
+        self.assertIn("user audit-user\n", options)
+
+    def test_atuin_policy_is_deployed(self):
+        self.apply("--destination", str(self.home), "--profile", "server")
+        import tomllib
+        policy = tomllib.loads((self.home / ".config/atuin/config.toml").read_text())
+        self.assertEqual({key: policy[key] for key in ("auto_sync", "update_check", "enter_accept")},
+                         {"auto_sync": False, "update_check": False, "enter_accept": False})
+
+    def test_apply_repairs_plugin_parent_permissions(self):
+        parent = self.home / ".local/share/zsh/plugins"
+        parent.mkdir(parents=True)
+        for path in [self.home / ".local", self.home / ".local/share", self.home / ".local/share/zsh", parent]:
+            path.chmod(0o775)
+        self.apply("--destination", str(self.home), "--profile", "server")
+        for path in [self.home / ".local", self.home / ".local/share", self.home / ".local/share/zsh", parent]:
+            self.assertFalse(path.stat().st_mode & 0o022, str(path))
 
     def test_link_and_content_backups(self):
         source = self.work / "source"
@@ -232,6 +284,13 @@ second=$(cached_asset_path tool "$2")
         self.run_command("python3", script, "classic")
         self.assertNotIn("custom-shader =", (self.home / ".config/dotfiles/ghostty-style.conf").read_text())
         self.assertEqual(source.read_text(), before)
+
+    def test_server_style_uses_terminal_only_assets(self):
+        self.apply("--destination", str(self.home), "--profile", "server")
+        script = str(ROOT / "home/dot_local/bin/executable_dotfiles-style")
+        self.run_command("python3", script, "operator")
+        self.assertTrue((self.home / ".config/dotfiles/tmux-style.conf").exists())
+        self.assertFalse((self.home / ".config/dotfiles/ghostty-style.conf").exists())
 
     def test_workbooks_reject_noninteractive_menu(self):
         script = str(ROOT / "home/dot_local/share/dotfiles/workbooks/lab.py")

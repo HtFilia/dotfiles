@@ -24,22 +24,28 @@ def main():
     parser.add_argument("--crt", action="store_true", help="Enable subtle, static Ghostty scan lines")
     args = parser.parse_args()
     root = Path.home() / ".config/dotfiles"
+    ghostty_available = (root / "styles/operator/ghostty.conf").exists()
     if args.style == "classic":
         ghostty = "# Use the managed Gruvbox theme.\n"
         tmux = "# Use the managed Gruvbox theme.\n"
     else:
         source = root / "styles" / args.style
-        ghostty = (source / "ghostty.conf").read_text()
+        ghostty_source = source / "ghostty.conf"
+        ghostty = ghostty_source.read_text() if ghostty_source.exists() else "# Ghostty styling is on the SSH client.\n"
         tmux = (source / "tmux.conf").read_text()
     if args.crt:
+        if not (root / "shaders/scanlines.glsl").exists():
+            parser.error("--crt needs the workstation shader asset")
         ghostty += 'custom-shader = "' + str(root / "shaders/scanlines.glsl") + '"\ncustom-shader-animation = false\n'
-    write_atomic(root / "ghostty-style.conf", ghostty)
+    if ghostty_available:
+        write_atomic(root / "ghostty-style.conf", ghostty)
     write_atomic(root / "tmux-style.conf", tmux)
     write_atomic(root / "style", args.style + "\n")
     if os.environ.get("TMUX"):
         subprocess.run(["tmux", "source-file", str(Path.home() / ".tmux.conf")], check=True)
-    print(f"Selected {args.style}. Run exec zsh; reload Ghostty configuration if using Ghostty.")
-    print("Windows Terminal: choose the matching Dotfiles scheme in its profile Appearance settings.")
+    print(f"Selected {args.style}. Run exec zsh; reload tmux with Ctrl-a r when attached.")
+    if ghostty_available:
+        print("Reload Ghostty configuration if using Ghostty. Windows Terminal users: select the matching scheme.")
 
 
 if __name__ == "__main__":

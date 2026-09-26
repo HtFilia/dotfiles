@@ -8,6 +8,32 @@ permissions:
   contents: read
 
 jobs:
+  debian-server:
+    name: Debian 13 server smoke
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - name: Install checkout and test prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git python3 zsh ripgrep util-linux passwd
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned Chezmoi
+        run: |
+          . scripts/pinned-assets.sh
+          archive="$(cached_asset_path chezmoi-linux-amd64 /tmp/dotfiles-assets)"
+          stage="$(mktemp -d)"
+          extract_pinned_archive "$archive" "$stage"
+          install -m 755 "$stage/chezmoi" /usr/local/bin/chezmoi
+      - name: Exercise isolated server deployment
+        run: |
+          useradd -m -s /bin/bash dotfiles-ci
+          # shellcheck disable=SC2016
+          runuser -u dotfiles-ci -- bash -c 'cd "$1" && bash tests/script-contracts.sh' _ "$GITHUB_WORKSPACE"
+
   scripts:
     name: Checks (${{ matrix.os }})
     strategy:

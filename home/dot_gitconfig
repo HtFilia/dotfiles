@@ -91,8 +91,10 @@
     cleanup = "!f() { base=${1:-main}; branches=$(git for-each-ref --merged=\"$base\" --format='%(refname:short)' refs/heads) || return; printf '%s\\n' \"$branches\" | while IFS= read -r branch; do case \"$branch\" in \"\"|main|master|develop) continue;; esac; git branch -d -- \"$branch\"; done; }; f"
     aliases = config --get-regexp alias
 
-[include]
-    path = ~/.gitconfig.local
 [user]
 	email = contact@lucaslebihan.dev
 	name = Lucas L.
+
+# Host identity and signing overrides take precedence.
+[include]
+    path = ~/.gitconfig.local

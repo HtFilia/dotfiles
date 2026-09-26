@@ -17,6 +17,8 @@ DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
+# shellcheck source=scripts/profile.sh
+. "$SCRIPT_DIR/profile.sh"
 
 detect_os() {
   case "$(uname -s)" in
@@ -45,12 +47,13 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --profile PROFILE       workstation (default) or server (SSH terminal/editor)
+  --profile PROFILE       workstation (default on new hosts) or server
   --skip-docker            do not install container packages
   --skip-fonts             do not install FiraCode Nerd Font
   --no-shell-plugins       skip zsh plugin installation
   --with-tpm               install optional tmux plugin manager
   --setup-editor           explicitly download language tools and parsers
+  --editor-languages LIST  comma-separated subset: lua,python,go,rust,node,shell
   --skip-vscode-extensions skip VS Code extension installation
   --configure-shell        allow /etc/shells and chsh changes
   --start-colima           start and enable Colima on macOS
@@ -83,7 +86,7 @@ install_vscode_extensions() {
 main() {
   local install_shell_plugins=1 install_tpm=0 configure_shell=0 start_colima=0 enable_docker_group=0
   local install_code_extensions=1 skip_docker=0 skip_fonts=0 setup_editor=0
-  local profile="${DOTFILES_PROFILE:-workstation}"
+  local profile="" editor_languages=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --profile)
@@ -94,6 +97,7 @@ main() {
       --skip-docker) skip_docker=1 ;;
       --skip-fonts) skip_fonts=1 ;;
       --setup-editor) setup_editor=1 ;;
+      --editor-languages) [[ $# -ge 2 ]] || fatal "--editor-languages requires a value"; editor_languages="$2"; setup_editor=1; shift ;;
       --with-tpm) install_tpm=1 ;;
       --no-shell-plugins) install_shell_plugins=0 ;;
       --skip-vscode-extensions) install_code_extensions=0 ;;
@@ -106,10 +110,14 @@ main() {
     esac
     shift
   done
-  case "$profile" in
-    workstation|server) ;;
-    *) fatal "Unknown profile: $profile" ;;
-  esac
+  profile="$(dotfiles_profile "$profile")" || fatal "Unknown profile"
+  if [[ -n "$editor_languages" ]]; then
+    local language
+    IFS=, read -ra selected_languages <<< "$editor_languages"
+    for language in "${selected_languages[@]}"; do
+      case "$language" in lua|python|go|rust|node|shell) ;; *) fatal "Unknown editor language: $language" ;; esac
+    done
+  fi
   export DOTFILES_PROFILE="$profile"
   if [[ "$profile" == server ]]; then
     skip_fonts=1
@@ -167,6 +175,7 @@ main() {
   fi
 
   if [[ "$install_shell_plugins" == "1" ]]; then
+    prepare_zsh_plugin_parents || fatal "Unsafe shell plugin parent"
     log "Installing pinned zsh plugins..."
     plugin_dir="$HOME/.local/share/zsh/plugins"
     for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
@@ -198,7 +207,7 @@ main() {
     dotfiles_dir="$DOTFILES_DIR"
     [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
   fi
-  "$dotfiles_dir/scripts/apply-dotfiles.sh" --force
+  "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
 
   if [[ "$install_code_extensions" == "1" ]]; then
     install_vscode_extensions "$dotfiles_dir/extensions.txt"
@@ -206,7 +215,16 @@ main() {
     warn "Skipped VS Code extension installation."
   fi
 
-  [[ "$setup_editor" != 1 ]] || "$dotfiles_dir/scripts/setup-editor.sh"
+  if [[ "$setup_editor" == 1 ]]; then
+    if [[ -n "$editor_languages" ]]; then
+      "$dotfiles_dir/scripts/setup-editor.sh" "${selected_languages[@]}"
+    else
+      "$dotfiles_dir/scripts/setup-editor.sh"
+    fi
+  fi
+  mkdir -p "$HOME/.local/state/dotfiles"
+  if [[ "$install_shell_plugins" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/shell-plugins"; else printf 'skipped\n' > "$HOME/.local/state/dotfiles/shell-plugins"; fi
+  if [[ "$install_tpm" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/tpm"; fi
 
   if [[ "$configure_shell" == "1" && "${SHELL:-}" != *"zsh"* ]]; then
     zsh_path="$(command -v zsh)"
