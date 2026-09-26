@@ -119,6 +119,7 @@ Existing identity files are preserved.
 - [Tools and their roles](docs/TOOLING.md)
 - [Keybindings](docs/KEYBINDINGS.md)
 - [Mac Ghostty connecting to a VPS](docs/VPS-GHOSTTY.md)
+- [Debian VPS bootstrap and ownership](docs/VPS-SERVER.md)
 - [Verification and maintenance](docs/VERIFICATION.md)
 
 ## Check the repository

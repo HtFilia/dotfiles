@@ -5,6 +5,8 @@ The managed private `~/.ssh/config` defines GitHub explicitly and includes
 with `IdentitiesOnly yes` and `IdentityAgent none`, so Git can authenticate
 without first adding that key to an SSH agent. Existing key files are not
 managed.
+The local include is evaluated for every destination and precedes GitHub
+defaults, so local host aliases and intentional GitHub overrides work.
 
 Example, adapted to your own key and host:
 

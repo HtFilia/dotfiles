@@ -51,6 +51,7 @@ if [[ "$SKIP_PACKAGES" == 0 ]]; then
 "${admin[@]}" apt-get install -y --no-install-recommends \
   ca-certificates curl git zsh tmux ncurses-bin ncurses-term less man-db \
   bsdextrautils util-linux unzip xz-utils fzf zoxide direnv ripgrep fd-find bat jq \
+  atuin ncdu tealdeer htop \
   shellcheck shfmt bats "${editor_packages[@]}"
 fi
 mkdir -p "$HOME/.terminfo"
@@ -71,7 +72,7 @@ install_tool() {
   mkdir -p "$stage"
   tar -xzf "$archive" -C "$stage"
   [[ -f "$stage/$member" ]] || { printf 'Missing archive member: %s\n' "$member" >&2; return 1; }
-  install -m 755 "$stage/$member" "$LOCAL_BIN/$tool"
+  atomic_install_binary "$stage/$member" "$LOCAL_BIN/$tool"
 }
 
 install_runtime() {

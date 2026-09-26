@@ -3,6 +3,8 @@
 # Read-only acceptance checks for installed tools and managed leaf files.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/profile.sh
+. "$SCRIPT_DIR/profile.sh"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
 # shellcheck source=scripts/pinned-plugins.sh
@@ -16,11 +18,7 @@ if [[ $# -gt 0 ]]; then
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
   esac
 fi
-if [[ -z "$profile" && -f "$HOME/.local/state/dotfiles/profile" ]]; then
-  profile="$(cat "$HOME/.local/state/dotfiles/profile")"
-fi
-profile="${profile:-workstation}"
-[[ "$profile" == server || "$profile" == workstation ]] || exit 1
+profile="$(dotfiles_profile "$profile")" || exit 1
 failures=0
 check() {
   local label="$1"
@@ -41,6 +39,12 @@ done
 for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/nvim/init.lua .config/nvim/lazy-lock.json; do
   check "$target deployed" test -f "$HOME/$target"
 done
+if [[ -f "$HOME/.local/state/dotfiles/materialize" ]] && [[ "$(cat "$HOME/.local/state/dotfiles/materialize")" == file ]]; then
+  for target in .zshenv .zshrc .tmux.conf .gitconfig .config/atuin/config.toml; do
+    source_file="$SCRIPT_DIR/../home/$(printf '%s' "$target" | sed -e 's#^\.config/#dot_config/#' -e 's#^\.local/#dot_local/#' -e 's#^\.#dot_#' -e 's#/\.#/dot_#g')"
+    check "$target matches source" cmp -s "$source_file" "$HOME/$target"
+  done
+fi
 check 'Zsh syntax' zsh -n "$HOME/.zshrc"
 check 'Completion permissions' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
 check 'bat Gruvbox theme' bash -c 'bat --list-themes | rg -x gruvbox-dark >/dev/null'
@@ -49,6 +53,7 @@ check 'tmux terminfo' bash -c 'infocmp -x tmux-256color >/dev/null 2>&1'
 # Terminfo output is useful on failure but verbose on success; hide via wrapper below.
 if [[ "$profile" == server ]]; then
   check 'Ghostty terminfo' bash -c 'infocmp -x xterm-ghostty >/dev/null 2>&1'
+  for tool in atuin ncdu tldr htop; do check "$tool available" available "$tool"; done
 fi
 if [[ "$(uname -s)" == Linux ]]; then
   for pair in starship:starship-linux-x86_64 eza:eza-linux-x86_64 delta:delta-linux-x86_64 lazygit:lazygit-linux-x86_64 chezmoi:chezmoi-linux-amd64 just:just-linux-x86_64 nvim:neovim-linux-x86_64; do
@@ -61,8 +66,14 @@ for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
     check "$plugin pin and clean checkout" plugin_matches "$plugin" "$HOME/.local/share/zsh/plugins"
   else printf 'optional - %s\n' "$plugin"; fi
 done
+if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed || ( -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" && -d "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting" ) ]]; then
+  check 'Zsh plugins actually load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
+fi
 if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
   check 'TPM pin and clean checkout' plugin_matches tmux-tpm "$HOME/.tmux/plugins"
+fi
+if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
+  check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
 fi
 if [[ "$profile" == workstation ]]; then
   for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt bats pnpm biome ouch zstd sponge ts vidir parallel chafa ov hexyl dua broot czkawka_cli xcp viu vivid pastel tldr jc jless fastfetch cmatrix cava; do

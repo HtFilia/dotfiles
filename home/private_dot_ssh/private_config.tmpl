@@ -1,3 +1,6 @@
+# Host-specific identities and aliases are loaded for every destination.
+Include ~/.ssh/config.local
+
 # GitHub uses the dedicated key in ~/.ssh directly; no agent setup is needed.
 Host github.com
     HostName github.com
@@ -8,6 +11,3 @@ Host github.com
     AddKeysToAgent no
     PreferredAuthentications publickey
     PasswordAuthentication no
-
-# Host-specific identities and aliases belong in this private local file.
-Include ~/.ssh/config.local

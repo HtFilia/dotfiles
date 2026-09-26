@@ -5,7 +5,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=scripts/profile.sh
+. "$SCRIPT_DIR/profile.sh"
 SOURCE_DIR="${DOTFILES_SOURCE_DIR:-$REPO_ROOT/home}"
+# shellcheck source=scripts/pinned-plugins.sh
+. "$SCRIPT_DIR/pinned-plugins.sh"
 DESTINATION="${DOTFILES_DESTINATION:-$HOME}"
 CHEZMOI_MODE="${DOTFILES_CHEZMOI_MODE:-}"
 CHEZMOI_STATE="${DOTFILES_CHEZMOI_STATE:-}"
@@ -66,18 +70,11 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
-if [[ -z "$PROFILE" && -f "$DESTINATION/.local/state/dotfiles/profile" ]]; then
-  PROFILE="$(cat "$DESTINATION/.local/state/dotfiles/profile")"
-fi
-PROFILE="${PROFILE:-workstation}"
+PROFILE="$(dotfiles_profile "$PROFILE" "$DESTINATION/.local/state/dotfiles/profile")" || fatal "Invalid profile"
 if [[ -z "$CHEZMOI_MODE" && -f "$DESTINATION/.local/state/dotfiles/materialize" ]]; then
   CHEZMOI_MODE="$(cat "$DESTINATION/.local/state/dotfiles/materialize")"
 fi
 [[ -n "$CHEZMOI_MODE" ]] || { if [[ "$PROFILE" == server ]]; then CHEZMOI_MODE="file"; else CHEZMOI_MODE=symlink; fi; }
-case "$PROFILE" in
-  workstation|server) ;;
-  *) fatal "Unknown profile: $PROFILE" ;;
-esac
 export DOTFILES_PROFILE="$PROFILE"
 
 case "$CHEZMOI_MODE" in
@@ -142,7 +139,7 @@ chezmoi_args=(
   --mode "$CHEZMOI_MODE"
   --no-tty
 )
-[[ "$DRY_RUN" == "1" ]] && chezmoi_args+=(--dry-run)
+[[ "$DRY_RUN" == "1" ]] && chezmoi_args+=(--dry-run --verbose)
 [[ "$FORCE" == "1" ]] && chezmoi_args+=(--force)
 
 # Save existing managed files before the first write, including forced applies.
@@ -183,6 +180,9 @@ fi
 configure_git_identity
 chezmoi "${chezmoi_args[@]}" apply
 if [[ "$DRY_RUN" == 0 ]]; then
+  if [[ -d "$DESTINATION/.local/share/zsh/plugins" && "$DESTINATION" == "$HOME" ]]; then
+    prepare_zsh_plugin_parents || fatal "Unsafe shell plugin parent"
+  fi
   mkdir -p "$DESTINATION/.local/state/dotfiles"
   printf '%s\n' "$PROFILE" >"$DESTINATION/.local/state/dotfiles/profile"
   printf '%s\n' "$CHEZMOI_MODE" >"$DESTINATION/.local/state/dotfiles/materialize"

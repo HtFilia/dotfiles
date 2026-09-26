@@ -43,6 +43,11 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 History is shared between shells, includes timestamps, and ignores commands
 beginning with a space. Do not place secrets directly in command arguments;
 atuin and other integrations have their own history policies.
+The managed Atuin configuration disables synchronization and update checks.
+Ctrl-r returns the selected command to the prompt so you can edit it before
+execution. History remains in Atuin's user data directory on each machine.
+Pinned shell plugins load only through user-owned, non-writable-by-others
+directory chains; bootstrap repairs those specific ancestors when installing.
 
 Plugin entrypoints and their directory chains must be owned by the user and not
 group/world writable. A pin records checkout intent; it does not replace trusting

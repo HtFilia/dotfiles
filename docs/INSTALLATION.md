@@ -4,6 +4,8 @@
 verified assets, installs optional plugins, applies configuration, installs
 VS Code extensions when its CLI is available, and optionally changes the shell.
 It does not run a system upgrade.
+An explicit `--profile` wins, followed by `DOTFILES_PROFILE`, the saved profile,
+then `workstation` on a new host. An invalid saved profile stops before changes.
 
 ## Prerequisites
 
@@ -32,6 +34,7 @@ relocate Chezmoi's managed `.config` targets; use the conventional layout.
 | `--start-colima` | Start Colima and enable its Homebrew service |
 | `--enable-docker-group` | Join Linux Docker group; root-equivalent access |
 | `--setup-editor` | Explicitly download language servers, formatters and parsers |
+| `--editor-languages lua,python,...` | Provision only selected editor languages; also enables `--setup-editor` |
 
 For a VPS that will run the Neovim language tooling, include `--setup-editor` so
 bootstrap installs its Go, Node.js, Python, and compiler prerequisites before
@@ -65,5 +68,8 @@ installed its declared apt dependencies. With `--setup-editor`, that includes
 are still installed into the user's `~/.local/opt`. It still compiles terminfo
 and installs user-owned binaries. Apply afterward with `--profile server`.
 
-Linux fonts/VS Code/Ghostty, assistant CLIs, and local atuin installation are
-separate choices where they are not supplied by the profile's package manager.
+Linux fonts/VS Code/Ghostty and assistant CLIs are separate choices where they
+are not supplied by the profile's package manager.
+The server profile installs Atuin, ncdu, tealdeer and htop from Debian packages.
+Atuin history stays local and Ctrl-r returns selections for editing. `tldr`
+may need an explicit `tldr --update` to populate general pages.

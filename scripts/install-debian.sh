@@ -219,6 +219,8 @@ biome --version
 
 if [[ "$SKIP_DOCKER" == "1" ]]; then
   warn "Skipped Docker installation."
+elif [[ "$SKIP_PACKAGES" == "1" ]]; then
+  warn "Skipped Docker package/repository changes (--skip-packages)."
 elif [[ "$ENV_TYPE" == "wsl" ]]; then
   warn "WSL detected: install Docker Desktop and VS Code on Windows with WSL integration."
 else
@@ -244,13 +246,18 @@ else
   fi
 fi
 
+if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_PACKAGES" == 1 ]]; then
+  fatal "--enable-docker-group requires package changes; omit --skip-packages"
+fi
 if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]]; then
   getent group docker >/dev/null || fatal "Docker group is absent; install the engine first."
   sudo usermod -aG docker "$(id -un)"
   warn "Docker group grants root-equivalent access; log out/in."
 fi
 
-if ! command -v gh >/dev/null 2>&1; then
+if [[ "$SKIP_PACKAGES" == 1 ]]; then
+  warn "Skipped GitHub CLI package/repository changes (--skip-packages)."
+elif ! command -v gh >/dev/null 2>&1; then
   log "Installing GitHub CLI from official apt repository..."
   sudo mkdir -p -m 755 /etc/apt/keyrings
   wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null

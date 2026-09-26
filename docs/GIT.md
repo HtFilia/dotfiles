@@ -24,6 +24,7 @@ project-specific build-output and secret policies in each repository.
 
 `~/.gitconfig.local` is included last. Apply creates it privately when both a
 name and email are supplied; existing files are preserved.
+Values in the local file take precedence over managed identity defaults.
 
 ```sh
 git config --file ~/.gitconfig.local user.name 'Your Name'
