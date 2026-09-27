@@ -66,6 +66,40 @@ If only Proton works, pause this procedure rather than supplying your Proton
 password to OVH. Mail sent to the same address through OVH can be delivered
 within OVH, so also confirm receipt in the particular inbox you monitor.
 
+## Check that the VPS can reach SMTP
+
+Before entering a credential, test outbound TCP connectivity:
+
+```sh
+python3 - <<'CHECK'
+import socket
+try:
+    with socket.create_connection(("smtp.mail.ovh.net", 465), timeout=5):
+        print("SMTP TCP connection succeeded")
+except OSError as error:
+    print("SMTP connection failed:", type(error).__name__)
+    raise SystemExit(1)
+CHECK
+```
+
+A timeout occurs before password authentication. A working webmail login does
+not test connectivity from the VPS. Check the VPS's location/product in OVH
+Manager: [OVH's VPS FAQ](https://docs.ovhcloud.com/en/guides/bare-metal-cloud/virtual-private-servers/vps-faq)
+states that **Local Zone VPSs cannot reach SMTP servers on any SMTP port, and
+this restriction cannot be lifted**. Changing the password or switching from
+465 to 587 cannot fix that restriction.
+
+On a standard VPS, ask OVH support to investigate outbound SMTP connectivity
+if DNS resolves, ordinary HTTPS works, the local firewall permits outgoing
+traffic, and multiple SMTP destinations time out. Include destination hostnames,
+ports and the time of your tests; do not include mailbox credentials. Opening
+an inbound SMTP port on the VPS does not fix an outbound connection failure.
+
+For a confirmed Local Zone VPS, use a separately agreed notification service
+with an HTTPS API or run the SMTP sender on a host that permits outbound mail.
+Those alternatives require changes to the notification implementation and
+provider configuration; this guide does not silently switch providers.
+
 ## 2. Store the mailbox password privately on the VPS
 
 The health checker must already be deployed from the current `homelab-infra`
@@ -141,9 +175,15 @@ checks, recovery sends a message, and persistent failures get daily reminders.
 - **Configuration error:** check TOML keys and that the private credential file
   is nonempty. For timer runs, check that the credential drop-in is installed
   and `daemon-reload` completed. Do not print the password while diagnosing.
-- **SMTP test failed:** first verify webmail login with the same mailbox, then
-  verify the exact product/region hostname and port. The log intentionally
-  avoids printing SMTP exception details that might contain private data.
+- **Network/SMTP timeout:** check outbound reachability and the Local Zone
+  restriction above. This is not evidence that the password was rejected.
+- **Authentication rejected (SMTP 535):** verify the mailbox username/password
+  and SMTP access for the exact product. Webmail and SMTP can have different
+  access policies.
+- **TLS certificate verification failed:** verify the hostname and system clock;
+  keep certificate verification enabled.
+- The checker reports safe error categories and SMTP status codes while
+  withholding server response text and credentials.
 - **SMTP accepted but nothing arrives:** check spam, mailbox rules and the
   intended provider's inbox, especially if MX records mention multiple providers.
 - **Repeated failures:** delivery retries back off from five minutes to one hour.
