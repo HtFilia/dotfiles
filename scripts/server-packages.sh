@@ -2,7 +2,7 @@
 # Debian/Ubuntu server packages shared by installation and previews.
 # shellcheck disable=SC2034
 dotfiles_server_packages=(
-  ca-certificates curl git python3 zsh tmux ncurses-bin ncurses-term less man-db
+  ca-certificates curl git openssh-client python3 zsh tmux ncurses-bin ncurses-term less man-db
   bsdextrautils util-linux unzip xz-utils fzf zoxide direnv ripgrep fd-find bat jq
   atuin ncdu tealdeer htop shellcheck shfmt bats
   iproute2 bind9-dnsutils iputils-ping procps
