@@ -1,11 +1,34 @@
-# Personal dotfiles
+# Dotfiles
 
-A practical development environment for macOS, Debian/Ubuntu, WSL, and SSH
-servers. Bash installs packages; Chezmoi deploys the files in `home/`. The shell
-and terminal use a compact Operator layout with deep green graphite, teal and
-amber accents; classic Gruvbox, Studio and two legacy accent profiles remain
-available.
-Editors and Git diffs retain Gruvbox.
+[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+A reproducible development and SSH administration environment for macOS,
+Debian/Ubuntu and WSL. Bash handles installation; Chezmoi manages user
+configuration. Workstations and servers share shell, Git, tmux and Neovim
+configuration, with explicit profile differences and host-local overrides.
+
+## Design decisions
+
+- **Separate user and system configuration.** `home/` contains Chezmoi source;
+  the optional Debian 13 baseline in `system/debian/` owns update policy and
+  journal retention. Application deployment and network policy belong elsewhere.
+- **Make changes inspectable and recoverable.** Bootstrap and deployment have
+  previews; apply takes snapshots; updates preserve the chosen profile.
+  Servers receive independent files so pulling Git does not activate edits.
+- **Verify downloaded code.** Direct Linux binaries have version/checksum pins;
+  shell and editor plugin revisions are recorded. Debian and Homebrew packages
+  follow their repositories. [Supply-chain details](docs/SUPPLY-CHAIN.md).
+- **Test behavior across platforms.** CI checks Linux and macOS, and installs,
+  applies and verifies the server profile twice in a clean Debian 13 container.
+  Regressions cover profile selection, drift, local overrides and recovery.
+
+For a code review, start with [profile resolution](scripts/profile.sh),
+[deployment and snapshots](scripts/apply-dotfiles.sh),
+[verification](scripts/verify.sh), and [behavioral tests](tests/regressions.py).
+The [VPS guide](docs/VPS-SERVER.md) documents the system ownership boundary and
+rebuild procedure. CI does not test boot, remote connectivity or a full machine
+restore.
 
 ## Supported environments
 
@@ -14,7 +37,7 @@ Editors and Git diffs retain Gruvbox.
 | Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
 | Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
 | Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
-| Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts, containers or language runtimes |
+| Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
 Linux ARM asset entries are metadata for selected upstream downloads, not a
 supported installation profile. Linux Ghostty and VS Code installation are
@@ -42,9 +65,12 @@ For a server:
 ./scripts/verify.sh --profile server
 ```
 
-For a Debian 13 administrator host with the agreed baseline and Python/shell
-editor tools, preview and run `bootstrap.sh --profile server --editor-languages
-python,shell --system-baseline --dry-run`, then repeat without `--dry-run`.
+For a Debian 13 administrator host with Python/shell editor tools:
+
+```sh
+./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --dry-run
+# Review the preview, then repeat without --dry-run.
+```
 See [the VPS guide](docs/VPS-SERVER.md) for the system ownership boundary.
 
 Useful workstation choices:
@@ -107,10 +133,11 @@ Existing identity files are preserved.
 | `Brewfile`, `extensions.txt` | macOS packages and VS Code extensions |
 | `home/` | Chezmoi source files, templates, and platform exclusions |
 | `scripts/` | Installation, deployment, snapshots, updates, editor setup, verification |
+| `system/debian/` | Opt-in Debian 13 APT and journald baseline |
 | `scripts/pinned-assets.sh`, `scripts/pinned-plugins.sh` | Authoritative download and plugin pins |
 | `assets/terminfo/` | Vendored Ghostty terminfo and upstream license |
 | `tests/` | Offline behavioral regressions using temporary homes |
-| `.github/workflows/ci.yml` | Linux/macOS checks, actionlint, redacted secret scan |
+| `.github/workflows/ci.yml` | Linux/macOS checks, Debian 13 install/verify smoke test, actionlint and secret scan |
 
 ## Guides
 
@@ -142,7 +169,7 @@ installation and language-tool downloads are separate from offline tests.
 
 MIT licensed; vendored terminfo retains its upstream license.
 
-## Modern tools, terminal layouts and workbooks
+## Optional workstation tools and layouts
 
 ```sh
 just tools-update        # packages and managed tools, separate from git/config updates
@@ -151,6 +178,10 @@ lab                      # nine interactive tool workbooks after deployment
 deck                     # shell + live resources + system card
 termstyle operator       # control-room layout for active work
 ```
+
+The default Operator shell layout uses graphite, teal and amber; editor and
+diff views use Gruvbox. Styles are selected explicitly and do not add startup
+animations or network calls.
 
 The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
 Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
