@@ -42,6 +42,11 @@ For a server:
 ./scripts/verify.sh --profile server
 ```
 
+For a Debian 13 administrator host with the agreed baseline and Python/shell
+editor tools, preview and run `bootstrap.sh --profile server --editor-languages
+python,shell --system-baseline --dry-run`, then repeat without `--dry-run`.
+See [the VPS guide](docs/VPS-SERVER.md) for the system ownership boundary.
+
 Useful workstation choices:
 
 ```sh

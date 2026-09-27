@@ -10,17 +10,25 @@ warn() { printf 'Warning: %s\n' "$*" >&2; }
 
 # shellcheck source=scripts/preflight.sh
 . "$SCRIPT_DIR/preflight.sh"
+# shellcheck source=scripts/server-packages.sh
+. "$SCRIPT_DIR/server-packages.sh"
 SKIP_PACKAGES=0
 SETUP_EDITOR=0
+EDITOR_LANGUAGES=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -h|--help) printf 'Usage: %s [--skip-packages] [--setup-editor]\nInstalls SSH shell, terminal tools and Neovim on Debian/Ubuntu x86_64.\n--setup-editor also installs the pinned Go, Node.js and Python build prerequisites used by Mason.\n' "$0"; exit 0 ;;
+    -h|--help) printf 'Usage: %s [--skip-packages] [--setup-editor] [--editor-languages lua,python,go,rust,node,shell]\n' "$0"; exit 0 ;;
     --skip-packages) SKIP_PACKAGES=1 ;;
     --setup-editor) SETUP_EDITOR=1 ;;
+    --editor-languages) [[ $# -ge 2 ]] || exit 2; IFS=, read -ra EDITOR_LANGUAGES <<<"$2"; SETUP_EDITOR=1; shift ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
   esac
   shift
 done
+if (( SETUP_EDITOR )) && (( ${#EDITOR_LANGUAGES[@]} == 0 )); then
+  EDITOR_LANGUAGES=(lua python go rust node shell)
+fi
+if (( SETUP_EDITOR )); then dotfiles_server_editor_packages "${EDITOR_LANGUAGES[@]}" >/dev/null; fi
 preflight_linux server
 ARCH="$(pinned_asset_arch)" || {
   printf 'Server installer currently requires Linux x86_64.\n' >&2; exit 1;
@@ -45,14 +53,10 @@ fi
 if [[ "$SKIP_PACKAGES" == 0 ]]; then
   editor_packages=()
   if [[ "$SETUP_EDITOR" == 1 ]]; then
-    editor_packages+=(build-essential python3 python3-venv)
+    mapfile -t editor_packages < <(dotfiles_server_editor_packages "${EDITOR_LANGUAGES[@]}")
   fi
 "${admin[@]}" apt-get update
-"${admin[@]}" apt-get install -y --no-install-recommends \
-  ca-certificates curl git zsh tmux ncurses-bin ncurses-term less man-db \
-  bsdextrautils util-linux unzip xz-utils fzf zoxide direnv ripgrep fd-find bat jq \
-  atuin ncdu tealdeer htop \
-  shellcheck shfmt bats "${editor_packages[@]}"
+"${admin[@]}" apt-get install -y --no-install-recommends "${dotfiles_server_packages[@]}" "${editor_packages[@]}"
 fi
 mkdir -p "$HOME/.terminfo"
 tic -x -o "$HOME/.terminfo" "$SCRIPT_DIR/../assets/terminfo/xterm-ghostty.terminfo"
@@ -95,48 +99,16 @@ install_runtime() {
 }
 
 install_go() {
-  if install_runtime go "go-linux-$GO_ARCH" bin/go; then
-    ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
-    return 0
-  fi
-  if command -v go >/dev/null 2>&1; then
-    warn "Pinned Go could not be downloaded; using existing $(go version) for editor setup."
-    ln -sfn "$(command -v go)" "$LOCAL_BIN/go"
-    command -v gofmt >/dev/null 2>&1 && ln -sfn "$(command -v gofmt)" "$LOCAL_BIN/gofmt"
-    return 0
-  fi
-  [[ "$SKIP_PACKAGES" == 0 ]] || return 1
-  warn "Installing Debian's Go package as a fallback for editor setup."
-  "${admin[@]}" apt-get install -y golang-go
-  command -v go >/dev/null 2>&1 || return 1
-  ln -sfn "$(command -v go)" "$LOCAL_BIN/go"
-  command -v gofmt >/dev/null 2>&1 && ln -sfn "$(command -v gofmt)" "$LOCAL_BIN/gofmt"
+  install_runtime go "go-linux-$GO_ARCH" bin/go
+  ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
 }
 
 install_node() {
-  if install_runtime node "node-linux-$ARCH" bin/node; then
-    local binary directory
-    directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
-    for binary in npm npx corepack; do
-      [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
-    done
-    return 0
-  fi
-  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-    warn "Pinned Node.js could not be downloaded; using existing $(node --version) for editor setup."
-    ln -sfn "$(command -v node)" "$LOCAL_BIN/node"
-    for binary in npm npx corepack; do
-      command -v "$binary" >/dev/null 2>&1 && ln -sfn "$(command -v "$binary")" "$LOCAL_BIN/$binary"
-    done
-    return 0
-  fi
-  [[ "$SKIP_PACKAGES" == 0 ]] || return 1
-  warn "Installing Debian's Node.js/npm packages as a fallback for editor setup."
-  "${admin[@]}" apt-get install -y nodejs npm
-  command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 || return 1
-  ln -sfn "$(command -v node)" "$LOCAL_BIN/node"
+  install_runtime node "node-linux-$ARCH" bin/node
+  local directory
+  directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
   for binary in npm npx corepack; do
-    command -v "$binary" >/dev/null 2>&1 && ln -sfn "$(command -v "$binary")" "$LOCAL_BIN/$binary"
+    [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
   done
 }
 
@@ -151,6 +123,8 @@ install_tool delta delta-linux-x86_64 "${delta_file%.tar.gz}/delta"
 install_tool lazygit lazygit-linux-x86_64 lazygit
 install_tool chezmoi chezmoi-linux-amd64 chezmoi
 install_tool just just-linux-x86_64 just
+install_tool gitleaks gitleaks-linux-x64 gitleaks
+install_tool actionlint actionlint-linux-amd64 actionlint
 
 # Extract to a versioned user directory; keep any previous version for rollback.
 nvim_archive="$(cached_asset_path neovim-linux-x86_64 "$DOWNLOAD_DIR")"
@@ -165,11 +139,15 @@ if [[ ! -x "$nvim_dir/bin/nvim" ]]; then
 fi
 ln -sfn "$nvim_dir/bin/nvim" "$LOCAL_BIN/nvim"
 if [[ "$SETUP_EDITOR" == 1 ]]; then
-  if ! asset_version_matches go "go-linux-$GO_ARCH" version; then
-    install_go
-  fi
-  if ! asset_version_matches node "node-linux-$ARCH" --version; then
-    install_node
-  fi
+  need_go=0 need_node=0
+  for language in "${EDITOR_LANGUAGES[@]}"; do
+    [[ "$language" == go ]] && need_go=1
+    [[ "$language" == node || "$language" == shell ]] && need_node=1
+  done
+  if (( need_go )) && ! asset_version_matches go "go-linux-$GO_ARCH" version; then install_go; fi
+  if (( need_node )) && ! asset_version_matches node "node-linux-$ARCH" --version; then install_node; fi
+fi
+if command -v tldr >/dev/null 2>&1 && ! tldr tar >/dev/null 2>&1; then
+  tldr --update || warn 'Could not populate tldr pages; rerun tldr --update when online.'
 fi
 printf 'Server tools installed for %s. Fonts belong on the SSH client.\n' "$(id -un)"

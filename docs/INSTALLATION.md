@@ -24,6 +24,8 @@ relocate Chezmoi's managed `.config` targets; use the conventional layout.
 |---|---|
 | `--profile workstation` | Default: development packages and application configuration |
 | `--profile server` | Linux SSH environment; desktop configurations excluded |
+| `--dry-run` | Preview profile packages, tool downloads, baseline and deployment |
+| `--system-baseline` | Debian 13 server APT/journal policy and administrator journal access |
 | `--yes` | Skip bootstrap confirmation prompts |
 | `--configure-shell` | Permit `/etc/shells` registration and `chsh` |
 | `--skip-docker` | Omit container packages on macOS/Linux |
@@ -64,8 +66,8 @@ clone URL for the bootstrap fallback; an existing checkout is used directly.
 
 `install-server.sh --skip-packages` assumes an administrator has already
 installed its declared apt dependencies. With `--setup-editor`, that includes
-`build-essential`, `python3`, and `python3-venv`; the pinned Go and Node archives
-are still installed into the user's `~/.local/opt`. It still compiles terminfo
+the prerequisites for the selected languages. Pinned Node is required for
+Python and shell Mason tools; pinned Go is required only for Go tooling. It still compiles terminfo
 and installs user-owned binaries. Apply afterward with `--profile server`.
 
 Linux fonts/VS Code/Ghostty and assistant CLIs are separate choices where they

@@ -41,7 +41,8 @@ must match pins and have clean working trees. Verification returns nonzero for
 required failures. Plugins/TPM deliberately skipped during installation are
 optional. Docker checks validate CLI plugins, not daemon startup; a skipped
 Docker installation is optional. Explicitly provisioned editor tools have markers
-and are checked independently. Fonts, assistant accounts, and remote connectivity
+and are checked independently, including selected runtime pins. Server checks
+also require usable tealdeer pages and repository quality tools. Fonts, assistant accounts, and remote connectivity
 require appropriate client/manual checks.
 
 ## Updates

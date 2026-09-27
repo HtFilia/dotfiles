@@ -12,6 +12,9 @@ jobs:
     name: Debian 13 server smoke
     runs-on: ubuntu-latest
     container: debian:trixie
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Install checkout and test prerequisites
         run: |
@@ -21,6 +24,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Install server package manifest
+        run: |
+          . scripts/server-packages.sh
+          apt-get install -y --no-install-recommends "${dotfiles_server_packages[@]}"
       - name: Install pinned Chezmoi
         run: |
           . scripts/pinned-assets.sh
@@ -33,6 +40,8 @@ jobs:
           useradd -m -s /bin/bash dotfiles-ci
           # shellcheck disable=SC2016
           runuser -u dotfiles-ci -- bash -c 'cd "$1" && bash tests/script-contracts.sh' _ "$GITHUB_WORKSPACE"
+          # shellcheck disable=SC2016
+          runuser -u dotfiles-ci -- bash -c 'cd "$1" && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server' _ "$GITHUB_WORKSPACE"
 
   scripts:
     name: Checks (${{ matrix.os }})
