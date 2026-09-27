@@ -39,12 +39,12 @@ install_pinned_plugin() {
 
   mkdir -p "$base_dir" || return 1
   if [[ ! -d "$dst/.git" ]]; then
-    git clone --quiet "$repo" "$dst" || return 1
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git clone --quiet "$repo" "$dst" || return 1
   fi
   local dirty
   dirty="$(git -C "$dst" status --porcelain)" || return 1
   [[ -z "$dirty" ]] || { printf "Plugin has local changes: %s\n" "$dst" >&2; return 1; }
-  git -C "$dst" fetch --quiet --depth=1 origin "$commit" || return 1
+  GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$dst" fetch --quiet --depth=1 origin "$commit" || return 1
   git -C "$dst" checkout --quiet --detach "$commit" || return 1
   actual="$(git -C "$dst" rev-parse HEAD)" || return 1
   [[ "$actual" == "$commit" ]]

@@ -48,17 +48,52 @@ fi
 check 'Zsh syntax' zsh -n "$HOME/.zshrc"
 check 'Completion permissions' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
 check 'bat Gruvbox theme' bash -c 'bat --list-themes | rg -x gruvbox-dark >/dev/null'
-check 'Starship configuration' bash -c 'STARSHIP_LOG=error starship prompt >/dev/null'
+check 'Starship configuration' bash -c 'TERM=xterm-256color STARSHIP_LOG=error starship prompt >/dev/null'
 check 'tmux terminfo' bash -c 'infocmp -x tmux-256color >/dev/null 2>&1'
 # Terminfo output is useful on failure but verbose on success; hide via wrapper below.
 if [[ "$profile" == server ]]; then
+  if [[ -f "$HOME/.local/state/dotfiles/source" ]]; then
+    source_root="$(cat "$HOME/.local/state/dotfiles/source")"
+    if [[ -d "$source_root/home" ]] && available chezmoi; then
+      check 'all managed server files match source' bash -c \
+        'diff=$(DOTFILES_PROFILE=server chezmoi --config /dev/null --config-format toml --source "$1" --destination "$2" --mode "$3" diff --no-pager) || exit; [[ -z "$diff" ]]' \
+        _ "$source_root/home" "$HOME" "$(cat "$HOME/.local/state/dotfiles/materialize" 2>/dev/null || printf file)"
+    fi
+  fi
   check 'Ghostty terminfo' bash -c 'infocmp -x xterm-ghostty >/dev/null 2>&1'
-  for tool in atuin ncdu tldr htop; do check "$tool available" available "$tool"; done
+  for tool in atuin ncdu tldr htop gitleaks actionlint; do check "$tool available" available "$tool"; done
+  check 'tldr pages available' bash -c 'tldr tar >/dev/null 2>&1'
+  check 'system diagnostic commands' bash -c 'for tool in ip ss dig ping ps; do command -v "$tool" >/dev/null || exit 1; done'
+  if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
+    read -ra server_languages < "$HOME/.local/state/dotfiles/editor-languages"
+    for language in "${server_languages[@]}"; do
+      case "$language" in
+        go) check 'Go editor runtime pin' asset_version_matches go go-linux-amd64 version ;;
+        node|shell) check 'Node editor runtime pin' asset_version_matches node node-linux-x86_64 --version ;;
+      esac
+    done
+  fi
+  if [[ -f "$HOME/.local/state/dotfiles/system-baseline" ]]; then
+    for timer in apt-daily.timer apt-daily-upgrade.timer logrotate.timer; do
+      check "$timer enabled" systemctl is-enabled --quiet "$timer"
+      check "$timer active" systemctl is-active --quiet "$timer"
+    done
+    for policy in 20auto-upgrades 52dotfiles-unattended; do
+      check "$policy baseline policy" cmp -s "$SCRIPT_DIR/../system/debian/$policy" "/etc/apt/apt.conf.d/$policy"
+    done
+    check 'journal retention policy' cmp -s "$SCRIPT_DIR/../system/debian/20-dotfiles-retention.conf" /etc/systemd/journald.conf.d/20-dotfiles-retention.conf
+    check 'persistent journal directory' test -d /var/log/journal
+    check 'system journal group membership'  bash -c 'id -nG "$(id -un)" | tr " " "\n" | rg -qx systemd-journal'
+  fi
 fi
 if [[ "$(uname -s)" == Linux ]]; then
   for pair in starship:starship-linux-x86_64 eza:eza-linux-x86_64 delta:delta-linux-x86_64 lazygit:lazygit-linux-x86_64 chezmoi:chezmoi-linux-amd64 just:just-linux-x86_64 nvim:neovim-linux-x86_64; do
     check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
   done
+  if [[ "$profile" == server ]]; then
+    check 'gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
+    check 'actionlint pin' asset_version_matches actionlint actionlint-linux-amd64
+  fi
 fi
 for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
   directory="$HOME/.local/share/zsh/plugins/$plugin"
@@ -104,6 +139,8 @@ if [[ "$profile" == workstation ]]; then
 fi
 # Explicit editor provisioning is checked only when its marker exists.
 if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
+  check 'editor tool manifest exists' test -s "$HOME/.local/state/dotfiles/editor-tools"
+  check 'selected editor parsers load' env DOTFILES_EDITOR_LANGUAGES="$(cat "$HOME/.local/state/dotfiles/editor-languages")" nvim --headless -u NONE "+lua dofile('$SCRIPT_DIR/verify-parsers.lua')"
   while IFS= read -r tool; do
     check "editor tool $tool" test -x "$HOME/.local/share/nvim/mason/bin/$tool"
   done <"$HOME/.local/state/dotfiles/editor-tools"

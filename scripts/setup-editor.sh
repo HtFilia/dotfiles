@@ -36,5 +36,5 @@ if (( needs_python == 1 )); then
 fi
 export DOTFILES_EDITOR_LANGUAGES="$*"
 export DOTFILES_EDITOR_SETUP="$SCRIPT_DIR/editor-setup.lua"
-nvim --headless '+Lazy! restore' '+qa'
-nvim --headless '+lua dofile(vim.env.DOTFILES_EDITOR_SETUP)'
+GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 nvim --headless '+Lazy! restore' '+qa'
+GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 nvim --headless '+lua dofile(vim.env.DOTFILES_EDITOR_SETUP)'

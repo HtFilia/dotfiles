@@ -49,7 +49,7 @@ class Contracts(unittest.TestCase):
 
     def test_cli_validation(self):
         for script in (ROOT / "scripts").glob("*.sh"):
-            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "asset-manifest.sh"}:
+            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "server-packages.sh", "asset-manifest.sh"}:
                 continue
             self.run_command(str(script), "--help")
         result = self.run_command(str(ROOT / "scripts/bootstrap.sh"), "--profile", "invalid", "--yes", success=False)
@@ -80,17 +80,59 @@ class Contracts(unittest.TestCase):
         state.mkdir(parents=True)
         (state / "profile").write_text("server\n")
         (state / "editor-languages").write_text("python shell\n")
-        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
-        self.assertIn("install-server.sh --skip-packages --setup-editor", result.stdout)
-        self.assertIn("setup-editor.sh python shell", result.stdout)
-        self.assertNotIn("sudo", result.stdout)
-        self.assertNotIn("install-debian.sh", result.stdout)
-        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--skip-packages", "--dry-run")
-        self.assertIn("install-debian.sh", result.stdout)
+        if os.uname().sysname == "Darwin":
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Server profile requires Linux", result.stderr)
+            self.assertNotIn("would run:", result.stdout)
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--dry-run")
+            self.assertIn("install-macos.sh", result.stdout)
+            self.assertNotIn("install-server.sh", result.stdout)
+        else:
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
+            self.assertIn("install-server.sh --skip-packages --editor-languages python\\,shell", result.stdout)
+            self.assertIn("setup-editor.sh python shell", result.stdout)
+            self.assertNotIn("sudo", result.stdout)
+            self.assertNotIn("install-debian.sh", result.stdout)
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--skip-packages", "--dry-run")
+            self.assertIn("install-debian.sh", result.stdout)
         (state / "profile").write_text("broken\n")
         result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertNotIn("would run:", result.stdout)
+
+    @unittest.skipUnless(os.uname().sysname == "Linux", "server installer requires Linux")
+    def test_server_editor_prerequisites_are_selected_by_language(self):
+        script = 'source "$1"; dotfiles_server_editor_packages python shell'
+        result = self.run_command("bash", "-euc", script, "_", str(ROOT / "scripts/server-packages.sh"))
+        self.assertEqual(result.stdout.splitlines(), ["build-essential", "python3", "python3-venv"])
+        result = self.run_command("bash", "-euc", 'source "$1"; dotfiles_server_editor_packages go',
+                                  "_", str(ROOT / "scripts/server-packages.sh"))
+        self.assertEqual(result.stdout.splitlines(), ["build-essential"])
+
+    @unittest.skipUnless(os.uname().sysname == "Linux", "server baseline requires Linux")
+    def test_server_baseline_preview_is_read_only(self):
+        if "VERSION_CODENAME=trixie" not in Path("/etc/os-release").read_text():
+            self.skipTest("Debian 13 baseline")
+        fake_bin = self.work / "bin"
+        fake_bin.mkdir()
+        fake_sudo = fake_bin / "sudo"
+        fake_sudo.write_text("#!/bin/sh\necho unexpected-sudo >&2\nexit 99\n")
+        fake_sudo.chmod(0o755)
+        self.env["PATH"] = str(fake_bin) + ":" + self.env["PATH"]
+        result = self.run_command(str(ROOT / "scripts/server-baseline.sh"), "--dry-run")
+        self.assertIn("journal retention", result.stdout)
+        self.assertNotIn("unexpected-sudo", result.stderr)
+
+    @unittest.skipUnless(os.uname().sysname == "Linux", "Linux updater")
+    def test_invalid_editor_state_stops_before_package_actions(self):
+        state = self.home / ".local/state/dotfiles"
+        state.mkdir(parents=True)
+        (state / "editor-languages").write_text("unknown-language\n")
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "server", "--dry-run", success=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Unknown editor language", result.stderr)
+        self.assertNotIn("apt-get", result.stdout)
 
     def test_local_git_and_ssh_overrides(self):
         self.apply("--destination", str(self.home), "--profile", "server")
@@ -205,6 +247,14 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
         result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("verification failure", result.stdout)
+
+    def test_verification_detects_managed_server_drift(self):
+        self.apply("--destination", str(self.home), "--profile", "server", "--force")
+        result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
+        self.assertIn("ok - all managed server files match source", result.stdout)
+        (self.home / ".config/ripgrep/config").write_text("--hidden\n")
+        result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
+        self.assertIn("FAIL - all managed server files match source", result.stderr)
 
     def test_existing_ssh_identity_is_preserved(self):
         ssh = self.home / ".ssh"

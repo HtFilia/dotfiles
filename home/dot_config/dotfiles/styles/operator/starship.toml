@@ -1,8 +1,8 @@
 # Operator: a compact control-room prompt for active work.
 add_newline = true
 command_timeout = 500
-format = "[┌─](bold #75d1c2)$directory$git_branch$git_status$line_break[└─](bold #75d1c2)$character"
-right_format = "$username$hostname$python$nodejs$rust$golang$cmd_duration"
+format = "[┌─](bold #75d1c2)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #75d1c2)$character"
+right_format = "$python$nodejs$rust$golang$cmd_duration"
 
 [username]
 show_always = false

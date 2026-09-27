@@ -306,7 +306,8 @@ command -v claude &>/dev/null && alias ai='claude' air='claude --resume'
 _dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$ZSH_PLUGIN_DIR" || true
 
 # Explicit commands: no animation, network fetch or dashboard at shell startup.
-alias lab='dotfiles-lab' deck='dotfiles-deck'
+command -v dotfiles-lab &>/dev/null && alias lab='dotfiles-lab'
+command -v dotfiles-deck &>/dev/null && alias deck='dotfiles-deck'
 command -v tldr &>/dev/null && alias helpme='tldr'
 command -v jless &>/dev/null && alias jsonview='jless'
 termstyle() { dotfiles-style "$@" && { print 'Style saved. Run: exec zsh'; }; }
