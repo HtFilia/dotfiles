@@ -19,7 +19,7 @@ jobs:
       - name: Install checkout and test prerequisites
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git python3 zsh ripgrep util-linux passwd
+          apt-get install -y --no-install-recommends ca-certificates curl git python3 zsh ripgrep util-linux passwd sudo
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
