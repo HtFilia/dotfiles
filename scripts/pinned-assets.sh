@@ -5,8 +5,6 @@
 pinned_asset_field() {
   local key="$1" field="$2"
   case "$key:$field" in
-    tokei-cargo:version) printf '%s\n' '15.0.0' ;;
-
     starship-linux-x86_64:version) printf '%s\n' 'v1.26.0' ;;
     starship-linux-x86_64:url) printf '%s\n' 'https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-gnu.tar.gz' ;;
     starship-linux-x86_64:file) printf '%s\n' 'starship-x86_64-unknown-linux-gnu.tar.gz' ;;
@@ -110,15 +108,7 @@ pinned_asset_field() {
     actionlint-linux-amd64:file) printf '%s\n' 'actionlint_1.7.12_linux_amd64.tar.gz' ;;
     actionlint-linux-amd64:sha256) printf '%s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' ;;
 
-    node-linux-x86_64:version) printf '%s\n' 'v26.9.0' ;;
-    node-linux-x86_64:url) printf '%s\n' 'https://nodejs.org/dist/v26.9.0/node-v26.9.0-linux-x64.tar.xz' ;;
-    node-linux-x86_64:file) printf '%s\n' 'node-v26.9.0-linux-x64.tar.xz' ;;
-    node-linux-x86_64:sha256) printf '%s\n' 'c6ecd8efc1c1d395265891675319da7a7b3785c6be174bd78933cf4f057624d1' ;;
 
-    node-linux-arm64:version) printf '%s\n' 'v26.9.0' ;;
-    node-linux-arm64:url) printf '%s\n' 'https://nodejs.org/dist/v26.9.0/node-v26.9.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:file) printf '%s\n' 'node-v26.9.0-linux-arm64.tar.xz' ;;
-    node-linux-arm64:sha256) printf '%s\n' '686d07ed3bc5d68d9f7bd4939b7e8849a87d0664ac19c8c5474474f44cc956db' ;;
 
     chezmoi-linux-amd64:version) printf '%s\n' 'v2.72.2' ;;
     chezmoi-linux-amd64:url) printf '%s\n' 'https://github.com/twpayne/chezmoi/releases/download/v2.72.2/chezmoi_2.72.2_linux_amd64.tar.gz' ;;
@@ -130,15 +120,7 @@ pinned_asset_field() {
     chezmoi-linux-arm64:file) printf '%s\n' 'chezmoi_2.72.2_linux_arm64.tar.gz' ;;
     chezmoi-linux-arm64:sha256) printf '%s\n' '499925fd10804b7c1a5dc4b4a275c8935261d02a4be0c18bbd41b7747810de67' ;;
 
-    go-linux-amd64:version) printf '%s\n' '1.27.1' ;;
-    go-linux-amd64:url) printf '%s\n' 'https://go.dev/dl/go1.27.1.linux-amd64.tar.gz' ;;
-    go-linux-amd64:file) printf '%s\n' 'go1.27.1.linux-amd64.tar.gz' ;;
-    go-linux-amd64:sha256) printf '%s\n' '63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445' ;;
 
-    go-linux-arm64:version) printf '%s\n' '1.27.1' ;;
-    go-linux-arm64:url) printf '%s\n' 'https://go.dev/dl/go1.27.1.linux-arm64.tar.gz' ;;
-    go-linux-arm64:file) printf '%s\n' 'go1.27.1.linux-arm64.tar.gz' ;;
-    go-linux-arm64:sha256) printf '%s\n' '3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec' ;;
 
     fzf-linux-x86_64:version) printf '%s\n' '0.74.4' ;;
     fzf-linux-x86_64:url) printf '%s\n' 'https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz' ;;
@@ -260,6 +242,26 @@ pinned_asset_field() {
     fastfetch-linux-x86_64:file) printf '%s\n' 'fastfetch-linux-amd64.tar.gz' ;;
     fastfetch-linux-x86_64:sha256) printf '%s\n' '0c51ef6fa3e976eb5038fe0afda38629d3ca07947740bb0e3354c7c4f1238c0c' ;;
 
+    pnpm-linux-x86_64:version) printf '%s\n' '12.4.2' ;;
+    pnpm-linux-x86_64:url) printf '%s\n' 'https://github.com/pnpm/pnpm/releases/download/v12.4.2/pnpm-linux-x64.tar.gz' ;;
+    pnpm-linux-x86_64:file) printf '%s\n' 'pnpm-linux-x64.tar.gz' ;;
+    pnpm-linux-x86_64:sha256) printf '%s\n' 'ce1ed690fe9c2f091d7267e1afbe9380abb08bb577e95348fda194a41147d2ec' ;;
+
+    biome-linux-x86_64:version) printf '%s\n' '2.5.14' ;;
+    biome-linux-x86_64:url) printf '%s\n' 'https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%402.5.14/biome-linux-x64' ;;
+    biome-linux-x86_64:file) printf '%s\n' 'biome-linux-x64' ;;
+    biome-linux-x86_64:sha256) printf '%s\n' '290c1c85deeaf01310d9187306060b53961574856a7e34f59d9662562e6f19fe' ;;
+
+    tree-sitter-linux-x86_64:version) printf '%s\n' '0.26.1' ;;
+    tree-sitter-linux-x86_64:url) printf '%s\n' 'https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.1/tree-sitter-linux-x64.gz' ;;
+    tree-sitter-linux-x86_64:file) printf '%s\n' 'tree-sitter-linux-x64.gz' ;;
+    tree-sitter-linux-x86_64:sha256) printf '%s\n' 'd74182fffbf441f247371ad6af77d99b10ac9f788d7e068e4b44992d9d6d7c26' ;;
+
+    python-linux-x86_64:version) printf '%s\n' '3.14.7' ;;
+    python-linux-x86_64:url) printf '%s\n' 'https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.14.7%2B20260901-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz' ;;
+    python-linux-x86_64:file) printf '%s\n' 'cpython-3.14.7-install_only_stripped.tar.gz' ;;
+    python-linux-x86_64:sha256) printf '%s\n' '3959f92825141e04adf44982d3a83ee57af0877e893b0796e04c1468749d9b04' ;;
+
     *) return 1 ;;
   esac
 }
@@ -295,17 +297,10 @@ download_pinned_asset() {
   file="$(pinned_asset_field "$key" file)" || return 1
   url="$(pinned_asset_field "$key" url)" || return 1
   sha="$(pinned_asset_field "$key" sha256)" || return 1
-  mkdir -p "$dest_dir"
-  local partial
-  partial="$(mktemp "$dest_dir/$file.part.XXXXXX")" || return 1
-  if curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
-    --retry 3 --connect-timeout 15 "$url" -o "$partial" && verify_sha256 "$partial" "$sha"; then
-    mv "$partial" "$dest_dir/$file"
-  else
-    printf 'Pinned asset download failed: %s\n  URL: %s\n' "$key" "$url" >&2
-    rm -f "$partial"
-    return 1
-  fi
+  [[ "$url" == https://github.com/*/releases/download/* ]] || { printf "Unauthorized asset source: %s\n" "$key" >&2; return 1; }
+  python3 "$(dirname "${BASH_SOURCE[0]}")/corporate-download.py" fetch "$url" "$dest_dir/$file" "$sha" || {
+    printf 'Pinned asset download failed: %s\n' "$key" >&2; return 1;
+  }
 }
 
 require_pinned_file() {
@@ -330,16 +325,11 @@ cached_asset_path() {
 
 extract_pinned_archive() {
   local archive="$1" destination="$2"
-  case "$archive" in
-    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$destination" ;;
-    *.tar.xz) tar -xJf "$archive" -C "$destination" ;;
-    *.zip) unzip -oq "$archive" -d "$destination" ;;
-    *) return 1 ;;
-  esac
+  python3 "$(dirname "${BASH_SOURCE[0]}")/corporate-download.py" extract "$archive" "$destination"
 }
 
 asset_version_matches() {
-  local tool="$1" key="$2" argument="${3:---version}" expected output
+  local tool="$1" key="$2" argument="${3:---version}" expected output binary_sha
   command -v "$tool" >/dev/null 2>&1 || return 1
   expected="$(pinned_asset_field "$key" version)" || return 1
   output="$("$tool" "$argument" 2>&1)" || return 1
@@ -354,10 +344,17 @@ asset_version_matches() {
 
 # Replace the destination itself, never follow an existing fd/bat symlink into /usr.
 atomic_install_binary() {
-  local source="$1" destination="$2" stage
+  local source="$1" destination="$2" stage backup
+  [[ -d "$(dirname "$destination")" && ! -L "$(dirname "$destination")" && -O "$(dirname "$destination")" ]] || { printf "Unsafe binary destination parent\n" >&2; return 1; }
   stage="$(mktemp "${destination}.XXXXXX")" || return 1
   if install -m 755 "$source" "$stage"; then
-    mv -f "$stage" "$destination"
+    if [[ -f "$destination" ]]; then
+      backup="$(mktemp "${destination}.backup.XXXXXX")" || { rm -f "$stage"; return 1; }
+      if ! cp -L -p "$destination" "$backup" || ! mv -fT "$backup" "$destination.previous"; then
+        rm -f "$stage" "$backup"; return 1
+      fi
+    fi
+    mv -fT "$stage" "$destination"
   else
     rm -f "$stage"
     return 1

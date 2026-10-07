@@ -5,6 +5,9 @@ local uv = vim.uv or vim.loop
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 local lazy_commit = "85c7ff3711b730b4030d03144f6db6375044ae82"
 if not uv.fs_stat(lazypath) then
+  if vim.env.DOTFILES_EDITOR_PROVISION ~= "1" then
+    error("Neovim plugins are missing. Run the corporate checkout's scripts/setup-editor.sh for selected languages.")
+  end
   local clone = vim.fn.system({
     "git",
     "clone",
@@ -37,7 +40,9 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "gruvbox-material", "habamax" } },
+  install = { missing = vim.env.DOTFILES_EDITOR_PROVISION == "1", colorscheme = { "gruvbox-material", "habamax" } },
+  rocks = { enabled = false },
+  pkg = { enabled = false },
   checker = { enabled = false },
   change_detection = { notify = false },
 })

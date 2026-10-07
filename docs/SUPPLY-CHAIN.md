@@ -1,5 +1,10 @@
 # Supply chain and reproducibility
 
+> On `environment/corporate`, [CORPORATE.md](CORPORATE.md) defines the
+> supported acquisition and acceptance process. References below to personal
+> macOS/server installers, vendor runtimes or Mason apply to `master`.
+
+
 ## Platform packages
 
 Homebrew and apt provide their native trust/update mechanisms. Brewfile and

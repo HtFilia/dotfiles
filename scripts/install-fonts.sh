@@ -18,6 +18,11 @@ case "${1:-}" in
   *) fatal "Unknown argument: $1" ;;
 esac
 
+# shellcheck source=scripts/corporate-preflight.sh
+. "$SCRIPT_DIR/corporate-preflight.sh"
+corporate_platform workstation
+corporate_repository "$(cd "$SCRIPT_DIR/.." && pwd)"
+
 install_font_linux() {
   local font_dir="$HOME/.local/share/fonts" cache_dir="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
   local key="firacode" file archive tmpdir
@@ -32,7 +37,8 @@ install_font_linux() {
   archive="$(cached_asset_path "$key" "$cache_dir")" || fatal "Download/checksum failed: $key"
   tmpdir="$(mktemp -d)"
   trap 'rm -rf "$tmpdir"' RETURN
-  unzip -oq "$archive" -d "$tmpdir/FiraCode"
+  mkdir "$tmpdir/FiraCode"
+  extract_pinned_archive "$archive" "$tmpdir/FiraCode"
   find "$tmpdir/FiraCode" -name "*.ttf" ! -name "*Windows*" -exec cp {} "$font_dir/" \;
   fc-cache -f "$font_dir"
   rm -rf "$tmpdir"

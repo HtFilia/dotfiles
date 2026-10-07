@@ -3,3 +3,18 @@
 typeset -U path PATH
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/go/bin" $path)
 export PATH
+
+# Corporate policy applies to noninteractive commands too. This host-local file
+# contains approved endpoints/settings; never commit it or put secrets in URLs.
+[[ ! -f "$HOME/.config/dotfiles/corporate.env" || -L "$HOME/.config/dotfiles/corporate.env" || ! -O "$HOME/.config/dotfiles/corporate.env" ]] || source "$HOME/.config/dotfiles/corporate.env"
+export NPM_CONFIG_REGISTRY="${DOTFILES_NPM_REGISTRY:-https://registry.invalid/npm/}"
+export PIP_INDEX_URL="${DOTFILES_PYTHON_REGISTRY:-https://registry.invalid/python/simple/}"
+export PIP_EXTRA_INDEX_URL=""
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+export UV_DEFAULT_INDEX="$PIP_INDEX_URL"
+export UV_PYTHON_DOWNLOADS=never
+export GOTOOLCHAIN=local
+export GOPROXY="${DOTFILES_GO_PROXY:-off}"
+export CARGO_NET_OFFLINE=true
+export MISE_AUTO_INSTALL=false
+export MISE_NOT_FOUND_AUTO_INSTALL=false

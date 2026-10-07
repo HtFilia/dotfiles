@@ -1,4 +1,4 @@
--- Explicit Mason and Treesitter provisioning with completion/error reporting.
+-- Explicit parser provisioning only; native language tools are installed first.
 local targets = {
   lua = { tools = { "lua-language-server", "stylua" }, parsers = { "lua", "luadoc" } },
   python = { tools = { "basedpyright", "ruff" }, parsers = { "python" } },
@@ -8,57 +8,38 @@ local targets = {
   shell = { tools = { "bash-language-server", "shfmt", "shellcheck" }, parsers = { "bash" } },
 }
 local function provision()
-  require("lazy").load({ plugins = { "mason.nvim", "nvim-treesitter" } })
-  local registry = require("mason-registry")
-  local refreshed, refresh_error
-  registry.refresh(function(ok, err)
-    refreshed, refresh_error = ok, err
-  end)
-  assert(vim.wait(120000, function() return refreshed ~= nil end, 100), "Mason registry refresh timed out")
-  assert(refreshed, vim.inspect(refresh_error))
-  local parsers, packages, failures = {}, {}, {}
+  require("lazy").load({ plugins = { "nvim-treesitter" } })
+  local parsers = {}
   for language in vim.env.DOTFILES_EDITOR_LANGUAGES:gmatch("%S+") do
     local target = assert(targets[language], "Unknown language")
     vim.list_extend(parsers, target.parsers)
-    for _, name in ipairs(target.tools) do
-      local package = registry.get_package(name)
-      packages[#packages + 1] = package
-      if not package:is_installed() then
-        package:install({}, function(success, install_error)
-          if not success then failures[package.name] = tostring(install_error or "unknown Mason error") end
-        end)
-      end
-    end
-  end
-  assert(vim.wait(600000, function()
-    for _, package in ipairs(packages) do
-      if package:is_installing() then return false end
-    end
-    return true
-  end, 100), "Mason installation timed out")
-  for _, package in ipairs(packages) do
-    if not package:is_installed() then
-      local detail = failures[package.name] or ("see " .. vim.fn.stdpath("state") .. "/mason.log")
-      error("Failed package: " .. package.name .. " (" .. detail .. ")")
-    end
   end
   local ts = require("nvim-treesitter")
   ts.install(parsers):wait(600000)
+  ts.update(parsers):wait(600000)
   local installed = ts.get_installed()
   for _, parser in ipairs(parsers) do
     assert(vim.tbl_contains(installed, parser), "Parser missing: " .. parser)
   end
   local state = (vim.env.XDG_STATE_HOME or (vim.env.HOME .. "/.local/state")) .. "/dotfiles"
   vim.fn.mkdir(state, "p")
-  vim.fn.writefile({ vim.env.DOTFILES_EDITOR_LANGUAGES }, state .. "/editor-languages")
-  local binaries = {
-    lua = { "lua-language-server", "stylua" }, python = { "basedpyright-langserver", "ruff" },
-    go = { "gopls", "goimports" }, rust = { "rust-analyzer" },
-    node = { "typescript-language-server", "prettier" }, shell = { "bash-language-server", "shfmt", "shellcheck" },
-  }
-  local tools = {}
-  for language in vim.env.DOTFILES_EDITOR_LANGUAGES:gmatch("%S+") do vim.list_extend(tools, binaries[language]) end
+  local tools = vim.fn.readfile(state .. "/editor-tools.pending")
+  for _, tool in ipairs(tools) do
+    assert(vim.fn.executable(tool) == 1, "Missing selected editor tool: " .. tool)
+  end
+  -- Record exact parser revisions from the pinned plugin definitions.
+  local revisions = {}
+  local definitions = require("nvim-treesitter.parsers")
+  for _, parser in ipairs(parsers) do
+    local info = assert(definitions[parser].install_info)
+    local revision = vim.fn.readfile(vim.fn.stdpath("data") .. "/site/parser-info/" .. parser .. ".revision")
+    assert(revision[1] == info.revision, "Parser revision differs from pin: " .. parser)
+    revisions[#revisions + 1] = parser .. "\t" .. tostring(info.revision)
+  end
+  vim.fn.writefile(revisions, state .. "/editor-parsers.tsv")
   vim.fn.writefile(tools, state .. "/editor-tools")
+  vim.fn.delete(state .. "/editor-tools.pending")
+  vim.fn.writefile({ vim.env.DOTFILES_EDITOR_LANGUAGES }, state .. "/editor-languages")
   print("Editor tools and parsers installed. Restart Neovim to enable servers.")
 end
 local ok, err = pcall(provision)

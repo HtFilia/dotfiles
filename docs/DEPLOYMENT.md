@@ -7,10 +7,9 @@ VS Code's native User directory to the shared configuration source.
 
 ## Materialization
 
-Workstations default to `symlink`: managed ordinary files point into the checkout.
-Editing or pulling source changes those files immediately, without another apply.
-Servers default to `file`: application configuration remains independent until
-apply. Explicit `symlink_` source entries, including macOS VS Code's directory,
+Corporate workstations default to `file`: application configuration remains
+independent until apply. An existing saved mode is preserved; change it explicitly
+with `--materialize file`. In `symlink` mode, source edits activate immediately. Explicit `symlink_` source entries, including macOS VS Code's directory,
 remain symlinks in either mode. Templates are rendered files.
 
 Profile and mode are persisted under `~/.local/state/dotfiles` for subsequent
@@ -55,7 +54,8 @@ UPDATE
 ```
 
 The update command snapshots before `git pull --ff-only` and applies afterward.
-It requires a clean checkout and SSH GitHub origin. `--after-pull` skips the pull
+It requires a clean corporate checkout, an approved GitHub origin and
+`origin/environment/corporate` as upstream. `--after-pull` skips the pull
 when it was already done manually. The installed `dotfiles-update` command reads
 the checkout path saved during apply, so it can be run from any directory. The
 `UPDATE` wrapper is the post-pull equivalent. The saved profile and

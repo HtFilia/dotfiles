@@ -12,7 +12,7 @@ success() { printf "%s  +%s %s\n" "$GREEN" "$RESET" "$*"; }
 warn() { printf "%s  !%s %s\n" "$YELLOW" "$RESET" "$*" >&2; }
 fatal() { printf "%s  x%s %s\n" "$RED" "$RESET" "$*" >&2; exit 1; }
 
-DOTFILES_REPO="${DOTFILES_REPO:-git@github.com:HtFilia/dotfiles.git}"
+DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/HtFilia/dotfiles.git}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-plugins.sh
@@ -47,9 +47,10 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --profile PROFILE       workstation (default on new hosts) or server
-  --system-baseline       apply the portable Debian 13 server baseline
+  --profile PROFILE       workstation (corporate branch supports Debian x86_64)
   --dry-run               preview actions without installing or applying
+  --skip-packages          administrator has provisioned required APT packages
+  --with-vscode-extensions install reviewed GitHub VSIX assets
   --skip-docker            do not install container packages
   --skip-fonts             do not install FiraCode Nerd Font
   --no-shell-plugins       skip zsh plugin installation
@@ -58,37 +59,16 @@ Options:
   --editor-languages LIST  comma-separated subset: lua,python,go,rust,node,shell
   --skip-vscode-extensions skip VS Code extension installation
   --configure-shell        allow /etc/shells and chsh changes
-  --start-colima           start and enable Colima on macOS
   --enable-docker-group    add current Linux user to docker group
   -y, --yes                assume yes to prompts
   -h, --help               show help
 EOF
 }
 
-install_vscode_extensions() {
-  local extensions_file="$1"
-  [[ -f "$extensions_file" ]] || return 0
-  if ! command -v code >/dev/null 2>&1; then
-    warn "VS Code CLI not found; skipped extension installation."
-    return 0
-  fi
-
-  log "Installing VS Code extensions..."
-  local extension
-  while IFS= read -r extension || [[ -n "$extension" ]]; do
-    [[ -z "$extension" || "$extension" == \#* ]] && continue
-    if code --install-extension "$extension" >/dev/null 2>&1; then
-      success "installed $extension"
-    else
-      warn "Could not install VS Code extension: $extension"
-    fi
-  done <"$extensions_file"
-}
-
 main() {
   local install_shell_plugins=1 install_tpm=0 configure_shell=0 start_colima=0 enable_docker_group=0
-  local install_code_extensions=1 skip_docker=0 skip_fonts=0 setup_editor=0
-  local profile="" editor_languages="" system_baseline=0 dry_run=0
+  local install_code_extensions=0 skip_docker=0 skip_fonts=0 setup_editor=0
+  local profile="" editor_languages="" system_baseline=0 dry_run=0 skip_packages=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --profile)
@@ -98,6 +78,8 @@ main() {
         ;;
       --system-baseline) system_baseline=1 ;;
       --dry-run) dry_run=1 ;;
+      --skip-packages) skip_packages=1 ;;
+      --with-vscode-extensions) install_code_extensions=1 ;;
       --skip-docker) skip_docker=1 ;;
       --skip-fonts) skip_fonts=1 ;;
       --setup-editor) setup_editor=1 ;;
@@ -124,6 +106,12 @@ main() {
       case "$language" in lua|python|go|rust|node|shell) ;; *) fatal "Unknown editor language: $language" ;; esac
     done
   fi
+  # shellcheck source=scripts/corporate-preflight.sh
+  . "$SCRIPT_DIR/corporate-preflight.sh"
+  corporate_platform "$profile" || fatal 'Unsupported corporate platform/profile.'
+  corporate_repository "$(cd "$SCRIPT_DIR/.." && pwd)" || fatal 'Wrong corporate branch.'
+  corporate_settings
+  (( system_baseline == 0 && start_colima == 0 )) || fatal 'Corporate bootstrap does not manage server policy or Colima.'
   export DOTFILES_PROFILE="$profile"
   if [[ "$profile" == server ]]; then
     skip_fonts=1
@@ -142,7 +130,7 @@ main() {
   if [[ "$os" != macos ]]; then
     # shellcheck source=scripts/preflight.sh
     . "$SCRIPT_DIR/preflight.sh"
-    preflight_linux "$profile"
+    corporate_platform "$profile"
     (( EUID != 0 )) || fatal "Run bootstrap as your regular SSH/development user."
   fi
   success "Detected OS: $os"
@@ -163,13 +151,24 @@ main() {
         printf '\n'
       fi
     else
-      info 'would run workstation installer and selected optional tools'
+      info "would run corporate workstation installer (APT skipped: $skip_packages)"
+      (( setup_editor == 0 )) || info "would provision editor languages: ${editor_languages:-lua,python,go,rust,node,shell}"
+      (( install_code_extensions == 0 )) || info 'would install reviewed VSIX assets'
+
     fi
     (( install_shell_plugins == 0 )) || info 'would install pinned Zsh plugins'
     (( install_tpm == 0 )) || info 'would install pinned tmux TPM'
     info 'would apply Chezmoi source'
     if command -v chezmoi >/dev/null 2>&1; then "$SCRIPT_DIR/apply-dotfiles.sh" --profile "$profile" --dry-run; fi
     return 0
+  fi
+
+  if (( setup_editor )); then
+    [[ -n "$editor_languages" ]] || selected_languages=(lua python go rust node shell)
+    python3 "$SCRIPT_DIR/install-editor-tools.py" --check "${selected_languages[@]}"
+  fi
+  if (( install_code_extensions )); then
+    python3 "$SCRIPT_DIR/install-vscode-extensions.py" --check
   fi
 
   confirm "Continue with installation?" || { warn "Aborted."; exit 0; }
@@ -202,6 +201,7 @@ main() {
       debian_args=("$os")
       [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)
       [[ "$skip_docker" == "1" ]] && debian_args+=(--skip-docker)
+      [[ "$skip_packages" == "1" ]] && debian_args+=(--skip-packages)
       bash "$SCRIPT_DIR/install-debian.sh" "${debian_args[@]}"
       fi
       ;;
@@ -247,12 +247,12 @@ main() {
     dotfiles_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
   else
     dotfiles_dir="$DOTFILES_DIR"
-    [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
+    [[ -d "$dotfiles_dir/.git" ]] || git clone --branch environment/corporate "$DOTFILES_REPO" "$dotfiles_dir"
   fi
   "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
 
   if [[ "$install_code_extensions" == "1" ]]; then
-    install_vscode_extensions "$dotfiles_dir/extensions.txt"
+    "$dotfiles_dir/scripts/install-vscode-extensions.sh"
   else
     warn "Skipped VS Code extension installation."
   fi
@@ -292,7 +292,7 @@ ${GREEN}${BOLD}Done.${RESET}
 Next steps:
   1. Restart your terminal or run: exec zsh
   2. Run: ./scripts/verify.sh --profile $profile
-  3. For a Mac connecting over SSH, see docs/VPS-GHOSTTY.md
+  3. Resolve infrastructure acceptance questions in AGENTS.md and docs/CORPORATE.md
 EOF
 }
 

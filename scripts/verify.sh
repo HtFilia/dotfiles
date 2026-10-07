@@ -115,7 +115,7 @@ if [[ "$profile" == workstation ]]; then
     check "$tool available" available "$tool"
   done
   if [[ "$(uname -s)" == Linux ]]; then
-    for pair in uv:uv-linux-x86_64 uvx:uv-linux-x86_64 mise:mise-linux-x86_64 yazi:yazi-linux-x86_64 yq:yq-linux-amd64 sd:sd-linux-x86_64 dust:dust-linux-x86_64 duf:duf-linux-x86_64 hyperfine:hyperfine-linux-x86_64 watchexec:watchexec-linux-x86_64 xh:xh-linux-x86_64 lazydocker:lazydocker-linux-x86_64 actionlint:actionlint-linux-amd64 node:node-linux-x86_64; do
+    for pair in uv:uv-linux-x86_64 uvx:uv-linux-x86_64 mise:mise-linux-x86_64 yazi:yazi-linux-x86_64 yq:yq-linux-amd64 sd:sd-linux-x86_64 dust:dust-linux-x86_64 duf:duf-linux-x86_64 hyperfine:hyperfine-linux-x86_64 watchexec:watchexec-linux-x86_64 xh:xh-linux-x86_64 lazydocker:lazydocker-linux-x86_64 actionlint:actionlint-linux-amd64 pnpm:pnpm-linux-x86_64 biome:biome-linux-x86_64 tree-sitter:tree-sitter-linux-x86_64; do
       check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
     done
     while IFS=$'\t' read -r tool key _member; do
@@ -125,10 +125,15 @@ if [[ "$profile" == workstation ]]; then
       check "$tool extra pin" asset_version_matches "$tool" "$key" "$argument"
     done < "$SCRIPT_DIR/extra-tools.tsv"
     check 'pnpm executes' pnpm --version
-    check 'Go pin'  asset_version_matches go go-linux-amd64 version
+    for tool in python3 node npm npx go gofmt rustc cargo rustfmt; do
+      check "$tool resolves to authorized APT runtime" bash -c '[[ "$(readlink -f "$(command -v "$1")")" == "$(readlink -f "/usr/bin/$1")" ]]' _ "$tool"
+    done
+    check 'APT runtime packages installed' bash -c 'for pkg in python3 nodejs npm golang-go rustc cargo; do [[ "$(dpkg-query -W -f="\${Status}" "$pkg")" == "install ok installed" ]] || exit 1; done'
+    check 'Go automatic toolchain download disabled' zsh -fc '[[ "$GOTOOLCHAIN" == local ]]'
+    check 'managed Python downloads disabled' zsh -fc '[[ "$UV_PYTHON_DOWNLOADS" == never ]]'
     check 'Gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
   fi
-  if available tokei; then check "tokei version" asset_version_matches tokei tokei-cargo --version; else printf "optional - tokei (Rust >=1.85 build)\n"; fi
+  if available tokei; then check "Tokei executes" tokei --version; else printf "optional - Tokei unavailable through APT (C11)\n"; fi
   if available docker; then
     check 'Docker Compose plugin' docker compose version
     check 'Docker Buildx plugin' docker buildx version
@@ -142,7 +147,7 @@ if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
   check 'editor tool manifest exists' test -s "$HOME/.local/state/dotfiles/editor-tools"
   check 'selected editor parsers load' env DOTFILES_EDITOR_LANGUAGES="$(cat "$HOME/.local/state/dotfiles/editor-languages")" nvim --headless -u NONE "+lua dofile('$SCRIPT_DIR/verify-parsers.lua')"
   while IFS= read -r tool; do
-    check "editor tool $tool" test -x "$HOME/.local/share/nvim/mason/bin/$tool"
+    check "editor tool $tool" test -x "$tool"
   done <"$HOME/.local/state/dotfiles/editor-tools"
 fi
 printf '%s verification failure(s).\n' "$failures"

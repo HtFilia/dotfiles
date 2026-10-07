@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # A small portable Debian 13 system baseline; sudo user or root with --user.
 set -euo pipefail
+if [[ "${1:-}" != --help && "${1:-}" != -h ]]; then
+  printf 'Corporate branch does not manage personal server installation/baseline; use master.\n' >&2
+  exit 2
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
   printf 'Usage: %s [--dry-run|--apply] [--user ACCOUNT]\n' "$0"

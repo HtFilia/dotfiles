@@ -43,11 +43,7 @@
     autoSetupRemote = true
     followTags = true
 
-# Keep GitHub remotes on SSH so clone, fetch, pull and push use ~/.ssh/github.
-[url "git@github.com:"]
-    insteadOf = https://github.com/
-    insteadOf = http://github.com/
-    insteadOf = git://github.com/
+# GitHub transport follows the explicit remote URL and host-local policy.
 
 [rebase]
     autoStash = true
@@ -88,12 +84,8 @@
     undo = reset --soft HEAD^
     amend = commit --amend --no-edit
     br = branch --sort=-committerdate
-    cleanup = "!f() { base=${1:-main}; branches=$(git for-each-ref --merged=\"$base\" --format='%(refname:short)' refs/heads) || return; printf '%s\\n' \"$branches\" | while IFS= read -r branch; do case \"$branch\" in \"\"|main|master|develop) continue;; esac; git branch -d -- \"$branch\"; done; }; f"
+    cleanup = "!f() { base=${1:-main}; branches=$(git for-each-ref --merged=\"$base\" --format='%(refname:short)' refs/heads) || return; printf '%s\\n' \"$branches\" | while IFS= read -r branch; do case \"$branch\" in \"\"|main|master|develop|environment/corporate) continue;; esac; git branch -d -- \"$branch\"; done; }; f"
     aliases = config --get-regexp alias
-
-[user]
-	email = contact@lucaslebihan.dev
-	name = Lucas L.
 
 # Host identity and signing overrides take precedence.
 [include]

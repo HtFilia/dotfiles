@@ -95,7 +95,7 @@
   // ==========================================================================
   // GIT
   // ==========================================================================
-  "git.autofetch": true,
+  "git.autofetch": false,
   "git.confirmSync": true,
   "git.enableSmartCommit": false,
   "git.openRepositoryInParentFolders": "always",
@@ -148,7 +148,15 @@
   // ==========================================================================
   // EXTENSIONS
   // ==========================================================================
-  "extensions.autoUpdate": true,
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "update.mode": "none",
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "go.toolsManagement.checkForUpdates": "off",
+  "go.toolsManagement.promptForUpdating": false,
+  "yaml.schemaStore.enable": false,
+  "json.schemaDownload.enable": false,
+  "rust-analyzer.server.path": "rust-analyzer",
   "extensions.ignoreRecommendations": false,
 
   // Error Lens

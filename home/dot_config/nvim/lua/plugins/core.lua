@@ -12,17 +12,15 @@ return {
       vim.cmd.colorscheme("gruvbox-material")
     end,
   },
+  { "mason-org/mason.nvim", enabled = false },
+  { "mason-org/mason-lspconfig.nvim", enabled = false },
   {
-    "mason-org/mason.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = {}
-    end,
-  },
-  {
-    "mason-org/mason-lspconfig.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = {}
-    end,
+    "saghen/blink.cmp",
+    opts = {
+      -- Explicit Lua matcher preserves completion without a startup binary fetch.
+      -- Re-enable Rust only after reviewing/provisioning a matching release library.
+      fuzzy = { implementation = "lua", prebuilt_binaries = { download = false } },
+    },
   },
   {
     "neovim/nvim-lspconfig",

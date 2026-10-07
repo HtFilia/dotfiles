@@ -1,77 +1,21 @@
 # Installation
 
-`bootstrap.sh` selects a profile, checks the platform, installs packages and
-verified assets, installs optional plugins, applies configuration, installs
-VS Code extensions when its CLI is available, and optionally changes the shell.
-It does not run a system upgrade.
-An explicit `--profile` wins, followed by `DOTFILES_PROFILE`, the saved profile,
-then `workstation` on a new host. An invalid saved profile stops before changes.
-
-## Prerequisites
-
-Clone `git@github.com:HtFilia/dotfiles.git` using your existing SSH credentials.
-Use a regular account. Linux supports x86_64 Debian 12/13 and Ubuntu 24.04/26.04;
-package installation needs sudo. macOS needs Homebrew and Command Line Tools.
-Finish the graphical CLT installer before rerunning bootstrap.
-
-The default target layout is `~/.config`, `~/.local`, `~/.ssh`, and macOS's native
-VS Code settings directory. A custom `XDG_CONFIG_HOME` does not automatically
-relocate Chezmoi's managed `.config` targets; use the conventional layout.
-
-## Profiles and flags
-
-| Flag | Effect |
-|---|---|
-| `--profile workstation` | Default: development packages and application configuration |
-| `--profile server` | Linux SSH environment; desktop configurations excluded |
-| `--dry-run` | Preview profile packages, tool downloads, baseline and deployment |
-| `--system-baseline` | Debian 13 server APT/journal policy and administrator journal access |
-| `--yes` | Skip bootstrap confirmation prompts |
-| `--configure-shell` | Permit `/etc/shells` registration and `chsh` |
-| `--skip-docker` | Omit container packages on macOS/Linux |
-| `--skip-fonts` | Omit font installation, including the macOS font cask |
-| `--skip-vscode-extensions` | Omit extension installation |
-| `--no-shell-plugins` | Omit Zsh plugin installation |
-| `--with-tpm` | Install pinned TPM for explicitly selected tmux plugins |
-| `--start-colima` | Start Colima and enable its Homebrew service |
-| `--enable-docker-group` | Join Linux Docker group; root-equivalent access |
-| `--setup-editor` | Explicitly download language servers, formatters and parsers |
-| `--editor-languages lua,python,...` | Provision only selected editor languages; also enables `--setup-editor` |
-
-For a VPS that will run the Neovim language tooling, include `--setup-editor` so
-bootstrap installs its Go, Node.js, Python, and compiler prerequisites before
-Mason runs:
+This branch installs Debian 12/13 x86_64 workstations through existing authorized
+APT and pinned GitHub assets. Start with [CORPORATE.md](CORPORATE.md) for host
+preparation, administrator provisioning, flags, reviewed editor/VSIX inputs and
+recovery. [AGENTS.md](../AGENTS.md) tracks infrastructure acceptance.
 
 ```sh
-./scripts/bootstrap.sh --profile server --setup-editor --yes
+./scripts/corporate-preflight.sh
+./scripts/bootstrap.sh --dry-run --skip-docker
+./scripts/bootstrap.sh --yes --skip-packages --skip-docker
 ```
 
-Fonts live on the terminal client. WSL uses Windows-hosted terminal/fonts,
-VS Code with Remote WSL, and optional Docker Desktop integration. macOS's
-container runtime is Colima. Native Linux uses Docker's signed apt repository.
-Docker daemon availability is separate from installed CLI/plugin checks.
+The last command assumes IT has installed `scripts/corporate-packages.sh`.
+Otherwise omit `--skip-packages` to install from already configured APT sources.
+Provide corporate Git identity before applying. Use a regular account.
 
-## Repeatability and overrides
-
-Rerun after interrupted installation. Download caches are keyed by asset and
-version and validated before use. Neovim/Go/Node are staged in versioned
-`~/.local/opt` directories, and launchers in `~/.local/bin` switch after staging.
-Previous versions remain for rollback. Incomplete version directories cause an
-explicit error rather than being silently reused.
-
-`LOCAL_BIN` changes the direct-tool directory and is exported in bootstrap's
-PATH. If you keep a custom location, add it to your persistent shell PATH too.
-`DOTFILES_DOWNLOAD_DIR` changes the cache root. `DOTFILES_REPO` supplies the SSH
-clone URL for the bootstrap fallback; an existing checkout is used directly.
-
-`install-server.sh --skip-packages` assumes an administrator has already
-installed its declared apt dependencies. With `--setup-editor`, that includes
-the prerequisites for the selected languages. Pinned Node is required for
-Python and shell Mason tools; pinned Go is required only for Go tooling. It still compiles terminfo
-and installs user-owned binaries. Apply afterward with `--profile server`.
-
-Linux fonts/VS Code/Ghostty and assistant CLIs are separate choices where they
-are not supplied by the profile's package manager.
-The server profile installs Atuin, ncdu, tealdeer and htop from Debian packages.
-Atuin history stays local and Ctrl-r returns selections for editing. `tldr`
-may need an explicit `tldr --update` to populate general pages.
+Fonts, pinned Zsh plugins and configuration are supplied by default. VS Code,
+Ghostty, language-tool provisioning, TPM and login-shell changes have separate
+preparation or flags. WSL GUI/font/container integration belongs to the Windows
+host. macOS/server/Ubuntu installation instructions are on personal `master`.

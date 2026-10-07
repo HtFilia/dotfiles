@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Debian/Ubuntu SSH environment; user tools stay in ~/.local.
 set -euo pipefail
+if [[ "${1:-}" != --help && "${1:-}" != -h ]]; then
+  printf 'Corporate branch does not manage personal server installation/baseline; use master.\n' >&2
+  exit 2
+fi
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/pinned-assets.sh

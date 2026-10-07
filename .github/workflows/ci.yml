@@ -8,95 +8,63 @@ permissions:
   contents: read
 
 jobs:
-  debian-server:
-    name: Debian 13 server smoke
+  corporate-debian:
+    name: Corporate Debian (${{ matrix.release }})
     runs-on: ubuntu-latest
-    container: debian:trixie
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [bookworm, trixie]
+    # Public CI fixtures; this does not authorize corporate image acquisition.
+    container: debian:${{ matrix.release }}
     defaults:
       run:
         shell: bash
     steps:
-      - name: Install checkout and test prerequisites
+      - name: Install checkout prerequisites
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git python3 zsh ripgrep util-linux passwd sudo
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install server package manifest
-        run: |
-          . scripts/server-packages.sh
-          apt-get install -y --no-install-recommends "${dotfiles_server_packages[@]}"
-      - name: Install pinned Chezmoi
-        run: |
-          . scripts/pinned-assets.sh
-          archive="$(cached_asset_path chezmoi-linux-amd64 /tmp/dotfiles-assets)"
-          stage="$(mktemp -d)"
-          extract_pinned_archive "$archive" "$stage"
-          install -m 755 "$stage/chezmoi" /usr/local/bin/chezmoi
-      - name: Exercise isolated server deployment
-        run: |
-          useradd -m -s /bin/bash dotfiles-ci
-          # shellcheck disable=SC2016
-          runuser -u dotfiles-ci -- bash -c 'cd "$1" && bash tests/script-contracts.sh' _ "$GITHUB_WORKSPACE"
-          # shellcheck disable=SC2016
-          runuser -u dotfiles-ci -- bash -c 'cd "$1" && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server' _ "$GITHUB_WORKSPACE"
-
-  scripts:
-    name: Checks (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
+          apt-get install -y --no-install-recommends ca-certificates curl git python3 passwd sudo
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
-
-      - name: Install Linux check tools
-        if: runner.os == 'Linux'
+      - name: Provision administrator-owned APT dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck zsh python3 ripgrep
-          . scripts/pinned-assets.sh
-          mkdir -p "$HOME/.local/bin"
-          for specification in chezmoi:chezmoi-linux-amd64 actionlint:actionlint-linux-amd64 gitleaks:gitleaks-linux-x64; do
-            tool="${specification%%:*}"
-            key="${specification#*:}"
-            archive="$(cached_asset_path "$key" "$RUNNER_TEMP/assets")"
-            stage="$(mktemp -d)"
-            extract_pinned_archive "$archive" "$stage"
-            install -m 755 "$stage/$tool" "$HOME/.local/bin/$tool"
-            rm -rf "$stage"
-          done
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Install macOS check tools
-        if: runner.os == 'macOS'
-        run: brew install shellcheck chezmoi actionlint gitleaks python ripgrep
-
-      - name: Syntax and ShellCheck
+          . scripts/corporate-packages.sh
+          apt-get install -y --no-install-recommends "${corporate_packages[@]}"
+      - name: Prepare isolated corporate account and checkout
         run: |
-          for file in scripts/*.sh tests/*.sh; do bash -n "$file"; done
-          for file in home/dot_zsh*; do zsh -n "$file"; done
-          shellcheck scripts/*.sh tests/*.sh
-
-      - name: Behavioral regressions
-        run: bash tests/script-contracts.sh
-
-      - name: Workflow lint
-        run: actionlint
-
-      - name: Secret scan
+          useradd -m -s /bin/bash dotfiles-ci
+          git -c safe.directory="$GITHUB_WORKSPACE" clone --no-hardlinks "$GITHUB_WORKSPACE" /home/dotfiles-ci/dotfiles
+          git -C /home/dotfiles-ci/dotfiles switch -C environment/corporate "$GITHUB_SHA"
+          chown -R dotfiles-ci:dotfiles-ci /home/dotfiles-ci/dotfiles
+      - name: Provision workstation twice and verify
+        env:
+          DOTFILES_GIT_NAME: Corporate CI
+          DOTFILES_GIT_EMAIL: ci@example.invalid
         run: |
-          gitleaks version
-          gitleaks git --redact --no-banner --verbose
-
-      - name: Asset inventory consistency
+          # shellcheck disable=SC2016
+          runuser -u dotfiles-ci -- bash -euc '
+            cd "$HOME/dotfiles"
+            scripts/bootstrap.sh --yes --skip-packages --skip-docker --skip-fonts
+            scripts/verify.sh --profile workstation
+            stat -c "%n %Y %i" "$HOME/.local/bin/tmux" "$HOME/.local/bin/pnpm" "$HOME/.local/bin/biome" "$HOME/.local/bin/tree-sitter" > /tmp/corporate-before
+            scripts/bootstrap.sh --yes --skip-packages --skip-docker --skip-fonts
+            scripts/verify.sh --profile workstation
+            stat -c "%n %Y %i" "$HOME/.local/bin/tmux" "$HOME/.local/bin/pnpm" "$HOME/.local/bin/biome" "$HOME/.local/bin/tree-sitter" > /tmp/corporate-after
+            diff -u /tmp/corporate-before /tmp/corporate-after
+          '
+      - name: Syntax, behavior, workflow, secrets and asset consistency
         run: |
-          scripts/asset-manifest.sh > "$RUNNER_TEMP/assets.md"
-          diff -u docs/ASSET-MANIFEST.md "$RUNNER_TEMP/assets.md"
+          # shellcheck disable=SC2016
+          runuser -u dotfiles-ci -- bash -euc '
+            export PATH="$HOME/.local/bin:$PATH"
+            cd "$HOME/dotfiles"
+            just check
+            just workflow
+            just security
+            scripts/asset-manifest.sh > /tmp/corporate-assets.md
+            diff -u docs/ASSET-MANIFEST.md /tmp/corporate-assets.md
+          '

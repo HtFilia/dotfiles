@@ -3,6 +3,11 @@
 
 set -euo pipefail
 
+case "${1:-}" in -h|--help) ;; *)
+  printf 'Corporate branch does not acquire Homebrew packages; use master for personal macOS.\n' >&2
+  exit 1 ;;
+esac
+
 log() { printf "\033[0;34m==>\033[0m %s\n" "$*"; }
 success() { printf "\033[0;32m  +\033[0m %s\n" "$*"; }
 info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }

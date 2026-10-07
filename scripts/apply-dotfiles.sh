@@ -74,7 +74,7 @@ PROFILE="$(dotfiles_profile "$PROFILE" "$DESTINATION/.local/state/dotfiles/profi
 if [[ -z "$CHEZMOI_MODE" && -f "$DESTINATION/.local/state/dotfiles/materialize" ]]; then
   CHEZMOI_MODE="$(cat "$DESTINATION/.local/state/dotfiles/materialize")"
 fi
-[[ -n "$CHEZMOI_MODE" ]] || { if [[ "$PROFILE" == server ]]; then CHEZMOI_MODE="file"; else CHEZMOI_MODE=symlink; fi; }
+[[ -n "$CHEZMOI_MODE" ]] || CHEZMOI_MODE="file"
 export DOTFILES_PROFILE="$PROFILE"
 
 case "$CHEZMOI_MODE" in
@@ -83,7 +83,7 @@ case "$CHEZMOI_MODE" in
 esac
 [[ -n "$CHEZMOI_STATE" ]] || CHEZMOI_STATE="$DESTINATION/.local/state/chezmoi/chezmoistate.boltdb"
 
-command -v chezmoi >/dev/null 2>&1 || fatal "chezmoi is required. Run ./scripts/bootstrap.sh or install it from https://chezmoi.io."
+command -v chezmoi >/dev/null 2>&1 || fatal "chezmoi is required; use the corporate bootstrap's pinned GitHub asset or authorized APT."
 [[ -d "$SOURCE_DIR" ]] || fatal "Chezmoi source directory not found: $SOURCE_DIR"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
 export DOTFILES_SOURCE_DIR="$SOURCE_DIR"
@@ -121,7 +121,7 @@ configure_git_identity() {
     mv "$stage" "$local_cfg"
     success "created $local_cfg"
   else
-    warn "git identity not configured; create $local_cfg later"
+    fatal "Corporate Git identity required: set DOTFILES_GIT_NAME/DOTFILES_GIT_EMAIL or create ~/.gitconfig.local"
   fi
 }
 

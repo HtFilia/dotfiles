@@ -2,91 +2,43 @@
 
 ![Project overview — Lucas Lebihan, Quantitative Engineer](docs/assets/project-header.png)
 
-[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
+[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=environment%2Fcorporate)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A reproducible development and SSH administration environment for macOS,
-Debian/Ubuntu and WSL. Bash handles installation; Chezmoi manages user
-configuration. Workstations and servers share shell, Git, tmux and Neovim
-configuration, with explicit profile differences and host-local overrides.
+This is the **corporate derivative**, on `environment/corporate`. Personal
+configuration and its macOS/server installers remain on `master`. The initial
+corporate target is Debian 12/13 x86_64 workstation, including Debian on WSL.
 
-## Design decisions
+Start with [Corporate installation and maintenance](docs/CORPORATE.md).
+[AGENTS.md](AGENTS.md) tracks the unresolved infrastructure questions for the
+agent operating inside the corporation. Corporate network acceptance is pending.
 
-- **Separate user and system configuration.** `home/` contains Chezmoi source;
-  the optional Debian 13 baseline in `system/debian/` owns update policy and
-  journal retention. Application deployment and network policy belong elsewhere.
-- **Make changes inspectable and recoverable.** Bootstrap and deployment have
-  previews; apply takes snapshots; updates preserve the chosen profile.
-  Servers receive independent files so pulling Git does not activate edits.
-- **Verify downloaded code.** Direct Linux binaries have version/checksum pins;
-  shell and editor plugin revisions are recorded. Debian and Homebrew packages
-  follow their repositories. [Supply-chain details](docs/SUPPLY-CHAIN.md).
-- **Test behavior across platforms.** CI checks Linux and macOS, and installs,
-  applies and verifies the server profile twice in a clean Debian 13 container.
-  Regressions cover profile selection, drift, local overrides and recovery.
+## Acquisition
 
-For a code review, start with [profile resolution](scripts/profile.sh),
-[deployment and snapshots](scripts/apply-dotfiles.sh),
-[verification](scripts/verify.sh), and [behavioral tests](tests/regressions.py).
-The [VPS guide](docs/VPS-SERVER.md) documents the system ownership boundary and
-rebuild procedure. CI does not test boot, remote connectivity or a full machine
-restore.
-
-## Supported environments
-
-| Profile | Platform | Installed environment |
-|---|---|---|
-| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
-| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
-| Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
-| Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
-
-Linux ARM asset entries are metadata for selected upstream downloads, not a
-supported installation profile. Linux Ghostty and VS Code installation are
-manual. Homebrew/apt versions follow their repositories; direct Linux downloads
-and plugin checkouts are pinned. See [supply chain](docs/SUPPLY-CHAIN.md).
+Existing authorized APT supplies the distro runtimes and system packages. Reviewed
+GitHub releases/source retain the standalone tools and plugin pins. Editor npm and
+Python packages require complete, hashed internal Artifactory inputs. No vendor APT
+repositories, Cargo registry builds, Go toolchain downloads or Marketplace fallback
+are added. Themes, shell workflows, keybindings and workbooks remain shared.
 
 ## Install
 
-Configure your GitHub SSH key first, then clone through SSH:
+After this branch has been published, use an approved GitHub transport:
 
 ```sh
-git clone git@github.com:HtFilia/dotfiles.git ~/.dotfiles
+git clone --branch environment/corporate https://github.com/HtFilia/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./scripts/bootstrap.sh
+./scripts/corporate-preflight.sh
+./scripts/bootstrap.sh --dry-run --skip-docker
+# Prepare corporate.env and Git identity as described in docs/CORPORATE.md:
+./scripts/bootstrap.sh --yes --skip-docker
+# Or use --skip-packages after administrator provisioning.
 ```
 
-Run as your regular development/SSH account. Linux package installation needs
-sudo. macOS requires Homebrew; if Command Line Tools installation is started,
-finish it and rerun bootstrap.
-
-For a server:
-
-```sh
-./scripts/bootstrap.sh --profile server --configure-shell --yes
-./scripts/verify.sh --profile server
-```
-
-For a Debian 13 administrator host with Python/shell editor tools:
-
-```sh
-./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --dry-run
-# Review the preview, then repeat without --dry-run.
-```
-See [the VPS guide](docs/VPS-SERVER.md) for the system ownership boundary.
-
-Useful workstation choices:
-
-```sh
-./scripts/bootstrap.sh --skip-docker --skip-fonts
-./scripts/bootstrap.sh --start-colima --configure-shell
-./scripts/bootstrap.sh --setup-editor
-```
-
-Shell plugins are installed by default. TPM is optional through `--with-tpm`.
-`--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
-extensions. Docker-group membership is opt-in with `--enable-docker-group` and
-grants root-equivalent access. See [installation](docs/INSTALLATION.md).
+Editor languages and reviewed VSIXs are explicit setup choices. Default
+configuration materialization uses independent files, with deployment snapshots.
+GitHub-hosted CI checks corporate contracts and repeats workstation installation
+in clean Debian fixtures; infrastructure acceptance remains a separate step.
 
 ## Apply and update
 
@@ -101,12 +53,13 @@ UPDATE
 ```
 
 The selected profile and materialization mode are saved under
-`~/.local/state/dotfiles`. Workstations use file-level symlinks; servers use
-independent files. Choose a mode explicitly with `--materialize file` or
+`~/.local/state/dotfiles`. Corporate workstations default to independent files;
+an existing saved mode is preserved. Choose a mode explicitly with `--materialize file` or
 `--materialize symlink`. Apply supports isolated `--destination` and `--source`
 paths. Dry runs do not create destination files or persistent state.
 
-The update helper requires a clean checkout and GitHub SSH origin. It snapshots
+The update helper requires a clean corporate checkout, an approved GitHub origin
+and upstream `origin/environment/corporate`. It snapshots
 live contents before a fast-forward pull, then applies the saved profile. Use
 `dotfiles-update --after-pull` when the pull was already performed manually.
 The installed `UPDATE` command is the explicit post-pull form. The saved source
@@ -114,7 +67,7 @@ path, profile and materialization mode make repeated updates safe and
 predictable. This matters for symlinks: source edits take effect immediately. See
 [deployment and recovery](docs/DEPLOYMENT.md).
 
-## Personal settings
+## Host-local settings
 
 | File | Purpose |
 |---|---|
@@ -123,6 +76,7 @@ predictable. This matters for symlinks: source edits take effect immediately. Se
 | `~/.zshrc.local` | Final shell aliases, environment overrides, widgets |
 | `~/.tmux.conf.local` | Extra tmux bindings/plugins |
 | `~/.ssh/config.local` | SSH hosts and identity paths |
+| `~/.config/dotfiles/corporate.env` | Approved registry/trust/proxy environment settings |
 
 Existing managed files are backed up before apply. Git identity is prompted
 when appropriate or supplied through `DOTFILES_GIT_NAME`/`DOTFILES_GIT_EMAIL`.
@@ -132,14 +86,14 @@ Existing identity files are preserved.
 
 | Path | Responsibility |
 |---|---|
-| `Brewfile`, `extensions.txt` | macOS packages and VS Code extensions |
+| `Brewfile`, `extensions.txt` | Retained personal package/extension selection references |
 | `home/` | Chezmoi source files, templates, and platform exclusions |
 | `scripts/` | Installation, deployment, snapshots, updates, editor setup, verification |
-| `system/debian/` | Opt-in Debian 13 APT and journald baseline |
+| `AGENTS.md`, `docs/CORPORATE.md` | Corporate infrastructure handoff and operating guide |
 | `scripts/pinned-assets.sh`, `scripts/pinned-plugins.sh` | Authoritative download and plugin pins |
 | `assets/terminfo/` | Vendored Ghostty terminfo and upstream license |
 | `tests/` | Offline behavioral regressions using temporary homes |
-| `.github/workflows/ci.yml` | Linux/macOS checks, Debian 13 install/verify smoke test, actionlint and secret scan |
+| `.github/workflows/ci.yml` | Debian 12/13 workstation smoke, offline tests, actionlint and secret scan |
 
 ## Guides
 
@@ -152,8 +106,8 @@ Existing identity files are preserved.
 - [Runtimes and project environments](docs/RUNTIMES.md)
 - [Tools and their roles](docs/TOOLING.md)
 - [Keybindings](docs/KEYBINDINGS.md)
-- [Mac Ghostty connecting to a VPS](docs/VPS-GHOSTTY.md)
-- [Debian VPS bootstrap and ownership](docs/VPS-SERVER.md)
+- [Mac Ghostty connecting to a VPS (personal master)](docs/VPS-GHOSTTY.md)
+- [Debian VPS bootstrap and ownership (personal master)](docs/VPS-SERVER.md)
 - [Verification and maintenance](docs/VERIFICATION.md)
 
 ## Check the repository

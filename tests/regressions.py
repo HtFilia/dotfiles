@@ -27,6 +27,7 @@ class Contracts(unittest.TestCase):
         for key in list(self.env):
             if key.startswith("DOTFILES_") and key != "DOTFILES_PROFILE":
                 del self.env[key]
+        self.env.update(DOTFILES_GIT_NAME="Corporate Test", DOTFILES_GIT_EMAIL="corporate-test@example.invalid")
         self.env["PATH"] = str(Path(shutil.which("chezmoi")).parent) + ":" + self.env["PATH"]
 
     def run_command(self, *args, cwd=None, env=None, success=True):
@@ -49,7 +50,7 @@ class Contracts(unittest.TestCase):
 
     def test_cli_validation(self):
         for script in (ROOT / "scripts").glob("*.sh"):
-            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "server-packages.sh", "asset-manifest.sh"}:
+            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "server-packages.sh", "corporate-packages.sh", "asset-manifest.sh"}:
                 continue
             self.run_command(str(script), "--help")
         result = self.run_command(str(ROOT / "scripts/bootstrap.sh"), "--profile", "invalid", "--yes", success=False)
@@ -75,31 +76,21 @@ class Contracts(unittest.TestCase):
         self.assertEqual((self.home / ".local/state/dotfiles/profile").read_text().strip(), "server")
         self.assertEqual((self.home / ".local/state/dotfiles/source").read_text().strip(), str(ROOT))
 
-    def test_profile_update_preview_never_uses_workstation_installer(self):
+    def test_corporate_updater_rejects_server_and_preserves_docker_skip(self):
         state = self.home / ".local/state/dotfiles"
         state.mkdir(parents=True)
         (state / "profile").write_text("server\n")
-        (state / "editor-languages").write_text("python shell\n")
-        if os.uname().sysname == "Darwin":
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertIn("Server profile requires Linux", result.stderr)
-            self.assertNotIn("would run:", result.stdout)
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--dry-run")
-            self.assertIn("install-macos.sh", result.stdout)
-            self.assertNotIn("install-server.sh", result.stdout)
-        else:
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
-            self.assertIn("install-server.sh --skip-packages --editor-languages python\\,shell", result.stdout)
-            self.assertIn("setup-editor.sh python shell", result.stdout)
-            self.assertNotIn("sudo", result.stdout)
-            self.assertNotIn("install-debian.sh", result.stdout)
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--skip-packages", "--dry-run")
-            self.assertIn("install-debian.sh", result.stdout)
-        (state / "profile").write_text("broken\n")
         result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
         self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workstation profile only", result.stderr)
         self.assertNotIn("would run:", result.stdout)
+        (state / "profile").write_text("workstation\n")
+        (state / "skip-docker").write_text("1\n")
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
+        self.assertIn("install-debian.sh linux --skip-packages --skip-docker", result.stdout)
+        self.assertNotIn("rustup", result.stdout)
+        self.assertNotIn("uv python", result.stdout)
+        self.assertNotIn("sudo", result.stdout)
 
     @unittest.skipUnless(os.uname().sysname == "Linux", "server installer requires Linux")
     def test_server_editor_prerequisites_are_selected_by_language(self):
@@ -111,17 +102,16 @@ class Contracts(unittest.TestCase):
         self.assertEqual(result.stdout.splitlines(), ["build-essential"])
 
     @unittest.skipUnless(os.uname().sysname == "Linux", "server baseline requires Linux")
-    def test_server_baseline_preview_is_read_only(self):
-        if "VERSION_CODENAME=trixie" not in Path("/etc/os-release").read_text():
-            self.skipTest("Debian 13 baseline")
+    def test_corporate_baseline_is_rejected_before_sudo(self):
         fake_bin = self.work / "bin"
         fake_bin.mkdir()
         fake_sudo = fake_bin / "sudo"
         fake_sudo.write_text("#!/bin/sh\necho unexpected-sudo >&2\nexit 99\n")
         fake_sudo.chmod(0o755)
         self.env["PATH"] = str(fake_bin) + ":" + self.env["PATH"]
-        result = self.run_command(str(ROOT / "scripts/server-baseline.sh"), "--dry-run")
-        self.assertIn("journal retention", result.stdout)
+        result = self.run_command(str(ROOT / "scripts/server-baseline.sh"), "--dry-run", success=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not manage", result.stderr)
         self.assertNotIn("unexpected-sudo", result.stderr)
 
     @unittest.skipUnless(os.uname().sysname == "Linux", "Linux updater")
@@ -224,23 +214,23 @@ class Contracts(unittest.TestCase):
     def test_plugin_errors_propagate_in_conditionals(self):
         script = '''source "$1"
 expected=$(pinned_plugin_field zsh-autosuggestions commit)
-git() { case "$*" in *rev-parse*) printf '%s\\n' "$expected";; *status*) return 0;; *) return 1;; esac; }
+git() { case "$*" in *rev-parse*) printf '%s\\n' drifted;; *status*) return 0;; *) return 1;; esac; }
 mkdir -p "$2/zsh-autosuggestions/.git"
 if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
 '''
         self.run_command("bash", "-euc", script, "_", str(ROOT / "scripts/pinned-plugins.sh"), str(self.work / "plugins"))
 
-    @unittest.skipUnless(os.uname().sysname == "Linux", "server bootstrap requires Linux")
+    @unittest.skipUnless(os.uname().sysname == "Linux", "corporate bootstrap requires Linux")
     def test_bootstrap_sees_child_installed_tools(self):
         fixture = self.work / "repository"
         shutil.copytree(ROOT / "scripts", fixture / "scripts")
         (fixture / "home").mkdir()
         (fixture / "home/dot_zshrc").write_text("# fixture")
-        (fixture / "scripts/preflight.sh").write_text("preflight_linux() { return 0; }\n")
-        (fixture / "scripts/install-server.sh").write_text('mkdir -p "$HOME/.local/bin"\nprintf "#!/bin/sh\\nexit 0\\n" >"$HOME/.local/bin/chezmoi"\nchmod +x "$HOME/.local/bin/chezmoi"\n')
+        (fixture / "scripts/corporate-preflight.sh").write_text("corporate_platform() { return 0; }\ncorporate_repository() { return 0; }\ncorporate_settings() { return 0; }\n")
+        (fixture / "scripts/install-debian.sh").write_text('mkdir -p "$HOME/.local/bin"\nprintf "#!/bin/sh\\nexit 0\\n" >"$HOME/.local/bin/chezmoi"\nchmod +x "$HOME/.local/bin/chezmoi"\n')
         (fixture / "scripts/apply-dotfiles.sh").write_text('#!/bin/sh\ncommand -v chezmoi >"$HOME/found"\n')
         self.env.update(PATH="/usr/bin:/bin", SHELL="/bin/bash")
-        self.run_command("bash", str(fixture / "scripts/bootstrap.sh"), "--yes", "--profile", "server", "--no-shell-plugins")
+        self.run_command("bash", str(fixture / "scripts/bootstrap.sh"), "--yes", "--profile", "workstation", "--skip-fonts", "--skip-docker", "--no-shell-plugins")
         self.assertEqual((self.home / "found").read_text().strip(), str(self.home / ".local/bin/chezmoi"))
 
     def test_verification_fails_when_required_tools_missing(self):
@@ -263,16 +253,14 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
         self.apply("--destination", str(self.home), "--profile", "server", "--force")
         self.assertIn("personal-key", (ssh / "config.local").read_text())
         managed = (ssh / "config").read_text()
-        self.assertIn("Host github.com", managed)
-        self.assertIn("IdentityFile ~/.ssh/github", managed)
-        self.assertIn("IdentitiesOnly yes", managed)
-        self.assertIn("IdentityAgent none", managed)
+        self.assertNotIn("IdentityFile ~/.ssh/github", managed)
         self.assertIn("Include ~/.ssh/config.local", managed)
         rewrites = self.run_command(
             "git", "config", "--file", str(self.home / ".gitconfig"),
             "--get-all", "url.git@github.com:.insteadOf",
+            success=False,
         ).stdout.splitlines()
-        self.assertEqual(set(rewrites), {"https://github.com/", "http://github.com/", "git://github.com/"})
+        self.assertEqual(rewrites, [])
 
     def test_cache_is_versioned_and_replaces_corruption(self):
         script = r'''source "$1"

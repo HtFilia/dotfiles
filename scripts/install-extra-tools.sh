@@ -9,7 +9,10 @@ case "${1:-}" in
   '') [[ $# == 0 ]] || exit 1 ;;
   *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
 esac
-[[ "$(uname -s):$(uname -m)" == Linux:x86_64 ]] || exit 1
+# shellcheck source=scripts/corporate-preflight.sh
+. "$SCRIPT_DIR/corporate-preflight.sh"
+corporate_platform workstation
+corporate_repository "$(cd "$SCRIPT_DIR/.." && pwd)"
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 DOWNLOAD_DIR="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
 mkdir -p "$LOCAL_BIN" "$DOWNLOAD_DIR"
@@ -32,9 +35,10 @@ while IFS=$'\t' read -r tool key member; do
       printf 'tmux build needs libevent-dev, libncurses-dev, pkg-config and a compiler.\n' >&2
       exit 1
     }
-    tar -xf "$archive" -C "$stage" --strip-components=1
-    (cd "$stage" && ./configure --prefix="$HOME/.local" && make -j2)
-    atomic_install_binary "$stage/tmux" "$LOCAL_BIN/tmux"
+    extract_pinned_archive "$archive" "$stage"
+    source_dir="$stage/tmux-$(pinned_asset_field "$key" version)"
+    (cd "$source_dir" && ./configure --prefix="$HOME/.local" && make -j2)
+    atomic_install_binary "$source_dir/tmux" "$LOCAL_BIN/tmux"
   else
     extract_pinned_archive "$archive" "$stage"
     matches=()
