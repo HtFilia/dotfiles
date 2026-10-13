@@ -43,6 +43,12 @@ run() {
   if (( dry_run )); then printf 'would run:'; printf ' %q' "$@"; printf '\n';
   else "$@"; fi
 }
+if [[ "$profile" == workstation ]]; then
+  selection_args=()
+  (( dry_run )) || selection_args+=(--save)
+  resolve_tool_selection "${selection_args[@]}"
+  if [[ ",$DOTFILES_INSTALL_METHODS," != *,native,* ]]; then skip_packages=1; fi
+fi
 if (( ! dry_run )); then
   report_init
   trap report_location EXIT
@@ -55,7 +61,7 @@ printf 'Tool update: profile=%s, packages=%s\n' "$profile" "$([[ "$skip_packages
 case "$(uname -s)" in
   Darwin)
     [[ "$profile" == workstation ]] || { printf 'Server profile requires Linux\n' >&2; exit 2; }
-    [[ "$skip_packages" == 0 ]] || { printf '%s\n' '--skip-packages is unavailable on macOS' >&2; exit 2; }
+    if [[ "$skip_packages" == 1 && ",$DOTFILES_INSTALL_METHODS," == *,native,* ]]; then printf '%s\n' '--skip-packages requires a method policy without native on macOS.' >&2; exit 2; fi
     run "$SCRIPT_DIR/install-macos.sh"
     ;;
   Linux)
@@ -76,20 +82,19 @@ case "$(uname -s)" in
         run "$SCRIPT_DIR/setup-editor.sh" "${languages[@]}"
       fi
     else
-      if command -v rustup >/dev/null 2>&1; then optional_run rustup rustup update stable; fi
+      if tool_selected rustup && command -v rustup >/dev/null 2>&1; then optional_run rustup rustup update stable; fi
       args=(linux)
       if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/sys/kernel/osrelease; then args=(wsl); fi
       (( skip_packages )) && args+=(--skip-packages)
       run "$SCRIPT_DIR/install-debian.sh" "${args[@]}"
-      # shellcheck source=scripts/runtime-versions.sh
-      . "$SCRIPT_DIR/runtime-versions.sh"
-      optional_run uv-python uv python install --default "$PYTHON_VERSION"
     fi
 
     ;;
   *) printf 'Unsupported platform\n' >&2; exit 2 ;;
 esac
-if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed ]]; then
+plugin_channels=1
+if [[ "$profile" == workstation && ",$DOTFILES_INSTALL_METHODS," != *,github,* && ",$DOTFILES_INSTALL_METHODS," != *,source,* ]]; then plugin_channels=0; fi
+if (( plugin_channels )) && [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed ]]; then
   if (( dry_run )); then
     printf 'would update pinned zsh-autosuggestions and zsh-syntax-highlighting checkouts\n'
   else
@@ -98,8 +103,9 @@ if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" =
     done
   fi
 fi
-if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
+if (( plugin_channels )) && [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
   if (( dry_run )); then printf "would update pinned tmux TPM checkout\n";
   else report_optional tmux-tpm "$SCRIPT_DIR/install-plugin.sh" tmux-tpm "$HOME/.tmux/plugins"; fi
 fi
+if (( ! dry_run )); then report_optional agent-guides python3 "$SCRIPT_DIR/generate-agent-guides.py"; fi
 (( dry_run )) || printf 'Tool update complete. Open a new shell, then run scripts/verify.sh.\n'

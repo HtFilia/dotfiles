@@ -11,18 +11,40 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/pinned-plugins.sh"
 export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
 profile="${DOTFILES_PROFILE:-}"
-if [[ $# -gt 0 ]]; then
+strict_pins=0
+while (( $# )); do
   case "$1" in
-    -h|--help) printf 'Usage: %s [--profile server|workstation]\nExits nonzero for missing required components or pin drift.\n' "$0"; exit 0 ;;
-    --profile) [[ $# == 2 ]] || exit 1; profile="$2" ;;
+    -h|--help) printf 'Usage: %s [--profile server|workstation] [--strict-pins]\nVerify selected tools; --strict-pins enforces release pins.\n' "$0"; exit 0 ;;
+    --profile) [[ $# -ge 2 ]] || exit 1; profile="$2"; shift ;;
+    --strict-pins) strict_pins=1 ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
   esac
-fi
+  shift
+done
 profile="$(dotfiles_profile "$profile")" || exit 1
+selection=""
+if [[ "$profile" == workstation && -f "$HOME/.local/state/dotfiles/tool-selection.json" ]]; then
+  selection="$(python3 - "$HOME/.local/state/dotfiles/tool-selection.json" <<'PYCODE'
+import json,sys
+print(','.join(json.load(open(sys.argv[1]))['tools']))
+PYCODE
+)" || exit 1
+fi
 failures=0
 check() {
-  local label="$1"
+  local label="$1" tool
   shift
+  if [[ -n "$selection" ]]; then
+    case "$label" in
+      *" pin"|*" version") if (( ! strict_pins )); then printf 'optional - %s (installation method/version is reported separately)\n' "$label"; return 0; fi ;;
+      *" available"|"pnpm executes")
+        tool="${label%% *}"
+        if [[ ",$selection," != *",$tool,"* ]]; then printf 'unselected - %s\n' "$label"; return 0; fi ;;
+      'Starship configuration') if ! available starship; then printf 'unselected - %s\n' "$label"; return 0; fi ;;
+      'bat Gruvbox theme') if ! available bat; then printf 'unselected - %s\n' "$label"; return 0; fi ;;
+      'Zsh syntax'|'Completion permissions') if ! available zsh; then printf 'unselected - %s\n' "$label"; return 0; fi ;;
+    esac
+  fi
   if "$@"; then printf 'ok - %s\n' "$label"; else printf 'FAIL - %s\n' "$label" >&2; failures=$((failures + 1)); fi
 }
 available() { command -v "$1" >/dev/null 2>&1; }

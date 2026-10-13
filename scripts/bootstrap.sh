@@ -51,6 +51,10 @@ Usage: $0 [OPTIONS]
 Options:
   --profile PROFILE       workstation (default on new hosts) or server
   --system-baseline       apply the portable Debian 13 server baseline
+  --tools LIST            recommended, all, none, or comma-separated tool names
+  --interactive           force the runtime tool/method picker
+  --list-tools            list available tools and audit categories
+  --custom-tools FILE     custom binary descriptions for generated agent guides
   --install-methods LIST  ordered subset of native,github,source (workstation)
   --dry-run               preview actions without installing or applying
   --skip-docker            do not install container packages
@@ -93,6 +97,7 @@ main() {
   local install_shell_plugins=1 install_tpm=0 configure_shell=0 start_colima=0 enable_docker_group=0
   local install_code_extensions=1 skip_docker=0 skip_fonts=0 setup_editor=0
   local profile="" editor_languages="" system_baseline=0 dry_run=0
+  local tools="" interactive=0 list_tools=0 custom_tools="" selection_args=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --profile)
@@ -100,6 +105,10 @@ main() {
         profile="$2"
         shift
         ;;
+      --tools) [[ $# -ge 2 ]] || fatal "--tools requires a value"; tools="$2"; shift ;;
+      --interactive) interactive=1 ;;
+      --list-tools) list_tools=1 ;;
+      --custom-tools) [[ $# -ge 2 ]] || fatal "--custom-tools requires a value"; custom_tools="$2"; shift ;;
       --system-baseline) system_baseline=1 ;;
       --install-methods) [[ $# -ge 2 ]] || fatal "--install-methods requires a value"; export DOTFILES_INSTALL_METHODS="$2"; shift ;;
       --dry-run) dry_run=1 ;;
@@ -119,6 +128,7 @@ main() {
     esac
     shift
   done
+  if (( list_tools )); then python3 "$SCRIPT_DIR/select-tools.py" --list; return; fi
   if [[ -n "${DOTFILES_INSTALL_METHODS:-}" ]]; then
     validate_install_methods "$DOTFILES_INSTALL_METHODS" || fatal "Invalid installation methods"
   fi
@@ -132,6 +142,7 @@ main() {
       case "$language" in lua|python|go|rust|node|shell) ;; *) fatal "Unknown editor language: $language" ;; esac
     done
   fi
+  [[ "$profile" == workstation || ( -z "$tools" && "$interactive" == 0 ) ]] || fatal "Tool selection applies to the workstation profile"
   export DOTFILES_PROFILE="$profile"
   if [[ "$profile" == server ]]; then
     skip_fonts=1
@@ -150,11 +161,51 @@ main() {
   if [[ "$os" != macos ]]; then
     # shellcheck source=scripts/preflight.sh
     . "$SCRIPT_DIR/preflight.sh"
-    preflight_linux "$profile"
-    (( EUID != 0 )) || fatal "Run bootstrap as your regular SSH/development user."
+    preflight_linux "$profile" "$dry_run"
+    (( EUID != 0 || dry_run )) || fatal "Run bootstrap as your regular SSH/development user."
   fi
   success "Detected OS: $os"
   (( system_baseline == 0 )) || "$SCRIPT_DIR/server-baseline.sh" --dry-run
+
+  if [[ "$profile" == workstation ]]; then
+    if ! command -v python3 >/dev/null; then
+      (( ! dry_run )) || fatal "Install Python first to preview the tool selection"
+      [[ ",${DOTFILES_INSTALL_METHODS:-native}," == *,native,* ]] || fatal "Python must already be installed when native installs are disabled"
+      confirm "Python is required to open the selector. Install this prerequisite?" || { warn "Aborted."; return; }
+      case "$os" in
+        macos) brew install python ;;
+        *) sudo apt-get update; sudo apt-get install -y --no-install-recommends python3 ;;
+      esac
+    fi
+    [[ -z "$tools" ]] || selection_args+=(--tools "$tools")
+    [[ -z "${DOTFILES_INSTALL_METHODS:-}" ]] || selection_args+=(--methods "$DOTFILES_INSTALL_METHODS")
+    if (( interactive )) || { [[ -t 0 && -z "$tools" && "${DOTFILES_ASSUME_YES:-0}" != 1 ]] && (( ! dry_run )); }; then
+      selection_args+=(--interactive)
+    fi
+    selection_exclusions=()
+    (( ! skip_docker )) || selection_exclusions+=(docker docker-compose docker-buildx colima lazydocker)
+    (( ! skip_fonts )) || selection_exclusions+=(font-fira-code-nerd-font)
+    if (( ${#selection_exclusions[@]} )); then selection_args+=(--exclude "$(IFS=,; printf '%s' "${selection_exclusions[*]}")"); fi
+    resolve_tool_selection "${selection_args[@]}"
+    if ! tool_selected docker; then skip_docker=1; fi
+    if ! tool_selected font-fira-code-nerd-font; then skip_fonts=1; fi
+    if ! tool_selected zsh; then install_shell_plugins=0; fi
+    if [[ ",$DOTFILES_INSTALL_METHODS," != *,github,* && ",$DOTFILES_INSTALL_METHODS," != *,source,* ]]; then
+      install_shell_plugins=0
+      install_tpm=0
+    fi
+    if [[ "$os" == macos ]]; then
+      [[ ",$DOTFILES_INSTALL_METHODS," == *,native,* ]] || skip_fonts=1
+    else
+      [[ ",$DOTFILES_INSTALL_METHODS," == *,github,* ]] || skip_fonts=1
+    fi
+    if ! tool_selected code; then install_code_extensions=0; fi
+    if (( setup_editor )) && ! tool_selected nvim; then fatal "--setup-editor requires nvim in the selected tools"; fi
+    if (( start_colima )) && ! tool_selected colima; then fatal "--start-colima requires colima in the selected tools"; fi
+    export DOTFILES_SETUP_EDITOR="$setup_editor"
+    info "Selected tools: $DOTFILES_TOOLS"
+    info "Installation order: $DOTFILES_INSTALL_METHODS"
+  fi
 
   if (( dry_run )); then
     info "profile: $profile; desktop/fonts: $([[ "$profile" == server ]] && printf excluded || printf included)"
@@ -171,7 +222,7 @@ main() {
         printf '\n'
       fi
     else
-      info 'would run workstation installer and selected optional tools'
+      python3 "$SCRIPT_DIR/install-tools.py" --only "$DOTFILES_TOOLS" --methods "$DOTFILES_INSTALL_METHODS" --dry-run
     fi
     (( install_shell_plugins == 0 )) || info 'would install pinned Zsh plugins'
     (( install_tpm == 0 )) || info 'would install pinned tmux TPM'
@@ -188,6 +239,7 @@ main() {
       *) sudo apt-get update; sudo apt-get install -y --no-install-recommends python3 ;;
     esac
   fi
+  if [[ "$profile" == workstation ]]; then resolve_tool_selection --tools "$DOTFILES_TOOLS" --methods "$DOTFILES_INSTALL_METHODS" --save; fi
   report_init
   trap report_location EXIT
 
@@ -225,7 +277,7 @@ main() {
   esac
 
   if [[ "$skip_fonts" == "1" ]]; then
-    python3 "$SCRIPT_DIR/install-tools.py" --record firacode --reason "disabled by --skip-fonts or server profile"
+    python3 "$SCRIPT_DIR/install-tools.py" --record firacode --reason "disabled by selection, installation-channel policy, option or profile"
     warn "Skipped font installation."
   elif [[ "$os" != "wsl" ]]; then
     log "Installing FiraCode Nerd Font..."
@@ -248,7 +300,7 @@ main() {
       fi
     done
   else
-    python3 "$SCRIPT_DIR/install-tools.py" --record shell-plugins --reason "disabled by --no-shell-plugins"
+    python3 "$SCRIPT_DIR/install-tools.py" --record shell-plugins --reason "disabled by selection, installation-channel policy or --no-shell-plugins"
     warn "Skipped Zsh plugin installation."
   fi
   if [[ "$install_tpm" == 1 ]]; then
@@ -300,6 +352,10 @@ main() {
   elif [[ "$current_shell" != *"zsh"* ]]; then
     warn "Default shell not changed. Re-run with --configure-shell to allow /etc/shells and chsh changes."
   fi
+
+  guide_args=()
+  [[ -z "$custom_tools" ]] || guide_args+=(--custom-tools "$custom_tools")
+  report_optional agent-guides python3 "$SCRIPT_DIR/generate-agent-guides.py" "${guide_args[@]}"
 
   cat <<EOF
 

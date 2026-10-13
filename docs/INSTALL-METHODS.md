@@ -1,6 +1,8 @@
 # Workstation installation methods and reports
 
-The workstation bootstrap installs each utility independently. A failed download,
+The workstation bootstrap first selects tools and allowed channels, then installs
+each selected utility independently. Start with [runtime selection](TOOL-SELECTION.md)
+and [the catalog audit](TOOL-AUDIT.md). A failed download,
 missing compiler, unavailable package or incompatible native library is recorded;
 the next method is tried and installation continues for optional tools. Git and
 Chezmoi are required to apply configuration; Python 3.9+ runs the installer and
@@ -24,18 +26,18 @@ keeps its separate package/pin policy.
 ```
 
 `DOTFILES_INSTALL_METHODS` provides the same comma-separated ordered subset.
-Duplicates and unknown methods are rejected before installation. Linux defaults
-to `github,native,source`; the macOS entrypoint defaults to `native,github,source`.
+Duplicates and unknown methods are rejected before installation. Workstation entrypoints default to the recommended selection with `native,github`
+on a new host, and reuse a saved selection on later runs. The low-level standalone
+installer keeps its explicit/default method behavior.
 `--reinstall` forces a selected method even when an executable already works.
 `--skip-packages` suppresses APT/Homebrew operations; native npm, Cargo and official
 Go/Node distribution downloads remain allowed. Source build prerequisites must
-already be available when using this option. `bootstrap.sh` normally provisions
-best-effort build prerequisites; using a source-only method order does not by
-itself suppress those package operations. Use the standalone CLI with
-`--skip-packages` for that purpose.
+already be available when using this option. `bootstrap.sh` provisions build prerequisites only with allowed native operations
+and requested source/editor work. Disabling native suppresses native dependency
+operations as well; build prerequisites must already exist in that case.
 
 `scripts/tool-catalog.json` is the per-tool selection and recipe catalog.
-`Brewfile` remains the authoritative macOS selection. Linux native packages use
+`Brewfile` bounds the macOS catalog; the saved selection determines what is installed. Linux native packages use
 maintained distro versions, so an asset pin is a target for the GitHub/source
 paths, not a requirement imposed on APT/Homebrew. Native aliases `fdfind` and
 `batcat` are wired to `fd` and `bat`. pnpm and Biome use an isolated npm prefix;
@@ -107,10 +109,6 @@ Logs can contain installer output: inspect them before sharing.
 
 ## Agent guidance
 
-`AGENTS.additional.md` and `CLAUDE.additional.md` document efficient, bounded,
-non-interactive usage of the modern tools. They are included in the repository
-and deployed to the user's home through Chezmoi. Repository `AGENTS.md` and
-`CLAUDE.md` reference them so agents working here discover them. To enable them
-in another project, explicitly refer to the deployed files from that project's
-agent instructions; `.additional.md` filenames are not automatically discovered
-by all agent clients. Existing global agent instructions are not overwritten.
+The deployed `AGENTS.additional.md` and `CLAUDE.additional.md` are generated from
+available executables, including registered/discovered custom Go/Rust binaries.
+They are not static all-tools lists. See [selection and custom inventory](TOOL-SELECTION.md).
