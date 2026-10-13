@@ -1,0 +1,13 @@
+[
+  {
+    "name": "company-data",
+    "description": "Internal market-data inspection tool",
+    "usage": "company-data inspect DATASET",
+    "path": "~/go/bin/company-data"
+  },
+  {
+    "name": "company-validate",
+    "description": "Internal dataset validation CLI",
+    "usage": "company-validate check INPUT"
+  }
+]

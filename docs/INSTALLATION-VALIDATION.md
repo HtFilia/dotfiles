@@ -79,3 +79,17 @@ bash tests/script-contracts.sh
 Use a disposable home/environment for live installation tests. These commands intentionally install tools.
 For real-machine results, run the normal bootstrap and read its printed report path.
 The structured validation summary is in [INSTALLATION-VALIDATION.json](INSTALLATION-VALIDATION.json).
+
+## Runtime selection and guide generation follow-up
+
+The follow-up adds a 13-entry practical default, a terminal picker, persisted
+channel/tool selection and host-generated guides. Offline coverage includes
+terminal input, optional-channel denial, native operations suppressed even without
+`--skip-packages`, selected-only installer dispatch, custom Go/Rust discovery
+without execution, and replacing old guide symlinks without editing source files.
+The saved custom registry path is reused during later regenerations. Full host
+bootstrap and native platform installation still need host validation.
+
+Follow-up check result: 80 offline tests across the three suites, 77 passed and
+three skipped for platform/user prerequisites. Bash/Zsh syntax, ShellCheck,
+actionlint, whitespace and secret checks passed.

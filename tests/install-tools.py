@@ -262,9 +262,11 @@ class InstallerBehavior(unittest.TestCase):
         self.assertFalse(extras - {t['name'] for t in module.CATALOG})
         self.assertEqual(len({t['name'] for t in module.CATALOG}), len(module.CATALOG))
 
-    def test_agent_guides_are_deployed_copies(self):
+    def test_agent_guides_are_host_generated_not_static_source_files(self):
         for name in ('AGENTS.additional.md', 'CLAUDE.additional.md'):
-            self.assertEqual((ROOT / name).read_bytes(), (ROOT / 'home' / name).read_bytes())
+            self.assertFalse((ROOT / 'home' / name).exists())
+            self.assertIn('generated', (ROOT / name).read_text())
+
 
 
 if __name__ == '__main__': unittest.main(verbosity=2)

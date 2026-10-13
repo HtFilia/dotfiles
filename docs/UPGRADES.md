@@ -30,14 +30,14 @@ Debian/Ubuntu packages follow the latest available versions in the configured
 supported distribution repositories; they are not all the latest upstream source
 releases. This deliberately preserves distro ownership of system components.
 
-macOS runs `brew update`, then installs/upgrades each selected Homebrew package
-independently, using `Brewfile` for selection and the tool catalog for fallbacks. Homebrew formula/cask versions follow
+macOS installs/upgrades the saved tool selection independently, with Homebrew
+operations only when native is allowed. `Brewfile` defines available platform
+packages and the catalog supplies fallback recipes. Homebrew formula/cask versions follow
 Homebrew. Windows host application updates are separate from WSL package updates.
 
 The current runtime selections are Node 26.9.0, Go 1.27.1, managed Python 3.14.7,
-pnpm 12.4.2 and Biome 2.5.14. Existing rustup installations update their stable
-toolchain; project `rust-toolchain.toml` overrides still win. Python is installed
-with uv under the user account; `/usr/bin/python3` remains owned by the distro.
+pnpm 12.4.2 and Biome 2.5.14. Selected toolchains are updated only when requested; project `rust-toolchain.toml` overrides still win. Managed Python versions are project choices, rather than automatic additions on
+each update; `/usr/bin/python3` remains owned by the distro.
 Node moves from the previous Node 24 baseline to current stable Node 26. Projects
 requiring Node 24 should declare that version with mise. Lockfiles are not rewritten.
 

@@ -32,3 +32,12 @@ validate_install_methods() {
     seen+="$method,"
   done
 }
+
+resolve_tool_selection() {
+  local selection
+  selection="$(python3 "$SCRIPT_DIR/select-tools.py" --format lines "$@")" || return
+  DOTFILES_TOOLS="${selection%%$'\n'*}"
+  DOTFILES_INSTALL_METHODS="${selection#*$'\n'}"
+  export DOTFILES_TOOLS DOTFILES_INSTALL_METHODS
+}
+tool_selected() { [[ ",${DOTFILES_TOOLS:-}," == *",$1,"* ]]; }

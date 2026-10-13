@@ -11,7 +11,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "v2.47.0"
+    "ref": "v2.47.0",
+    "category": "required",
+    "description": "Version control",
+    "usage": "git --no-pager diff --stat",
+    "audit_reason": "Required for configuration deployment and source retrieval."
   },
   {
     "name": "curl",
@@ -25,7 +29,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "curl-8_10_1"
+    "ref": "curl-8_10_1",
+    "category": "required",
+    "description": "HTTPS downloads",
+    "usage": "curl -fsSL URL",
+    "audit_reason": "Required download transport; avoid adding another downloader by default."
   },
   {
     "name": "zsh",
@@ -39,7 +47,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "recommended",
+    "description": "Configured interactive shell",
+    "usage": "zsh -n FILE",
+    "audit_reason": "Useful because these dotfiles configure this shell."
   },
   {
     "name": "python3",
@@ -53,7 +65,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "v3.14.7"
+    "ref": "v3.14.7",
+    "category": "required",
+    "description": "Installer and report runtime",
+    "usage": "python3 --version",
+    "audit_reason": "Required by the installer, inventory and deployment helpers."
   },
   {
     "name": "rustup",
@@ -69,7 +85,11 @@
     ],
     "probe": [
       "--version"
-    ]
+    ],
+    "category": "project",
+    "description": "Rust toolchain bootstrap",
+    "usage": "rustup show",
+    "audit_reason": "macOS toolchain provisioner; choose this or a distro-owned compiler."
   },
   {
     "name": "go",
@@ -87,7 +107,11 @@
     ],
     "asset": "go-linux-amd64",
     "member": "go",
-    "ref": "go1.27.1"
+    "ref": "go1.27.1",
+    "category": "project",
+    "description": "Go compiler and runtime",
+    "usage": "go version",
+    "audit_reason": "Install for Go development or chosen source builds; not for prebuilt Go tools."
   },
   {
     "name": "node",
@@ -103,7 +127,11 @@
     "runtime": "node",
     "asset": "node-linux-x86_64",
     "member": "node",
-    "ref": "v26.9.0"
+    "ref": "v26.9.0",
+    "category": "project",
+    "description": "JavaScript runtime",
+    "usage": "node --version",
+    "audit_reason": "Install for Node projects or selected package tools."
   },
   {
     "name": "rustc",
@@ -114,7 +142,11 @@
     "bins": [
       "rustc"
     ],
-    "note": "Rust compiler bootstrapping is not automated; use native packages or an existing rustup toolchain."
+    "note": "Rust compiler bootstrapping is not automated; use native packages or an existing rustup toolchain.",
+    "category": "project",
+    "description": "Rust compiler",
+    "usage": "rustc --version",
+    "audit_reason": "Install for Rust projects/builds; prebuilt Rust tools do not require a compiler."
   },
   {
     "name": "cargo",
@@ -125,7 +157,11 @@
     "bins": [
       "cargo"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. Supplied with the Rust toolchain; no standalone source bootstrap."
+    "note": "No supported official GitHub artifact/source recipe; use the native package. Supplied with the Rust toolchain; no standalone source bootstrap.",
+    "category": "project",
+    "description": "Rust package/build tool",
+    "usage": "cargo --version",
+    "audit_reason": "Pair with a Rust compiler when needed; avoid duplicate toolchains."
   },
   {
     "name": "starship",
@@ -139,7 +175,11 @@
     "asset": "starship-linux-x86_64",
     "member": "starship",
     "ref": "v1.26.0",
-    "crate": "starship"
+    "crate": "starship",
+    "category": "comfort",
+    "description": "Prompt decoration",
+    "usage": "starship --version",
+    "audit_reason": "Comfort, not a bootstrap requirement."
   },
   {
     "name": "eza",
@@ -153,7 +193,11 @@
     "asset": "eza-linux-x86_64",
     "member": "eza",
     "ref": "v0.23.5",
-    "crate": "eza"
+    "crate": "eza",
+    "category": "comfort",
+    "description": "Enhanced directory listings",
+    "usage": "eza -la --color=never",
+    "audit_reason": "Comfort; avoid making formatted listings mandatory."
   },
   {
     "name": "uv",
@@ -168,7 +212,11 @@
     "asset": "uv-linux-x86_64",
     "member": "uv",
     "ref": "0.12.15",
-    "pip": "uv"
+    "pip": "uv",
+    "category": "recommended",
+    "description": "Python project environments",
+    "usage": "uv run COMMAND",
+    "audit_reason": "Strong fit for a Python/quant workstation; only selected runtime manager in the lean preset."
   },
   {
     "name": "delta",
@@ -182,7 +230,11 @@
     "asset": "delta-linux-x86_64",
     "member": "delta",
     "ref": "0.19.2",
-    "crate": "git-delta"
+    "crate": "git-delta",
+    "category": "comfort",
+    "description": "Readable Git diffs",
+    "usage": "delta --paging=never",
+    "audit_reason": "Comfort; ordinary Git diffs already work."
   },
   {
     "name": "lazygit",
@@ -196,7 +248,11 @@
     "asset": "lazygit-linux-x86_64",
     "member": "lazygit",
     "ref": "v0.65.1",
-    "ldflags": "-X main.version={version} -X main.buildSource=git"
+    "ldflags": "-X main.version={version} -X main.buildSource=git",
+    "category": "comfort",
+    "description": "Interactive Git UI",
+    "usage": "lazygit --help",
+    "audit_reason": "Choose if a terminal Git UI is part of daily work."
   },
   {
     "name": "chezmoi",
@@ -209,7 +265,11 @@
     ],
     "asset": "chezmoi-linux-amd64",
     "member": "chezmoi",
-    "ref": "v2.72.2"
+    "ref": "v2.72.2",
+    "category": "required",
+    "description": "Configuration deployment",
+    "usage": "chezmoi --version",
+    "audit_reason": "Required to deploy and track the dotfiles."
   },
   {
     "name": "just",
@@ -223,7 +283,11 @@
     "asset": "just-linux-x86_64",
     "member": "just",
     "ref": "1.58.0",
-    "crate": "just"
+    "crate": "just",
+    "category": "project",
+    "description": "Project task runner",
+    "usage": "just --list",
+    "audit_reason": "Useful for repositories with a task file; no need globally for every machine."
   },
   {
     "name": "mise",
@@ -237,7 +301,11 @@
     "asset": "mise-linux-x86_64",
     "member": "@binary",
     "ref": "v2026.9.10",
-    "crate": "mise"
+    "crate": "mise",
+    "category": "comfort",
+    "description": "Project runtime selection",
+    "usage": "mise current",
+    "audit_reason": "Choose for multi-runtime projects; avoid duplicating runtime ownership."
   },
   {
     "name": "yazi",
@@ -252,7 +320,11 @@
     "asset": "yazi-linux-x86_64",
     "member": "yazi",
     "ref": "v26.9.1",
-    "crate": "yazi"
+    "crate": "yazi",
+    "category": "comfort",
+    "description": "Interactive file manager",
+    "usage": "yazi --help",
+    "audit_reason": "Choose one file manager, rather than installing every file TUI."
   },
   {
     "name": "yq",
@@ -266,7 +338,11 @@
     "asset": "yq-linux-amd64",
     "member": "@binary",
     "ref": "v4.53.6",
-    "ldflags": ""
+    "ldflags": "",
+    "category": "specialist",
+    "description": "Structured YAML editing",
+    "usage": "yq eval . FILE",
+    "audit_reason": "Useful for YAML-heavy projects; this recipe targets the Go implementation."
   },
   {
     "name": "sd",
@@ -280,7 +356,11 @@
     "asset": "sd-linux-x86_64",
     "member": "sd",
     "ref": "v1.1.0",
-    "crate": "sd"
+    "crate": "sd",
+    "category": "specialist",
+    "description": "Text replacement",
+    "usage": "sd --help",
+    "audit_reason": "Optional convenience over existing text processing; edits files."
   },
   {
     "name": "dust",
@@ -294,7 +374,11 @@
     "asset": "dust-linux-x86_64",
     "member": "dust",
     "ref": "v1.2.5",
-    "crate": "du-dust"
+    "crate": "du-dust",
+    "category": "specialist",
+    "description": "Directory size overview",
+    "usage": "dust -d 2 PATH",
+    "audit_reason": "Useful disk investigation; choose one directory-size tool."
   },
   {
     "name": "duf",
@@ -308,7 +392,11 @@
     "asset": "duf-linux-x86_64",
     "member": "duf",
     "ref": "v0.9.1",
-    "ldflags": "-X main.Version={version}"
+    "ldflags": "-X main.Version={version}",
+    "category": "specialist",
+    "description": "Filesystem capacity overview",
+    "usage": "duf --json",
+    "audit_reason": "Readable capacity display; standard diagnostics already exist."
   },
   {
     "name": "hyperfine",
@@ -322,7 +410,11 @@
     "asset": "hyperfine-linux-x86_64",
     "member": "hyperfine",
     "ref": "v1.20.0",
-    "crate": "hyperfine"
+    "crate": "hyperfine",
+    "category": "project",
+    "description": "Command benchmarking",
+    "usage": "hyperfine --help",
+    "audit_reason": "High value for performance work, not for routine onboarding."
   },
   {
     "name": "watchexec",
@@ -336,7 +428,11 @@
     "asset": "watchexec-linux-x86_64",
     "member": "watchexec",
     "ref": "v2.7.3",
-    "crate": "watchexec"
+    "crate": "watchexec",
+    "category": "project",
+    "description": "File-change command runner",
+    "usage": "watchexec --help",
+    "audit_reason": "Select for a concrete watcher workflow; no background watcher by default."
   },
   {
     "name": "xh",
@@ -350,7 +446,11 @@
     "asset": "xh-linux-x86_64",
     "member": "xh",
     "ref": "v0.26.2",
-    "crate": "xh"
+    "crate": "xh",
+    "category": "specialist",
+    "description": "Interactive HTTP client",
+    "usage": "xh --help",
+    "audit_reason": "Convenience HTTP interface; existing download transport can make requests."
   },
   {
     "name": "lazydocker",
@@ -364,7 +464,11 @@
     "asset": "lazydocker-linux-x86_64",
     "member": "lazydocker",
     "ref": "v0.25.2",
-    "ldflags": "-X main.version={version} -X main.buildSource=git"
+    "ldflags": "-X main.version={version} -X main.buildSource=git",
+    "category": "project",
+    "description": "Interactive container UI",
+    "usage": "lazydocker --help",
+    "audit_reason": "Convenience on top of a working container setup."
   },
   {
     "name": "gitleaks",
@@ -381,7 +485,11 @@
     "asset": "gitleaks-linux-x64",
     "member": "gitleaks",
     "ref": "v8.30.1",
-    "ldflags": "-X github.com/zricethezav/gitleaks/v8/version.Version={version}"
+    "ldflags": "-X github.com/zricethezav/gitleaks/v8/version.Version={version}",
+    "category": "project",
+    "description": "Secret scanning",
+    "usage": "gitleaks git --redact --no-banner",
+    "audit_reason": "Useful security check; redacted output only."
   },
   {
     "name": "actionlint",
@@ -396,7 +504,11 @@
     "asset": "actionlint-linux-amd64",
     "member": "actionlint",
     "ref": "v1.7.12",
-    "ldflags": "-X github.com/rhysd/actionlint.version={version}"
+    "ldflags": "-X github.com/rhysd/actionlint.version={version}",
+    "category": "project",
+    "description": "Workflow validation",
+    "usage": "actionlint",
+    "audit_reason": "Useful for GitHub Actions maintainers."
   },
   {
     "name": "nvim",
@@ -410,7 +522,11 @@
     "runtime": "nvim",
     "asset": "neovim-linux-x86_64",
     "member": "nvim",
-    "ref": "v0.12.5"
+    "ref": "v0.12.5",
+    "category": "project",
+    "description": "Terminal editor",
+    "usage": "nvim --version",
+    "audit_reason": "Choose an editor; provisioning plugins/language tools is a separate opt-in."
   },
   {
     "name": "tokei",
@@ -424,7 +540,11 @@
     "version": "15.0.0",
     "ref": "v15.0.0",
     "release_pattern": "tokei-{arch}-unknown-{os}-gnu.tar.gz",
-    "crate": "tokei"
+    "crate": "tokei",
+    "category": "project",
+    "description": "Code statistics",
+    "usage": "tokei PATH",
+    "audit_reason": "Occasional inventory; compiling it is not worth default bootstrap cost."
   },
   {
     "name": "fzf",
@@ -439,7 +559,11 @@
     "asset": "fzf-linux-x86_64",
     "member": "fzf",
     "ref": "v0.74.4",
-    "ldflags": "-X main.version={version} -X main.revision=dotfiles"
+    "ldflags": "-X main.version={version} -X main.revision=dotfiles",
+    "category": "recommended",
+    "description": "Interactive selection",
+    "usage": "fzf --help",
+    "audit_reason": "Useful for shell file/history selection; agents should avoid interactive prompts."
   },
   {
     "name": "rg",
@@ -454,7 +578,11 @@
     "asset": "rg-linux-x86_64",
     "member": "rg",
     "ref": "15.2.0",
-    "crate": "ripgrep"
+    "crate": "ripgrep",
+    "category": "recommended",
+    "description": "Content search",
+    "usage": "rg -n -- PATTERN PATH",
+    "audit_reason": "High value for repository inspection and agent work."
   },
   {
     "name": "bat",
@@ -472,7 +600,11 @@
     "asset": "bat-linux-x86_64",
     "member": "bat",
     "ref": "v0.26.1",
-    "crate": "bat"
+    "crate": "bat",
+    "category": "recommended",
+    "description": "Readable file output",
+    "usage": "bat --paging=never --color=never FILE",
+    "audit_reason": "Useful bounded previews; standard text commands still work."
   },
   {
     "name": "fd",
@@ -490,7 +622,11 @@
     "asset": "fd-linux-x86_64",
     "member": "fd",
     "ref": "v10.5.0",
-    "crate": "fd-find"
+    "crate": "fd-find",
+    "category": "recommended",
+    "description": "File-name search",
+    "usage": "fd -t f -e py . PATH",
+    "audit_reason": "Complements content search; convenient interactive file discovery."
   },
   {
     "name": "zoxide",
@@ -505,7 +641,11 @@
     "asset": "zoxide-linux-x86_64",
     "member": "zoxide",
     "ref": "v0.10.0",
-    "crate": "zoxide"
+    "crate": "zoxide",
+    "category": "comfort",
+    "description": "Learned directory navigation",
+    "usage": "zoxide query NAME",
+    "audit_reason": "Comfort for interactive navigation."
   },
   {
     "name": "atuin",
@@ -520,7 +660,11 @@
     "asset": "atuin-linux-x86_64",
     "member": "atuin",
     "ref": "v18.22.0",
-    "crate": "atuin"
+    "crate": "atuin",
+    "category": "comfort",
+    "description": "Contextual shell history",
+    "usage": "atuin --version",
+    "audit_reason": "Optional history database and integration; local history already exists."
   },
   {
     "name": "direnv",
@@ -534,7 +678,11 @@
     "group": "extra",
     "asset": "direnv-linux-x86_64",
     "member": "@binary",
-    "ref": "v2.37.1"
+    "ref": "v2.37.1",
+    "category": "comfort",
+    "description": "Project environment loading",
+    "usage": "direnv status",
+    "audit_reason": "Choose for projects with reviewed environment scripts."
   },
   {
     "name": "jq",
@@ -548,7 +696,11 @@
     "group": "extra",
     "asset": "jq-linux-x86_64",
     "member": "@binary",
-    "ref": "jq-1.8.2"
+    "ref": "jq-1.8.2",
+    "category": "recommended",
+    "description": "JSON processing",
+    "usage": "jq -r . FILE",
+    "audit_reason": "Useful for structured output and API responses."
   },
   {
     "name": "btop",
@@ -562,7 +714,11 @@
     "group": "extra",
     "asset": "btop-linux-x86_64",
     "member": "btop",
-    "ref": "v1.4.7"
+    "ref": "v1.4.7",
+    "category": "specialist",
+    "description": "Interactive resource monitor",
+    "usage": "btop --version",
+    "audit_reason": "Alternative to another monitor; choose one, not both."
   },
   {
     "name": "tmux",
@@ -579,7 +735,11 @@
     ],
     "asset": "tmux-linux-x86_64",
     "member": "@tmux",
-    "ref": "3.7c"
+    "ref": "3.7c",
+    "category": "recommended",
+    "description": "Persistent terminal sessions",
+    "usage": "tmux list-sessions",
+    "audit_reason": "High value for development and SSH; one terminal multiplexer is enough."
   },
   {
     "name": "ouch",
@@ -594,7 +754,11 @@
     "asset": "ouch-linux-x86_64",
     "member": "ouch",
     "ref": "0.8.3",
-    "crate": "ouch"
+    "crate": "ouch",
+    "category": "specialist",
+    "description": "Archive interface",
+    "usage": "ouch list ARCHIVE",
+    "audit_reason": "Convenience wrapper over archive operations; optional."
   },
   {
     "name": "ov",
@@ -609,7 +773,11 @@
     "asset": "ov-linux-x86_64",
     "member": "ov",
     "ref": "v0.54.0",
-    "ldflags": "-X main.Version={version}"
+    "ldflags": "-X main.Version={version}",
+    "category": "specialist",
+    "description": "Interactive pager",
+    "usage": "ov --help",
+    "audit_reason": "Alternative pager; do not add several pagers by default."
   },
   {
     "name": "hexyl",
@@ -624,7 +792,11 @@
     "asset": "hexyl-linux-x86_64",
     "member": "hexyl",
     "ref": "v0.17.0",
-    "crate": "hexyl"
+    "crate": "hexyl",
+    "category": "specialist",
+    "description": "Hexadecimal file inspection",
+    "usage": "hexyl --length 256 FILE",
+    "audit_reason": "Specialist binary-data debugging."
   },
   {
     "name": "dua",
@@ -639,7 +811,11 @@
     "asset": "dua-linux-x86_64",
     "member": "dua",
     "ref": "v2.45.0",
-    "crate": "dua-cli"
+    "crate": "dua-cli",
+    "category": "specialist",
+    "description": "Directory usage explorer",
+    "usage": "dua --help",
+    "audit_reason": "Overlap with directory-size utilities; choose when its interactive workflow is needed."
   },
   {
     "name": "broot",
@@ -654,7 +830,11 @@
     "asset": "broot-linux-x86_64",
     "member": "x86_64-unknown-linux-musl/broot",
     "ref": "v1.60.1",
-    "crate": "broot"
+    "crate": "broot",
+    "category": "specialist",
+    "description": "Interactive tree navigator",
+    "usage": "broot --help",
+    "audit_reason": "Overlap with file managers and file selection; choose one preferred workflow."
   },
   {
     "name": "czkawka_cli",
@@ -668,7 +848,11 @@
     "group": "extra",
     "asset": "czkawka_cli-linux-x86_64",
     "member": "@binary",
-    "ref": "12.0.2"
+    "ref": "12.0.2",
+    "category": "specialist",
+    "description": "Duplicate/media cleanup",
+    "usage": "czkawka_cli --help",
+    "audit_reason": "Real specialist cleanup utility; review candidates before deleting anything."
   },
   {
     "name": "xcp",
@@ -683,7 +867,11 @@
     "asset": "xcp-linux-x86_64",
     "member": "xcp",
     "ref": "xcp-v0.24.8",
-    "crate": "xcp"
+    "crate": "xcp",
+    "category": "specialist",
+    "description": "Alternative copy utility",
+    "usage": "xcp --help",
+    "audit_reason": "Optional copying interface; ordinary copies cover the lean workflow."
   },
   {
     "name": "viu",
@@ -698,7 +886,11 @@
     "asset": "viu-linux-x86_64",
     "member": "@binary",
     "ref": "v1.6.1",
-    "crate": "viu"
+    "crate": "viu",
+    "category": "visual",
+    "description": "Terminal image viewing",
+    "usage": "viu --help",
+    "audit_reason": "Overlaps terminal image rendering; choose only if actually used."
   },
   {
     "name": "vivid",
@@ -713,7 +905,11 @@
     "asset": "vivid-linux-x86_64",
     "member": "vivid",
     "ref": "v0.11.1",
-    "crate": "vivid"
+    "crate": "vivid",
+    "category": "visual",
+    "description": "Listing color theme",
+    "usage": "vivid --help",
+    "audit_reason": "Visual customization, not an operational requirement."
   },
   {
     "name": "pastel",
@@ -728,7 +924,11 @@
     "asset": "pastel-linux-x86_64",
     "member": "pastel",
     "ref": "v0.12.0",
-    "crate": "pastel"
+    "crate": "pastel",
+    "category": "visual",
+    "description": "Color inspection",
+    "usage": "pastel --help",
+    "audit_reason": "Useful for color/design work; unnecessary for generic workstation setup."
   },
   {
     "name": "tldr",
@@ -743,7 +943,11 @@
     "asset": "tldr-linux-x86_64",
     "member": "@binary",
     "ref": "v1.9.0",
-    "crate": "tealdeer"
+    "crate": "tealdeer",
+    "category": "comfort",
+    "description": "Short command examples",
+    "usage": "tldr COMMAND",
+    "audit_reason": "Optional help cache; offline population adds onboarding work."
   },
   {
     "name": "jc",
@@ -757,7 +961,11 @@
     "group": "extra",
     "asset": "jc-linux-x86_64",
     "member": "jc",
-    "ref": "v1.25.7"
+    "ref": "v1.25.7",
+    "category": "specialist",
+    "description": "Unix output parsing",
+    "usage": "jc --help",
+    "audit_reason": "Useful when automating unstructured command output, not for every shell session."
   },
   {
     "name": "jless",
@@ -772,7 +980,11 @@
     "asset": "jless-linux-x86_64",
     "member": "jless",
     "ref": "v0.9.0",
-    "crate": "jless"
+    "crate": "jless",
+    "category": "specialist",
+    "description": "Interactive JSON viewer",
+    "usage": "jless --help",
+    "audit_reason": "Overlap with structured queries and the editor; optional TUI."
   },
   {
     "name": "fastfetch",
@@ -787,7 +999,11 @@
     "asset": "fastfetch-linux-x86_64",
     "member": "usr/bin/fastfetch",
     "ref": "2.68.1",
-    "release_pattern": "fastfetch-{os}-{arch}.tar.gz"
+    "release_pattern": "fastfetch-{os}-{arch}.tar.gz",
+    "category": "visual",
+    "description": "Decorative system summary",
+    "usage": "fastfetch --version",
+    "audit_reason": "Visual convenience; existing system diagnostics cover operational inspection."
   },
   {
     "name": "wget",
@@ -801,7 +1017,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "specialist",
+    "description": "Alternative downloader",
+    "usage": "wget --version",
+    "audit_reason": "Duplicates the download transport in the lean set."
   },
   {
     "name": "tree",
@@ -815,7 +1035,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "specialist",
+    "description": "Recursive directory listing",
+    "usage": "tree -L 2 PATH",
+    "audit_reason": "Optional listing convenience; avoid overlapping listing packages."
   },
   {
     "name": "htop",
@@ -829,7 +1053,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "3.3.0"
+    "ref": "3.3.0",
+    "category": "specialist",
+    "description": "Interactive process monitor",
+    "usage": "htop --version",
+    "audit_reason": "Choose one interactive process monitor."
   },
   {
     "name": "shellcheck",
@@ -845,7 +1073,11 @@
     ],
     "ref": "v0.10.0",
     "release_pattern": "shellcheck-*.{os}.{arch}.tar.xz",
-    "version": "0.10.0"
+    "version": "0.10.0",
+    "category": "recommended",
+    "description": "Shell static analysis",
+    "usage": "shellcheck SCRIPT",
+    "audit_reason": "Useful maintenance check for the bootstrap itself."
   },
   {
     "name": "shfmt",
@@ -863,7 +1095,11 @@
     "release_pattern": "shfmt_*_{os}_{goarch}",
     "release_binary": true,
     "source_path": "./cmd/shfmt",
-    "version": "3.10.0"
+    "version": "3.10.0",
+    "category": "project",
+    "description": "Shell formatting",
+    "usage": "shfmt -d FILE",
+    "audit_reason": "Useful shell-maintenance extra."
   },
   {
     "name": "bats",
@@ -877,7 +1113,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "v1.11.0"
+    "ref": "v1.11.0",
+    "category": "project",
+    "description": "Shell test runner",
+    "usage": "bats --version",
+    "audit_reason": "Only needed when a project uses this test framework."
   },
   {
     "name": "gh",
@@ -892,7 +1132,11 @@
       "--version"
     ],
     "ref": "v2.60.0",
-    "release_pattern": "gh_*_{os}_{goarch}.tar.gz"
+    "release_pattern": "gh_*_{os}_{goarch}.tar.gz",
+    "category": "project",
+    "description": "GitHub workflows",
+    "usage": "gh pr view",
+    "audit_reason": "Useful when GitHub workflows are needed; Git alone handles version control."
   },
   {
     "name": "zstd",
@@ -906,7 +1150,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "v1.5.6"
+    "ref": "v1.5.6",
+    "category": "specialist",
+    "description": "Zstandard compression",
+    "usage": "zstd --version",
+    "audit_reason": "Install when datasets/artifacts actually use this format."
   },
   {
     "name": "sponge",
@@ -927,7 +1175,11 @@
       0,
       1
     ],
-    "presence_only": true
+    "presence_only": true,
+    "category": "specialist",
+    "description": "Buffered Unix output helpers",
+    "usage": "Inspect documentation before buffering input into an output file",
+    "audit_reason": "Specialist package with file-writing helpers; do not probe it by executing an arbitrary option."
   },
   {
     "name": "chafa",
@@ -941,7 +1193,11 @@
     "probe": [
       "--version"
     ],
-    "ref": "1.14.4"
+    "ref": "1.14.4",
+    "category": "visual",
+    "description": "Terminal image rendering",
+    "usage": "chafa --version",
+    "audit_reason": "Presentation/preview helper; not core development tooling."
   },
   {
     "name": "parallel",
@@ -955,7 +1211,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "specialist",
+    "description": "Parallel command batches",
+    "usage": "parallel --version",
+    "audit_reason": "Useful for intentional batch jobs, not as a default interactive dependency."
   },
   {
     "name": "cmatrix",
@@ -969,7 +1229,11 @@
     "probe": [
       "-V"
     ],
-    "ref": "v2.0"
+    "ref": "v2.0",
+    "category": "visual",
+    "description": "Terminal animation",
+    "usage": "cmatrix -V",
+    "audit_reason": "Decorative gadget; excluded from every practical default."
   },
   {
     "name": "cava",
@@ -983,7 +1247,11 @@
     "probe": [
       "-v"
     ],
-    "ref": "0.10.3"
+    "ref": "0.10.3",
+    "category": "visual",
+    "description": "Audio visualizer",
+    "usage": "cava -v",
+    "audit_reason": "Decorative gadget; excluded from every practical default."
   },
   {
     "name": "ffmpeg",
@@ -997,7 +1265,11 @@
     "probe": [
       "-version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "specialist",
+    "description": "Media conversion",
+    "usage": "ffmpeg -version",
+    "audit_reason": "Large specialist media dependency; select for a media workflow."
   },
   {
     "name": "7z",
@@ -1011,7 +1283,11 @@
     "probe": [
       "i"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "specialist",
+    "description": "7-Zip archive utility",
+    "usage": "7z i",
+    "audit_reason": "Select for formats requiring it; avoid a full archive stack by default."
   },
   {
     "name": "xclip",
@@ -1025,7 +1301,11 @@
     "probe": [
       "-version"
     ],
-    "ref": "0.13"
+    "ref": "0.13",
+    "category": "specialist",
+    "description": "X11 clipboard integration",
+    "usage": "xclip -version",
+    "audit_reason": "X11-specific; not universal to WSL, Wayland or remote hosts."
   },
   {
     "name": "rustfmt",
@@ -1039,7 +1319,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "project",
+    "description": "Rust formatting",
+    "usage": "rustfmt --check FILE",
+    "audit_reason": "Rust-project component, not a generic Unix requirement."
   },
   {
     "name": "cargo-clippy",
@@ -1053,7 +1337,11 @@
     "probe": [
       "--version"
     ],
-    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+    "note": "No supported official GitHub artifact/source recipe; use the native package. ",
+    "category": "project",
+    "description": "Rust linting",
+    "usage": "cargo clippy",
+    "audit_reason": "Rust-project component; requires a configured toolchain."
   },
   {
     "name": "pnpm",
@@ -1066,7 +1354,11 @@
     ],
     "npm": "pnpm",
     "version": "12.4.2",
-    "note": "pnpm source development needs pnpm itself; use npm or a verified upstream release."
+    "note": "pnpm source development needs pnpm itself; use npm or a verified upstream release.",
+    "category": "project",
+    "description": "JavaScript package manager",
+    "usage": "pnpm --version",
+    "audit_reason": "Select only when a project uses this package manager."
   },
   {
     "name": "biome",
@@ -1082,7 +1374,11 @@
     "source_bin": "biome",
     "note": "Cargo builds the CLI in crates/biome_cli.",
     "cargo_package": "biome_cli",
-    "ref": "@biomejs/biome@2.5.14"
+    "ref": "@biomejs/biome@2.5.14",
+    "category": "project",
+    "description": "JavaScript formatting/linting",
+    "usage": "biome check PATH",
+    "audit_reason": "Select for projects configured to use it."
   },
   {
     "name": "colima",
@@ -1098,7 +1394,11 @@
     ],
     "probe": [
       "version"
-    ]
+    ],
+    "category": "project",
+    "description": "macOS container runtime",
+    "usage": "colima status",
+    "audit_reason": "Needed only for the chosen macOS container setup."
   },
   {
     "name": "docker",
@@ -1108,10 +1408,11 @@
     "bins": [
       "docker"
     ],
-    "platforms": [
-      "darwin"
-    ],
-    "note": "Docker service stack is managed separately on Linux."
+    "note": "Docker service stack is managed separately on Linux.",
+    "category": "project",
+    "description": "Container engine/CLI",
+    "usage": "docker ps",
+    "audit_reason": "Select only for actual container workflows; installing it changes service ownership."
   },
   {
     "name": "docker-compose",
@@ -1123,7 +1424,11 @@
     ],
     "platforms": [
       "darwin"
-    ]
+    ],
+    "category": "project",
+    "description": "Container stack CLI",
+    "usage": "docker-compose version",
+    "audit_reason": "Only useful with a container stack workflow."
   },
   {
     "name": "docker-buildx",
@@ -1138,7 +1443,11 @@
     ],
     "probe": [
       "version"
-    ]
+    ],
+    "category": "project",
+    "description": "Container image builder",
+    "usage": "docker-buildx version",
+    "audit_reason": "Only useful for image-building workflows."
   },
   {
     "name": "ghostty",
@@ -1151,7 +1460,11 @@
     ],
     "platforms": [
       "darwin"
-    ]
+    ],
+    "category": "project",
+    "description": "Terminal emulator",
+    "usage": "ghostty --version",
+    "audit_reason": "Choose one terminal; not an SSH host prerequisite."
   },
   {
     "name": "code",
@@ -1164,7 +1477,11 @@
     ],
     "platforms": [
       "darwin"
-    ]
+    ],
+    "category": "project",
+    "description": "GUI editor",
+    "usage": "code --version",
+    "audit_reason": "Select only if this is the editor used on the host."
   },
   {
     "name": "font-fira-code-nerd-font",
@@ -1173,8 +1490,9 @@
     "repo": "ryanoasis/nerd-fonts",
     "build": null,
     "bins": [],
-    "platforms": [
-      "darwin"
-    ]
+    "category": "project",
+    "description": "Decorative terminal font",
+    "usage": "",
+    "audit_reason": "Font aesthetics and icon support; not essential for command execution."
   }
 ]

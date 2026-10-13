@@ -37,8 +37,8 @@ restore.
 
 | Profile | Platform | Installed environment |
 |---|---|---|
-| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
-| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
+| Workstation | macOS with Homebrew and Xcode Command Line Tools | Selected CLI/editor/runtime tools; optional terminal, fonts and container setup |
+| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Selected CLI/editor/runtime tools; optional Docker Engine and fonts |
 | Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
 | Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
@@ -58,8 +58,10 @@ cd ~/.dotfiles
 ```
 
 Run as your regular development/SSH account. Linux package installation needs
-sudo. macOS requires Homebrew; if Command Line Tools installation is started,
-finish it and rerun bootstrap.
+sudo. macOS native installs use Homebrew. Finish requested build tools before source
+compilation. The workstation picker defaults to 13 practical/prerequisite tools;
+use `list` to inspect optional tools and choose fallback channels. See
+[selection and generated guides](docs/TOOL-SELECTION.md) and [the tool audit](docs/TOOL-AUDIT.md).
 
 For a server:
 
@@ -96,8 +98,8 @@ order with `--install-methods native,github,source` (or a subset). Optional fail
 are recorded and do not stop configuration deployment. Every run prints the path
 to its Markdown/JSON report, including successful methods, observed versions,
 failed attempts and logs. See [installation methods](docs/INSTALL-METHODS.md) for
-coverage, prerequisites and source-build limits. The repository and deployed
-`AGENTS.additional.md` / `CLAUDE.additional.md` explain efficient agent usage.
+coverage, prerequisites and source-build limits. Deployed `AGENTS.additional.md` / `CLAUDE.additional.md` are generated from tools
+available on that host, including described custom Go/Rust binaries.
 
 ## Apply and update
 
@@ -196,7 +198,7 @@ The default Operator shell layout uses graphite, teal and amber; editor and
 diff views use Gruvbox. Styles are selected explicitly and do not add startup
 animations or network calls.
 
-The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
+The optional catalog offers ouch, zstd, moreutils, ov, hexyl, dua, broot,
 Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
 jc and jless. Fastfetch, cmatrix and cava provide explicit visual modes.
 See [workbooks](docs/WORKBOOKS.md), [visual styles](docs/VISUALS.md), and
