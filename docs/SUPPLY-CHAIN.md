@@ -16,8 +16,10 @@ cache is replaced only by a newly verified download. Hashes authenticate against
 the reviewed manifest, not independently against the publisher's signing key.
 
 [`ASSET-MANIFEST.md`](ASSET-MANIFEST.md) is generated with `just assets`. Edit the
-shell manifest, not the generated table. Cargo's optional tokei build uses an
-exact version and `--locked`, with crates.io's dependency integrity mechanisms.
+shell manifest, not the generated table. Source-build recipes use reviewed release refs and report resolved commits;
+Cargo builds use `--locked`. Dependencies can still require non-GitHub registries.
+Selected extra release assets require GitHub's SHA256 digest. Native packages
+follow their repositories. See [installation methods](INSTALL-METHODS.md).
 
 ## Executed plugins and editor tools
 

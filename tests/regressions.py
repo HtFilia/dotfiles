@@ -231,6 +231,7 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
         self.run_command("bash", "-euc", script, "_", str(ROOT / "scripts/pinned-plugins.sh"), str(self.work / "plugins"))
 
     @unittest.skipUnless(os.uname().sysname == "Linux", "server bootstrap requires Linux")
+    @unittest.skipIf(os.geteuid() == 0, "bootstrap must run as a regular user")
     def test_bootstrap_sees_child_installed_tools(self):
         fixture = self.work / "repository"
         shutil.copytree(ROOT / "scripts", fixture / "scripts")

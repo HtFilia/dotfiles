@@ -44,7 +44,7 @@ you leave; read `.envrc` before approving it.
 ## Node, Go and Rust
 
 pnpm is supplied by Homebrew or explicitly installed at the version in
-`scripts/runtime-versions.sh` on Linux. Respect each project's package-manager version. Node installation does not select an unrequested
+`scripts/tool-catalog.json` on Linux. Respect each project's package-manager version. Node installation does not select an unrequested
 package manager for every project.
 
 Go binaries installed by `go install` use GOPATH/GOBIN, which remain overrideable.
@@ -52,6 +52,7 @@ Linux rustfmt and Clippy come from distro packages; rustup toolchains need their
 corresponding components. `rustup override set` stores a local override;
 version-controlled `rust-toolchain.toml` is the portable project declaration.
 
-Linux tokei uses a versioned, locked Cargo build only with Rust >=1.85; otherwise
-it is skipped as optional. watchexec is already installed for file watching:
+Linux tokei can use a verified official release, a native package/Cargo install
+or a clone-and-build recipe. Builds must satisfy upstream MSRV; failures are
+reported as optional. watchexec is already installed for file watching:
 `watchexec -e rs -- cargo test` avoids another Cargo watcher dependency.

@@ -19,6 +19,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/pinned-plugins.sh"
 # shellcheck source=scripts/profile.sh
 . "$SCRIPT_DIR/profile.sh"
+# shellcheck source=scripts/install-report.sh
+. "$SCRIPT_DIR/install-report.sh"
 
 detect_os() {
   case "$(uname -s)" in
@@ -49,6 +51,7 @@ Usage: $0 [OPTIONS]
 Options:
   --profile PROFILE       workstation (default on new hosts) or server
   --system-baseline       apply the portable Debian 13 server baseline
+  --install-methods LIST  ordered subset of native,github,source (workstation)
   --dry-run               preview actions without installing or applying
   --skip-docker            do not install container packages
   --skip-fonts             do not install FiraCode Nerd Font
@@ -69,6 +72,7 @@ install_vscode_extensions() {
   local extensions_file="$1"
   [[ -f "$extensions_file" ]] || return 0
   if ! command -v code >/dev/null 2>&1; then
+    python3 "$SCRIPT_DIR/install-tools.py" --record vscode-extensions --reason "VS Code CLI not found"
     warn "VS Code CLI not found; skipped extension installation."
     return 0
   fi
@@ -77,7 +81,7 @@ install_vscode_extensions() {
   local extension
   while IFS= read -r extension || [[ -n "$extension" ]]; do
     [[ -z "$extension" || "$extension" == \#* ]] && continue
-    if code --install-extension "$extension" >/dev/null 2>&1; then
+    if python3 "$SCRIPT_DIR/install-tools.py" --step "vscode-$extension" -- code --install-extension "$extension"; then
       success "installed $extension"
     else
       warn "Could not install VS Code extension: $extension"
@@ -97,6 +101,7 @@ main() {
         shift
         ;;
       --system-baseline) system_baseline=1 ;;
+      --install-methods) [[ $# -ge 2 ]] || fatal "--install-methods requires a value"; export DOTFILES_INSTALL_METHODS="$2"; shift ;;
       --dry-run) dry_run=1 ;;
       --skip-docker) skip_docker=1 ;;
       --skip-fonts) skip_fonts=1 ;;
@@ -114,6 +119,9 @@ main() {
     esac
     shift
   done
+  if [[ -n "${DOTFILES_INSTALL_METHODS:-}" ]]; then
+    validate_install_methods "$DOTFILES_INSTALL_METHODS" || fatal "Invalid installation methods"
+  fi
   profile="$(dotfiles_profile "$profile")" || fatal "Unknown profile"
   [[ "$profile" == server || "$system_baseline" == 0 ]] || fatal "--system-baseline requires --profile server"
   if [[ -n "$editor_languages" ]]; then
@@ -174,6 +182,15 @@ main() {
 
   confirm "Continue with installation?" || { warn "Aborted."; exit 0; }
 
+  if ! command -v python3 >/dev/null 2>&1; then
+    case "$os" in
+      macos) brew install python ;;
+      *) sudo apt-get update; sudo apt-get install -y --no-install-recommends python3 ;;
+    esac
+  fi
+  report_init
+  trap report_location EXIT
+
   export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
   if [[ "$os" == macos ]]; then
     for prefix in /opt/homebrew /usr/local; do
@@ -208,39 +225,38 @@ main() {
   esac
 
   if [[ "$skip_fonts" == "1" ]]; then
+    python3 "$SCRIPT_DIR/install-tools.py" --record firacode --reason "disabled by --skip-fonts or server profile"
     warn "Skipped font installation."
   elif [[ "$os" != "wsl" ]]; then
     log "Installing FiraCode Nerd Font..."
-    bash "$SCRIPT_DIR/install-fonts.sh"
+    report_optional firacode bash "$SCRIPT_DIR/install-fonts.sh"
   else
+    python3 "$SCRIPT_DIR/install-tools.py" --record firacode --reason "WSL: install the font on Windows"
     warn "On WSL, install FiraCode Nerd Font on the Windows host."
   fi
 
+  local plugins_ok=1
   if [[ "$install_shell_plugins" == "1" ]]; then
-    prepare_zsh_plugin_parents || fatal "Unsafe shell plugin parent"
     log "Installing pinned zsh plugins..."
     plugin_dir="$HOME/.local/share/zsh/plugins"
     for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
-      if install_pinned_plugin "$plugin" "$plugin_dir"; then
+      if python3 "$SCRIPT_DIR/install-tools.py" --step "$plugin" -- "$SCRIPT_DIR/install-plugin.sh" "$plugin" "$plugin_dir"; then
         success "installed $plugin"
       else
-        fatal "Could not install pinned plugin: $plugin"
+        plugins_ok=0
+        warn "Could not install optional plugin: $plugin"
       fi
     done
-
-
   else
+    python3 "$SCRIPT_DIR/install-tools.py" --record shell-plugins --reason "disabled by --no-shell-plugins"
     warn "Skipped Zsh plugin installation."
   fi
-
-    if [[ "$install_tpm" == 1 ]]; then
-    log "Installing pinned tmux plugin manager..."
-    if install_pinned_plugin tmux-tpm "$HOME/.tmux/plugins"; then
-      success "installed tmux TPM"
-    else
-      fatal "Could not install pinned tmux TPM"
-    fi
-    fi
+  if [[ "$install_tpm" == 1 ]]; then
+    if python3 "$SCRIPT_DIR/install-tools.py" --step tmux-tpm -- "$SCRIPT_DIR/install-plugin.sh" tmux-tpm "$HOME/.tmux/plugins"; then
+      mkdir -p "$HOME/.local/state/dotfiles"
+      printf 'installed\n' > "$HOME/.local/state/dotfiles/tpm"
+    else warn "Could not install optional tmux TPM"; fi
+  fi
 
   log "Applying dotfiles..."
   if [[ -f "$SCRIPT_DIR/../home/dot_zshrc" ]]; then
@@ -249,24 +265,24 @@ main() {
     dotfiles_dir="$DOTFILES_DIR"
     [[ -d "$dotfiles_dir/.git" ]] || git clone "$DOTFILES_REPO" "$dotfiles_dir"
   fi
-  "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
+  python3 "$SCRIPT_DIR/install-tools.py" --step apply-dotfiles -- "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
 
   if [[ "$install_code_extensions" == "1" ]]; then
     install_vscode_extensions "$dotfiles_dir/extensions.txt"
   else
+    python3 "$SCRIPT_DIR/install-tools.py" --record vscode-extensions --reason "disabled by option or server profile"
     warn "Skipped VS Code extension installation."
   fi
 
   if [[ "$setup_editor" == 1 ]]; then
     if [[ -n "$editor_languages" ]]; then
-      "$dotfiles_dir/scripts/setup-editor.sh" "${selected_languages[@]}"
+      report_optional editor-setup "$dotfiles_dir/scripts/setup-editor.sh" "${selected_languages[@]}"
     else
-      "$dotfiles_dir/scripts/setup-editor.sh"
+      report_optional editor-setup "$dotfiles_dir/scripts/setup-editor.sh"
     fi
   fi
   mkdir -p "$HOME/.local/state/dotfiles"
-  if [[ "$install_shell_plugins" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/shell-plugins"; else printf 'skipped\n' > "$HOME/.local/state/dotfiles/shell-plugins"; fi
-  if [[ "$install_tpm" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/tpm"; fi
+  if [[ "$install_shell_plugins" == 1 && "$plugins_ok" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/shell-plugins"; else printf 'skipped\n' > "$HOME/.local/state/dotfiles/shell-plugins"; fi
 
   if [[ "$os" == macos ]]; then
     current_shell="$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')"
@@ -274,7 +290,7 @@ main() {
     current_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
   fi
   if [[ "$configure_shell" == "1" && "$current_shell" != *"zsh"* ]]; then
-    zsh_path="$(command -v zsh)"
+    zsh_path="$(command -v zsh || true)"
     if [[ -n "$zsh_path" ]]; then
       grep -Fxq "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
       if confirm "Change default shell to Zsh?"; then

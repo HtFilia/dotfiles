@@ -1,0 +1,623 @@
+{
+  "date": "2026-10-13",
+  "scope": "isolated Linux test home",
+  "tools": [
+    {
+      "tool": "actionlint",
+      "validated_methods": [
+        "github",
+        "source"
+      ],
+      "version": "1.7.12",
+      "sources": [
+        "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz SHA256=8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+        "https://github.com/rhysd/actionlint.git ref=v1.7.12 commit=914e7df21a07ef503a81201c76d2b11c789d3fca"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "atuin",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "bat",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "biome",
+      "validated_methods": [
+        "native"
+      ],
+      "version": "Version: 2.5.14",
+      "sources": [],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "broot",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "btop",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "chezmoi",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "chezmoi version v2.72.2, commit 125d00fe730fc9abf456ec312ba85b18c859bc50, built at 2026-09-13T18:23:26Z, built by goreleaser",
+      "sources": [
+        "https://github.com/twpayne/chezmoi/releases/download/v2.72.2/chezmoi_2.72.2_linux_amd64.tar.gz SHA256=a2be1b8bcdf06c6f173e070bb3ddbcc52c50478fe9b57f6e6c63d15c7cff4f03"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "czkawka_cli",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "delta",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "delta 0.19.2",
+      "sources": [
+        "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-x86_64-unknown-linux-gnu.tar.gz SHA256=8e695c5f586a8c53d6c3b01be0b4a422ed218bfed2a56191caebe373a1c18ab2"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "direnv",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "dua",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "duf",
+      "validated_methods": [
+        "github",
+        "source"
+      ],
+      "version": "duf 0.9.1 (b2f01a1ecbfd) (built on 2025-09-08)",
+      "sources": [
+        "https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_linux_x86_64.tar.gz SHA256=5add851e7062c5e56939abb664705e4d14fa2d06289490aff31d51f153832de7",
+        "https://github.com/muesli/duf.git ref=v0.9.1 commit=b2f01a1ecbfd1af63015b83296c50a95260f97b1"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "dust",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "Dust 1.2.5",
+      "sources": [
+        "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-unknown-linux-gnu.tar.gz SHA256=64b16f5c10cc4c25d2eaa144e9d2d44b3ed8f72ee63b3bc0a92c85e21e9e0932"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "eza",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "eza eza - A modern, maintained replacement for ls",
+      "sources": [
+        "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-gnu.tar.gz SHA256=35c70c5c43c29108075e58b893234c67ef585f0b53a7eaf8e9e7d4eec9f339b4"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "fastfetch",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "fd",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "fd 10.5.0",
+      "sources": [
+        "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-unknown-linux-musl.tar.gz SHA256=761c72dc8e120d85b22292063be8a796e2eeb20eb3e4f38b8fa2343ccf3514a7"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "fzf",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "gitleaks",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "8.30.1",
+      "sources": [
+        "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz SHA256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "go",
+      "validated_methods": [
+        "native"
+      ],
+      "version": "go version go1.27.1 linux/amd64",
+      "sources": [
+        "https://go.dev/dl/go1.27.1.linux-amd64.tar.gz SHA256=63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "hexyl",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "hyperfine",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "jc",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "jless",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "jq",
+      "validated_methods": [],
+      "version": "jq-1.7",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "existing executable"
+    },
+    {
+      "tool": "just",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "just 1.58.0",
+      "sources": [
+        "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz SHA256=4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "lazydocker",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "lazygit",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "commit=17cb09fa7b08bc96d9f0e81b91f4720fc1a36700, build date=2026-09-13T05:42:30Z, build source=binaryRelease, version=0.65.1, os=linux, arch=amd64, git version=2.51.1",
+      "sources": [
+        "https://github.com/jesseduffield/lazygit/releases/download/v0.65.1/lazygit_0.65.1_linux_x86_64.tar.gz SHA256=02beacbcda0fa342e50ae3480ba8147307353af3fb28e1d5f790e02329c201a6"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "mise",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "2026.9.10 linux-x64 (2026-09-16)",
+      "sources": [
+        "https://github.com/jdx/mise/releases/download/v2026.9.10/mise-v2026.9.10-linux-x64 SHA256=f917e52216924ef0a8b4eca3f7004dfcff3b94665716ac5685fd53006a491eee"
+      ],
+      "failures": [
+        {
+          "method": "native",
+          "reason": "Cargo is absent in the test environment."
+        }
+      ],
+      "status": "validated"
+    },
+    {
+      "tool": "node",
+      "validated_methods": [
+        "native"
+      ],
+      "version": "v26.9.0",
+      "sources": [
+        "https://nodejs.org/dist/v26.9.0/node-v26.9.0-linux-x64.tar.xz SHA256=c6ecd8efc1c1d395265891675319da7a7b3785c6be174bd78933cf4f057624d1"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "nvim",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "ouch",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "ov",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "pastel",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "pnpm",
+      "validated_methods": [
+        "native"
+      ],
+      "version": "12.4.2",
+      "sources": [],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "rg",
+      "validated_methods": [],
+      "version": "ripgrep 15.2.0 (rev e89fff89ac)",
+      "sources": [],
+      "failures": [],
+      "status": "existing executable"
+    },
+    {
+      "tool": "sd",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "sd 1.0.0",
+      "sources": [
+        "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-gnu.tar.gz SHA256=3613eca74cd686739bb5a6d68319aa56c747e7315274d02323a2ca2b1c5d82d2"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "shellcheck",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "ShellCheck - shell script analysis tool",
+      "sources": [
+        "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz SHA256=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "shfmt",
+      "validated_methods": [
+        "source"
+      ],
+      "version": "3.10.0",
+      "sources": [
+        "https://github.com/mvdan/sh.git ref=v3.10.0 commit=392da98b03853d889822bc2f62d61f4f92f37fa4"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "starship",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "starship 1.26.0",
+      "sources": [
+        "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-gnu.tar.gz SHA256=321f0dd7af8340a5f2e6a8fec6538a04f617486f9ec70d878f91c09cd8deef22"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "tldr",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "uv",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "uv 0.12.15 (x86_64-unknown-linux-gnu)",
+      "sources": [
+        "https://github.com/astral-sh/uv/releases/download/0.12.15/uv-x86_64-unknown-linux-gnu.tar.gz SHA256=f97935763c04be3e692460a7aaeaaab8fc3b78fcf8b389da820b38ae7423a638"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "viu",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "vivid",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "watchexec",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "xcp",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "xh",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    },
+    {
+      "tool": "yazi",
+      "validated_methods": [
+        "github"
+      ],
+      "version": "Yazi",
+      "sources": [
+        "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-gnu.zip SHA256=a02fe91d3304294048c681f010f1100856872a4e98ecf6927328e888d40a6ad2"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "yq",
+      "validated_methods": [
+        "github",
+        "source"
+      ],
+      "version": "yq (https://github.com/mikefarah/yq/) version v4.53.6",
+      "sources": [
+        "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_amd64 SHA256=c5f056448f973ae7d39b5401949648a78f2dc1947d6a8eb65be60d5c504b9385",
+        "https://github.com/mikefarah/yq.git ref=v4.53.6 commit=c14f446382944492701b16c1ddb48bb9dbe683e3"
+      ],
+      "failures": [],
+      "status": "validated"
+    },
+    {
+      "tool": "zoxide",
+      "validated_methods": [],
+      "version": "",
+      "sources": [],
+      "failures": [
+        {
+          "method": "github",
+          "reason": "Artifact download returned HTTP 403 in this test environment."
+        }
+      ],
+      "status": "failed"
+    }
+  ]
+}

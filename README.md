@@ -6,7 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A reproducible development and SSH administration environment for macOS,
-Debian/Ubuntu and WSL. Bash handles installation; Chezmoi manages user
+Debian/Ubuntu and WSL. Bash orchestrates setup, Python handles independent tool
+installation and reports, and Chezmoi manages user
 configuration. Workstations and servers share shell, Git, tmux and Neovim
 configuration, with explicit profile differences and host-local overrides.
 
@@ -87,6 +88,16 @@ Shell plugins are installed by default. TPM is optional through `--with-tpm`.
 `--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
 extensions. Docker-group membership is opt-in with `--enable-docker-group` and
 grants root-equivalent access. See [installation](docs/INSTALLATION.md).
+
+### Installation fallbacks and reports
+
+Workstation utilities now have independent installation attempts. Select their
+order with `--install-methods native,github,source` (or a subset). Optional failures
+are recorded and do not stop configuration deployment. Every run prints the path
+to its Markdown/JSON report, including successful methods, observed versions,
+failed attempts and logs. See [installation methods](docs/INSTALL-METHODS.md) for
+coverage, prerequisites and source-build limits. The repository and deployed
+`AGENTS.additional.md` / `CLAUDE.additional.md` explain efficient agent usage.
 
 ## Apply and update
 

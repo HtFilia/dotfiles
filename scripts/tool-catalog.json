@@ -1,0 +1,1180 @@
+[
+  {
+    "name": "git",
+    "apt": "git",
+    "brew": "git",
+    "repo": "git/git",
+    "build": "git",
+    "bins": [
+      "git"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v2.47.0"
+  },
+  {
+    "name": "curl",
+    "apt": "curl",
+    "brew": "curl",
+    "repo": "curl/curl",
+    "build": "autotools",
+    "bins": [
+      "curl"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "curl-8_10_1"
+  },
+  {
+    "name": "zsh",
+    "apt": "zsh",
+    "brew": "zsh",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "zsh"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "python3",
+    "apt": "python3",
+    "brew": "python@3.14",
+    "repo": "python/cpython",
+    "build": "autotools",
+    "bins": [
+      "python3"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v3.14.7"
+  },
+  {
+    "name": "rustup",
+    "brew": "rustup",
+    "repo": "rust-lang/rustup",
+    "build": null,
+    "bins": [
+      "rustup-init"
+    ],
+    "probe_name": "rustup-init",
+    "platforms": [
+      "darwin"
+    ],
+    "probe": [
+      "--version"
+    ]
+  },
+  {
+    "name": "go",
+    "apt": "golang-go",
+    "brew": "go",
+    "repo": "golang/go",
+    "build": "go-runtime",
+    "bins": [
+      "go",
+      "gofmt"
+    ],
+    "runtime": "go",
+    "probe": [
+      "version"
+    ],
+    "asset": "go-linux-amd64",
+    "member": "go",
+    "ref": "go1.27.1"
+  },
+  {
+    "name": "node",
+    "apt": "nodejs",
+    "brew": "node",
+    "repo": "nodejs/node",
+    "build": "node-runtime",
+    "bins": [
+      "node",
+      "npm",
+      "npx"
+    ],
+    "runtime": "node",
+    "asset": "node-linux-x86_64",
+    "member": "node",
+    "ref": "v26.9.0"
+  },
+  {
+    "name": "rustc",
+    "apt": "rustc",
+    "brew": "rust",
+    "repo": "rust-lang/rust",
+    "build": null,
+    "bins": [
+      "rustc"
+    ],
+    "note": "Rust compiler bootstrapping is not automated; use native packages or an existing rustup toolchain."
+  },
+  {
+    "name": "cargo",
+    "apt": "cargo",
+    "brew": "rust",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "cargo"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. Supplied with the Rust toolchain; no standalone source bootstrap."
+  },
+  {
+    "name": "starship",
+    "apt": null,
+    "brew": "starship",
+    "repo": "starship/starship",
+    "build": "cargo",
+    "bins": [
+      "starship"
+    ],
+    "asset": "starship-linux-x86_64",
+    "member": "starship",
+    "ref": "v1.26.0",
+    "crate": "starship"
+  },
+  {
+    "name": "eza",
+    "apt": "eza",
+    "brew": "eza",
+    "repo": "eza-community/eza",
+    "build": "cargo",
+    "bins": [
+      "eza"
+    ],
+    "asset": "eza-linux-x86_64",
+    "member": "eza",
+    "ref": "v0.23.5",
+    "crate": "eza"
+  },
+  {
+    "name": "uv",
+    "apt": null,
+    "brew": "uv",
+    "repo": "astral-sh/uv",
+    "build": "cargo",
+    "bins": [
+      "uv",
+      "uvx"
+    ],
+    "asset": "uv-linux-x86_64",
+    "member": "uv",
+    "ref": "0.12.15",
+    "pip": "uv"
+  },
+  {
+    "name": "delta",
+    "apt": "git-delta",
+    "brew": "git-delta",
+    "repo": "dandavison/delta",
+    "build": "cargo",
+    "bins": [
+      "delta"
+    ],
+    "asset": "delta-linux-x86_64",
+    "member": "delta",
+    "ref": "0.19.2",
+    "crate": "git-delta"
+  },
+  {
+    "name": "lazygit",
+    "apt": "lazygit",
+    "brew": "lazygit",
+    "repo": "jesseduffield/lazygit",
+    "build": "go",
+    "bins": [
+      "lazygit"
+    ],
+    "asset": "lazygit-linux-x86_64",
+    "member": "lazygit",
+    "ref": "v0.65.1",
+    "ldflags": "-X main.version={version} -X main.buildSource=git"
+  },
+  {
+    "name": "chezmoi",
+    "apt": "chezmoi",
+    "brew": "chezmoi",
+    "repo": "twpayne/chezmoi",
+    "build": "chezmoi",
+    "bins": [
+      "chezmoi"
+    ],
+    "asset": "chezmoi-linux-amd64",
+    "member": "chezmoi",
+    "ref": "v2.72.2"
+  },
+  {
+    "name": "just",
+    "apt": "just",
+    "brew": "just",
+    "repo": "casey/just",
+    "build": "cargo",
+    "bins": [
+      "just"
+    ],
+    "asset": "just-linux-x86_64",
+    "member": "just",
+    "ref": "1.58.0",
+    "crate": "just"
+  },
+  {
+    "name": "mise",
+    "apt": null,
+    "brew": "mise",
+    "repo": "jdx/mise",
+    "build": "cargo",
+    "bins": [
+      "mise"
+    ],
+    "asset": "mise-linux-x86_64",
+    "member": "@binary",
+    "ref": "v2026.9.10",
+    "crate": "mise"
+  },
+  {
+    "name": "yazi",
+    "apt": "yazi",
+    "brew": "yazi",
+    "repo": "sxyazi/yazi",
+    "build": "cargo",
+    "bins": [
+      "yazi",
+      "ya"
+    ],
+    "asset": "yazi-linux-x86_64",
+    "member": "yazi",
+    "ref": "v26.9.1",
+    "crate": "yazi"
+  },
+  {
+    "name": "yq",
+    "apt": null,
+    "brew": "yq",
+    "repo": "mikefarah/yq",
+    "build": "go",
+    "bins": [
+      "yq"
+    ],
+    "asset": "yq-linux-amd64",
+    "member": "@binary",
+    "ref": "v4.53.6",
+    "ldflags": ""
+  },
+  {
+    "name": "sd",
+    "apt": "sd",
+    "brew": "sd",
+    "repo": "chmln/sd",
+    "build": "cargo",
+    "bins": [
+      "sd"
+    ],
+    "asset": "sd-linux-x86_64",
+    "member": "sd",
+    "ref": "v1.1.0",
+    "crate": "sd"
+  },
+  {
+    "name": "dust",
+    "apt": "du-dust",
+    "brew": "dust",
+    "repo": "bootandy/dust",
+    "build": "cargo",
+    "bins": [
+      "dust"
+    ],
+    "asset": "dust-linux-x86_64",
+    "member": "dust",
+    "ref": "v1.2.5",
+    "crate": "du-dust"
+  },
+  {
+    "name": "duf",
+    "apt": "duf",
+    "brew": "duf",
+    "repo": "muesli/duf",
+    "build": "go",
+    "bins": [
+      "duf"
+    ],
+    "asset": "duf-linux-x86_64",
+    "member": "duf",
+    "ref": "v0.9.1",
+    "ldflags": "-X main.Version={version}"
+  },
+  {
+    "name": "hyperfine",
+    "apt": "hyperfine",
+    "brew": "hyperfine",
+    "repo": "sharkdp/hyperfine",
+    "build": "cargo",
+    "bins": [
+      "hyperfine"
+    ],
+    "asset": "hyperfine-linux-x86_64",
+    "member": "hyperfine",
+    "ref": "v1.20.0",
+    "crate": "hyperfine"
+  },
+  {
+    "name": "watchexec",
+    "apt": null,
+    "brew": "watchexec",
+    "repo": "watchexec/watchexec",
+    "build": "cargo",
+    "bins": [
+      "watchexec"
+    ],
+    "asset": "watchexec-linux-x86_64",
+    "member": "watchexec",
+    "ref": "v2.7.3",
+    "crate": "watchexec"
+  },
+  {
+    "name": "xh",
+    "apt": null,
+    "brew": "xh",
+    "repo": "ducaale/xh",
+    "build": "cargo",
+    "bins": [
+      "xh"
+    ],
+    "asset": "xh-linux-x86_64",
+    "member": "xh",
+    "ref": "v0.26.2",
+    "crate": "xh"
+  },
+  {
+    "name": "lazydocker",
+    "apt": null,
+    "brew": "lazydocker",
+    "repo": "jesseduffield/lazydocker",
+    "build": "go",
+    "bins": [
+      "lazydocker"
+    ],
+    "asset": "lazydocker-linux-x86_64",
+    "member": "lazydocker",
+    "ref": "v0.25.2",
+    "ldflags": "-X main.version={version} -X main.buildSource=git"
+  },
+  {
+    "name": "gitleaks",
+    "apt": "gitleaks",
+    "brew": "gitleaks",
+    "repo": "gitleaks/gitleaks",
+    "build": "go",
+    "bins": [
+      "gitleaks"
+    ],
+    "probe": [
+      "version"
+    ],
+    "asset": "gitleaks-linux-x64",
+    "member": "gitleaks",
+    "ref": "v8.30.1",
+    "ldflags": "-X github.com/zricethezav/gitleaks/v8/version.Version={version}"
+  },
+  {
+    "name": "actionlint",
+    "apt": null,
+    "brew": "actionlint",
+    "repo": "rhysd/actionlint",
+    "build": "go",
+    "bins": [
+      "actionlint"
+    ],
+    "source_path": "./cmd/actionlint",
+    "asset": "actionlint-linux-amd64",
+    "member": "actionlint",
+    "ref": "v1.7.12",
+    "ldflags": "-X github.com/rhysd/actionlint.version={version}"
+  },
+  {
+    "name": "nvim",
+    "apt": "neovim",
+    "brew": "neovim",
+    "repo": "neovim/neovim",
+    "build": "neovim",
+    "bins": [
+      "nvim"
+    ],
+    "runtime": "nvim",
+    "asset": "neovim-linux-x86_64",
+    "member": "nvim",
+    "ref": "v0.12.5"
+  },
+  {
+    "name": "tokei",
+    "apt": "tokei",
+    "brew": "tokei",
+    "repo": "XAMPPRocky/tokei",
+    "build": "cargo",
+    "bins": [
+      "tokei"
+    ],
+    "version": "15.0.0",
+    "ref": "v15.0.0",
+    "release_pattern": "tokei-{arch}-unknown-{os}-gnu.tar.gz",
+    "crate": "tokei"
+  },
+  {
+    "name": "fzf",
+    "apt": "fzf",
+    "brew": "fzf",
+    "repo": "junegunn/fzf",
+    "build": "go",
+    "bins": [
+      "fzf"
+    ],
+    "group": "extra",
+    "asset": "fzf-linux-x86_64",
+    "member": "fzf",
+    "ref": "v0.74.4",
+    "ldflags": "-X main.version={version} -X main.revision=dotfiles"
+  },
+  {
+    "name": "rg",
+    "apt": "ripgrep",
+    "brew": "ripgrep",
+    "repo": "BurntSushi/ripgrep",
+    "build": "cargo",
+    "bins": [
+      "rg"
+    ],
+    "group": "extra",
+    "asset": "rg-linux-x86_64",
+    "member": "rg",
+    "ref": "15.2.0",
+    "crate": "ripgrep"
+  },
+  {
+    "name": "bat",
+    "apt": "bat",
+    "brew": "bat",
+    "repo": "sharkdp/bat",
+    "build": "cargo",
+    "bins": [
+      "bat"
+    ],
+    "group": "extra",
+    "aliases": [
+      "batcat"
+    ],
+    "asset": "bat-linux-x86_64",
+    "member": "bat",
+    "ref": "v0.26.1",
+    "crate": "bat"
+  },
+  {
+    "name": "fd",
+    "apt": "fd-find",
+    "brew": "fd",
+    "repo": "sharkdp/fd",
+    "build": "cargo",
+    "bins": [
+      "fd"
+    ],
+    "group": "extra",
+    "aliases": [
+      "fdfind"
+    ],
+    "asset": "fd-linux-x86_64",
+    "member": "fd",
+    "ref": "v10.5.0",
+    "crate": "fd-find"
+  },
+  {
+    "name": "zoxide",
+    "apt": "zoxide",
+    "brew": "zoxide",
+    "repo": "ajeetdsouza/zoxide",
+    "build": "cargo",
+    "bins": [
+      "zoxide"
+    ],
+    "group": "extra",
+    "asset": "zoxide-linux-x86_64",
+    "member": "zoxide",
+    "ref": "v0.10.0",
+    "crate": "zoxide"
+  },
+  {
+    "name": "atuin",
+    "apt": null,
+    "brew": "atuin",
+    "repo": "atuinsh/atuin",
+    "build": "cargo",
+    "bins": [
+      "atuin"
+    ],
+    "group": "extra",
+    "asset": "atuin-linux-x86_64",
+    "member": "atuin",
+    "ref": "v18.22.0",
+    "crate": "atuin"
+  },
+  {
+    "name": "direnv",
+    "apt": "direnv",
+    "brew": "direnv",
+    "repo": "direnv/direnv",
+    "build": "go",
+    "bins": [
+      "direnv"
+    ],
+    "group": "extra",
+    "asset": "direnv-linux-x86_64",
+    "member": "@binary",
+    "ref": "v2.37.1"
+  },
+  {
+    "name": "jq",
+    "apt": "jq",
+    "brew": "jq",
+    "repo": "jqlang/jq",
+    "build": "jq",
+    "bins": [
+      "jq"
+    ],
+    "group": "extra",
+    "asset": "jq-linux-x86_64",
+    "member": "@binary",
+    "ref": "jq-1.8.2"
+  },
+  {
+    "name": "btop",
+    "apt": "btop",
+    "brew": "btop",
+    "repo": "aristocratos/btop",
+    "build": "btop",
+    "bins": [
+      "btop"
+    ],
+    "group": "extra",
+    "asset": "btop-linux-x86_64",
+    "member": "btop",
+    "ref": "v1.4.7"
+  },
+  {
+    "name": "tmux",
+    "apt": "tmux",
+    "brew": "tmux",
+    "repo": "tmux/tmux",
+    "build": "tmux",
+    "bins": [
+      "tmux"
+    ],
+    "group": "extra",
+    "probe": [
+      "-V"
+    ],
+    "asset": "tmux-linux-x86_64",
+    "member": "@tmux",
+    "ref": "3.7c"
+  },
+  {
+    "name": "ouch",
+    "apt": null,
+    "brew": "ouch",
+    "repo": "ouch-org/ouch",
+    "build": "cargo",
+    "bins": [
+      "ouch"
+    ],
+    "group": "extra",
+    "asset": "ouch-linux-x86_64",
+    "member": "ouch",
+    "ref": "0.8.3",
+    "crate": "ouch"
+  },
+  {
+    "name": "ov",
+    "apt": null,
+    "brew": "ov",
+    "repo": "noborus/ov",
+    "build": "go",
+    "bins": [
+      "ov"
+    ],
+    "group": "extra",
+    "asset": "ov-linux-x86_64",
+    "member": "ov",
+    "ref": "v0.54.0",
+    "ldflags": "-X main.Version={version}"
+  },
+  {
+    "name": "hexyl",
+    "apt": "hexyl",
+    "brew": "hexyl",
+    "repo": "sharkdp/hexyl",
+    "build": "cargo",
+    "bins": [
+      "hexyl"
+    ],
+    "group": "extra",
+    "asset": "hexyl-linux-x86_64",
+    "member": "hexyl",
+    "ref": "v0.17.0",
+    "crate": "hexyl"
+  },
+  {
+    "name": "dua",
+    "apt": "dua-cli",
+    "brew": "dua-cli",
+    "repo": "Byron/dua-cli",
+    "build": "cargo",
+    "bins": [
+      "dua"
+    ],
+    "group": "extra",
+    "asset": "dua-linux-x86_64",
+    "member": "dua",
+    "ref": "v2.45.0",
+    "crate": "dua-cli"
+  },
+  {
+    "name": "broot",
+    "apt": null,
+    "brew": "broot",
+    "repo": "Canop/broot",
+    "build": "cargo",
+    "bins": [
+      "broot"
+    ],
+    "group": "extra",
+    "asset": "broot-linux-x86_64",
+    "member": "x86_64-unknown-linux-musl/broot",
+    "ref": "v1.60.1",
+    "crate": "broot"
+  },
+  {
+    "name": "czkawka_cli",
+    "apt": "czkawka",
+    "brew": "czkawka",
+    "repo": "qarmin/czkawka",
+    "build": "cargo",
+    "bins": [
+      "czkawka_cli"
+    ],
+    "group": "extra",
+    "asset": "czkawka_cli-linux-x86_64",
+    "member": "@binary",
+    "ref": "12.0.2"
+  },
+  {
+    "name": "xcp",
+    "apt": null,
+    "brew": "xcp",
+    "repo": "tarka/xcp",
+    "build": "cargo",
+    "bins": [
+      "xcp"
+    ],
+    "group": "extra",
+    "asset": "xcp-linux-x86_64",
+    "member": "xcp",
+    "ref": "xcp-v0.24.8",
+    "crate": "xcp"
+  },
+  {
+    "name": "viu",
+    "apt": null,
+    "brew": "viu",
+    "repo": "atanunq/viu",
+    "build": "cargo",
+    "bins": [
+      "viu"
+    ],
+    "group": "extra",
+    "asset": "viu-linux-x86_64",
+    "member": "@binary",
+    "ref": "v1.6.1",
+    "crate": "viu"
+  },
+  {
+    "name": "vivid",
+    "apt": null,
+    "brew": "vivid",
+    "repo": "sharkdp/vivid",
+    "build": "cargo",
+    "bins": [
+      "vivid"
+    ],
+    "group": "extra",
+    "asset": "vivid-linux-x86_64",
+    "member": "vivid",
+    "ref": "v0.11.1",
+    "crate": "vivid"
+  },
+  {
+    "name": "pastel",
+    "apt": null,
+    "brew": "pastel",
+    "repo": "sharkdp/pastel",
+    "build": "cargo",
+    "bins": [
+      "pastel"
+    ],
+    "group": "extra",
+    "asset": "pastel-linux-x86_64",
+    "member": "pastel",
+    "ref": "v0.12.0",
+    "crate": "pastel"
+  },
+  {
+    "name": "tldr",
+    "apt": "tealdeer",
+    "brew": "tealdeer",
+    "repo": "tealdeer-rs/tealdeer",
+    "build": "cargo",
+    "bins": [
+      "tldr"
+    ],
+    "group": "extra",
+    "asset": "tldr-linux-x86_64",
+    "member": "@binary",
+    "ref": "v1.9.0",
+    "crate": "tealdeer"
+  },
+  {
+    "name": "jc",
+    "apt": "jc",
+    "brew": "jc",
+    "repo": "kellyjonbrazil/jc",
+    "build": "jc",
+    "bins": [
+      "jc"
+    ],
+    "group": "extra",
+    "asset": "jc-linux-x86_64",
+    "member": "jc",
+    "ref": "v1.25.7"
+  },
+  {
+    "name": "jless",
+    "apt": null,
+    "brew": "jless",
+    "repo": "PaulJuliusMartinez/jless",
+    "build": "cargo",
+    "bins": [
+      "jless"
+    ],
+    "group": "extra",
+    "asset": "jless-linux-x86_64",
+    "member": "jless",
+    "ref": "v0.9.0",
+    "crate": "jless"
+  },
+  {
+    "name": "fastfetch",
+    "apt": null,
+    "brew": "fastfetch",
+    "repo": "fastfetch-cli/fastfetch",
+    "build": "fastfetch",
+    "bins": [
+      "fastfetch"
+    ],
+    "group": "extra",
+    "asset": "fastfetch-linux-x86_64",
+    "member": "usr/bin/fastfetch",
+    "ref": "2.68.1",
+    "release_pattern": "fastfetch-{os}-{arch}.tar.gz"
+  },
+  {
+    "name": "wget",
+    "apt": "wget",
+    "brew": "wget",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "wget"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "tree",
+    "apt": "tree",
+    "brew": "tree",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "tree"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "htop",
+    "apt": "htop",
+    "brew": "htop",
+    "repo": "htop-dev/htop",
+    "build": "autotools",
+    "bins": [
+      "htop"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "3.3.0"
+  },
+  {
+    "name": "shellcheck",
+    "apt": "shellcheck",
+    "brew": "shellcheck",
+    "repo": "koalaman/shellcheck",
+    "build": "stack",
+    "bins": [
+      "shellcheck"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v0.10.0",
+    "release_pattern": "shellcheck-*.{os}.{arch}.tar.xz",
+    "version": "0.10.0"
+  },
+  {
+    "name": "shfmt",
+    "apt": "shfmt",
+    "brew": "shfmt",
+    "repo": "mvdan/sh",
+    "build": "go",
+    "bins": [
+      "shfmt"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v3.10.0",
+    "release_pattern": "shfmt_*_{os}_{goarch}",
+    "release_binary": true,
+    "source_path": "./cmd/shfmt",
+    "version": "3.10.0"
+  },
+  {
+    "name": "bats",
+    "apt": "bats",
+    "brew": "bats-core",
+    "repo": "bats-core/bats-core",
+    "build": "bats",
+    "bins": [
+      "bats"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v1.11.0"
+  },
+  {
+    "name": "gh",
+    "apt": "gh",
+    "brew": "gh",
+    "repo": "cli/cli",
+    "build": "gh",
+    "bins": [
+      "gh"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v2.60.0",
+    "release_pattern": "gh_*_{os}_{goarch}.tar.gz"
+  },
+  {
+    "name": "zstd",
+    "apt": "zstd",
+    "brew": "zstd",
+    "repo": "facebook/zstd",
+    "build": "make-install",
+    "bins": [
+      "zstd"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "v1.5.6"
+  },
+  {
+    "name": "sponge",
+    "apt": "moreutils",
+    "brew": "moreutils",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "sponge",
+      "ts",
+      "vidir"
+    ],
+    "probe": [
+      "--help"
+    ],
+    "note": "moreutils supplies sponge, ts and vidir; its upstream is not on GitHub.",
+    "probe_exit_codes": [
+      0,
+      1
+    ],
+    "presence_only": true
+  },
+  {
+    "name": "chafa",
+    "apt": "chafa",
+    "brew": "chafa",
+    "repo": "hpjansson/chafa",
+    "build": "autotools",
+    "bins": [
+      "chafa"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "ref": "1.14.4"
+  },
+  {
+    "name": "parallel",
+    "apt": "parallel",
+    "brew": "parallel",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "parallel"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "cmatrix",
+    "apt": "cmatrix",
+    "brew": "cmatrix",
+    "repo": "abishekvashok/cmatrix",
+    "build": "autotools",
+    "bins": [
+      "cmatrix"
+    ],
+    "probe": [
+      "-V"
+    ],
+    "ref": "v2.0"
+  },
+  {
+    "name": "cava",
+    "apt": "cava",
+    "brew": "cava",
+    "repo": "karlstav/cava",
+    "build": "autotools",
+    "bins": [
+      "cava"
+    ],
+    "probe": [
+      "-v"
+    ],
+    "ref": "0.10.3"
+  },
+  {
+    "name": "ffmpeg",
+    "apt": "ffmpeg",
+    "brew": "ffmpeg",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "ffmpeg"
+    ],
+    "probe": [
+      "-version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "7z",
+    "apt": "7zip",
+    "brew": "7zip",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "7z"
+    ],
+    "probe": [
+      "i"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "xclip",
+    "apt": "xclip",
+    "brew": "xclip",
+    "repo": "astrand/xclip",
+    "build": "autotools",
+    "bins": [
+      "xclip"
+    ],
+    "probe": [
+      "-version"
+    ],
+    "ref": "0.13"
+  },
+  {
+    "name": "rustfmt",
+    "apt": "rustfmt",
+    "brew": "rust",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "rustfmt"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "cargo-clippy",
+    "apt": "rust-clippy",
+    "brew": "rust",
+    "repo": null,
+    "build": null,
+    "bins": [
+      "cargo-clippy"
+    ],
+    "probe": [
+      "--version"
+    ],
+    "note": "No supported official GitHub artifact/source recipe; use the native package. "
+  },
+  {
+    "name": "pnpm",
+    "apt": null,
+    "brew": "pnpm",
+    "repo": "pnpm/pnpm",
+    "build": null,
+    "bins": [
+      "pnpm"
+    ],
+    "npm": "pnpm",
+    "version": "12.4.2",
+    "note": "pnpm source development needs pnpm itself; use npm or a verified upstream release."
+  },
+  {
+    "name": "biome",
+    "apt": null,
+    "brew": "biome",
+    "repo": "biomejs/biome",
+    "build": "cargo",
+    "bins": [
+      "biome"
+    ],
+    "npm": "@biomejs/biome",
+    "version": "2.5.14",
+    "source_bin": "biome",
+    "note": "Cargo builds the CLI in crates/biome_cli.",
+    "cargo_package": "biome_cli",
+    "ref": "@biomejs/biome@2.5.14"
+  },
+  {
+    "name": "colima",
+    "brew": "colima",
+    "repo": "abiosoft/colima",
+    "build": "go",
+    "ref": "v0.8.1",
+    "bins": [
+      "colima"
+    ],
+    "platforms": [
+      "darwin"
+    ],
+    "probe": [
+      "version"
+    ]
+  },
+  {
+    "name": "docker",
+    "brew": "docker",
+    "repo": "docker/cli",
+    "build": null,
+    "bins": [
+      "docker"
+    ],
+    "platforms": [
+      "darwin"
+    ],
+    "note": "Docker service stack is managed separately on Linux."
+  },
+  {
+    "name": "docker-compose",
+    "brew": "docker-compose",
+    "repo": "docker/compose",
+    "build": null,
+    "bins": [
+      "docker-compose"
+    ],
+    "platforms": [
+      "darwin"
+    ]
+  },
+  {
+    "name": "docker-buildx",
+    "brew": "docker-buildx",
+    "repo": "docker/buildx",
+    "build": null,
+    "bins": [
+      "docker-buildx"
+    ],
+    "platforms": [
+      "darwin"
+    ],
+    "probe": [
+      "version"
+    ]
+  },
+  {
+    "name": "ghostty",
+    "brew": "ghostty",
+    "cask": true,
+    "repo": "ghostty-org/ghostty",
+    "build": null,
+    "bins": [
+      "ghostty"
+    ],
+    "platforms": [
+      "darwin"
+    ]
+  },
+  {
+    "name": "code",
+    "brew": "visual-studio-code",
+    "cask": true,
+    "repo": "microsoft/vscode",
+    "build": null,
+    "bins": [
+      "code"
+    ],
+    "platforms": [
+      "darwin"
+    ]
+  },
+  {
+    "name": "font-fira-code-nerd-font",
+    "brew": "font-fira-code-nerd-font",
+    "cask": true,
+    "repo": "ryanoasis/nerd-fonts",
+    "build": null,
+    "bins": [],
+    "platforms": [
+      "darwin"
+    ]
+  }
+]
