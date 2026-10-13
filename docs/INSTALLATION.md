@@ -75,3 +75,10 @@ are not supplied by the profile's package manager.
 The server profile installs Atuin, ncdu, tealdeer and htop from Debian packages.
 Atuin history stays local and Ctrl-r returns selections for editing. `tldr`
 may need an explicit `tldr --update` to populate general pages.
+
+## Workstation fallback methods
+
+Use `--install-methods native,github,source` or an ordered subset to choose
+installation channels. Every run generates a Markdown/JSON report with versions,
+methods and failed attempts. Optional failures allow the bootstrap to continue.
+See [method coverage and reports](INSTALL-METHODS.md).

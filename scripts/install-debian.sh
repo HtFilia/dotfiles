@@ -1,272 +1,55 @@
 #!/usr/bin/env bash
-# Install packages on Debian/Ubuntu or WSL with pinned direct downloads.
-
+# Independent workstation installs with native/GitHub/source fallbacks.
 set -euo pipefail
-
-ENV_TYPE="linux"
-if [[ $# -gt 0 && "$1" != --* ]]; then
-  ENV_TYPE="$1"
-  shift
-fi
-ENABLE_DOCKER_GROUP=0
-SKIP_DOCKER=0
-SKIP_PACKAGES=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/pinned-assets.sh
-. "$SCRIPT_DIR/pinned-assets.sh"
-
-log() { printf "\033[0;34m==>\033[0m %s\n" "$*"; }
-success() { printf "\033[0;32m  +\033[0m %s\n" "$*"; }
-info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
-warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
-fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
-
-usage() {
-  cat <<EOF
-Usage: $0 [linux|wsl] [--enable-docker-group] [--skip-docker] [--skip-packages]
-
-Options:
-  --enable-docker-group   add the current user to the root-equivalent docker group
-  --skip-docker           do not install Docker
-EOF
-}
-
-while [[ $# -gt 0 ]]; do
+# shellcheck source=scripts/preflight.sh
+. "$SCRIPT_DIR/preflight.sh"
+# shellcheck source=scripts/install-report.sh
+. "$SCRIPT_DIR/install-report.sh"
+ENV_TYPE=linux
+if [[ $# -gt 0 && "$1" != --* ]]; then ENV_TYPE="$1"; shift; fi
+skip_packages=0 skip_docker=0 enable_docker_group=0
+methods="${DOTFILES_INSTALL_METHODS:-github,native,source}"
+while (( $# )); do
   case "$1" in
-    --enable-docker-group) ENABLE_DOCKER_GROUP=1 ;;
-    --skip-docker) SKIP_DOCKER=1 ;;
-    --skip-packages) SKIP_PACKAGES=1 ;;
-    -h|--help) usage; exit 0 ;;
-    *) fatal "Unknown argument: $1" ;;
+    --skip-packages) skip_packages=1 ;;
+    --skip-docker) skip_docker=1 ;;
+    --enable-docker-group) enable_docker_group=1 ;;
+    --methods) [[ $# -ge 2 ]] || exit 2; methods="$2"; shift ;;
+    -h|--help) printf 'Usage: %s [linux|wsl] [--methods github,native,source] [--skip-packages] [--skip-docker] [--enable-docker-group]\n' "$0"; exit 0 ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
   esac
   shift
 done
-
-[[ "$ENV_TYPE" == linux || "$ENV_TYPE" == wsl ]] || fatal "Expected linux or wsl"
-# shellcheck disable=SC1091
-. "$SCRIPT_DIR/preflight.sh"
+[[ "$ENV_TYPE" == linux || "$ENV_TYPE" == wsl ]] || exit 2
+# Validate the order before touching the host.
+validate_install_methods "$methods"
+(( ! enable_docker_group || (! skip_docker && ! skip_packages) )) || { printf 'Docker group requires Docker package installation.\n' >&2; exit 2; }
 preflight_linux workstation
-
-LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
-DOWNLOAD_DIR="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"
-mkdir -p "$LOCAL_BIN" "$DOWNLOAD_DIR"
-export PATH="$LOCAL_BIN:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
-
-ARCH="$(pinned_asset_arch)" || fatal "Unsupported architecture: $(uname -m)"
-GO_ARCH="$(pinned_asset_go_arch)" || fatal "Unsupported Go architecture: $(uname -m)"
-[[ "$ARCH" == "x86_64" ]] || fatal "Pinned Linux assets currently support x86_64 only."
-
-work_dir="$(mktemp -d)"
-trap 'rm -rf "$work_dir"' EXIT
-
-install_from_archive() {
-  local key="$1" member="$2" dest="$3" archive tmp file
-  file="$(pinned_asset_field "$key" file)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
-  tmp="$(mktemp -d "$work_dir/extract.XXXXXX")"
-  extract_pinned_archive "$archive" "$tmp" || { rm -rf "$tmp"; fatal "Unsupported archive type: $file"; }
-  local found
-  local -a matches=()
-  while IFS= read -r -d '' found; do matches+=("$found"); done < <(find "$tmp" -type f -name "$member" -print0)
-  [[ "${#matches[@]}" == 1 ]] || { rm -rf "$tmp"; fatal "Could not find $member in $file"; }
-  atomic_install_binary "${matches[0]}" "$dest"
-  rm -rf "$tmp"
-  success "installed $(basename "$dest")"
-}
-
-install_binary_asset() {
-  local key="$1" dest="$2" archive file
-  file="$(pinned_asset_field "$key" file)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
-  atomic_install_binary "$archive" "$dest"
-  success "installed $(basename "$dest")"
-}
-
-install_archive_if_needed() {
-  local tool="$1" key="$2" member="$3" dest="$4" version_cmd="${5:---version}"
-  asset_version_matches "$tool" "$key" "$version_cmd" || install_from_archive "$key" "$member" "$dest"
-}
-
-install_binary_if_needed() {
-  local tool="$1" key="$2" dest="$3" version_cmd="${4:---version}"
-  asset_version_matches "$tool" "$key" "$version_cmd" || install_binary_asset "$key" "$dest"
-}
-
-install_yazi() {
-  install_from_archive "yazi-linux-$ARCH" yazi "$LOCAL_BIN/yazi"
-  install_from_archive "yazi-linux-$ARCH" ya "$LOCAL_BIN/ya"
-}
-
-install_tokei() {
-  command -v cargo >/dev/null 2>&1 || fatal "cargo is required to install tokei"
-  local rust_version
-  rust_version="$(rustc --version | awk '{print $2}')"
-  if [[ "$(printf '%s\n' 1.85.0 "$rust_version" | sort -V | head -1)" != 1.85.0 ]]; then
-    warn "tokei build needs Rust >=1.85; skipped optional counter (use a project toolchain)."
-    return 0
-  fi
-  cargo install --locked --version "$(pinned_asset_field tokei-cargo version)" tokei
-}
-
-tokei_version_matches() {
-  command -v tokei >/dev/null 2>&1 || return 1
-  asset_version_matches tokei tokei-cargo
-}
-
-install_runtime() {
-  local tool="$1" key="$2" member="$3" version archive stage destination
-  version="$(pinned_asset_field "$key" version)"
-  archive="$(cached_asset_path "$key" "$DOWNLOAD_DIR")" || fatal "Download/checksum failed: $key"
-  mkdir -p "$HOME/.local/opt"
-  destination="$HOME/.local/opt/$tool-$version"
-  if [[ ! -x "$destination/$member" ]]; then
-    stage="$(mktemp -d "$HOME/.local/opt/$tool-stage.XXXXXX")"
-    if ! tar -xf "$archive" -C "$stage" --strip-components=1 || [[ ! -x "$stage/$member" ]]; then
-      rm -rf "$stage"
-      fatal "Invalid runtime archive: $key"
-    fi
-    [[ ! -e "$destination" ]] || { rm -rf "$stage"; fatal "Incomplete runtime directory: $destination"; }
-    mv "$stage" "$destination"
-  fi
-  ln -sfn "$destination/$member" "$LOCAL_BIN/$tool"
-}
-install_neovim() { install_runtime nvim "neovim-linux-$ARCH" bin/nvim; }
-install_go() {
-  install_runtime go "go-linux-$GO_ARCH" bin/go
-  ln -sfn "$(dirname "$(readlink "$LOCAL_BIN/go")")/gofmt" "$LOCAL_BIN/gofmt"
-}
-install_node() {
-  install_runtime node "node-linux-$ARCH" bin/node
-  local binary directory
-  directory="$(dirname "$(readlink "$LOCAL_BIN/node")")"
-  for binary in npm npx corepack; do
-    [[ ! -x "$directory/$binary" ]] || ln -sfn "$directory/$binary" "$LOCAL_BIN/$binary"
-  done
-}
-
-if [[ -f /etc/os-release ]]; then
-  # shellcheck disable=SC1091
-  . /etc/os-release
-  info "Detected: ${PRETTY_NAME:-$ID}"
+if ! command -v python3 >/dev/null; then
+  (( ! skip_packages )) || { printf 'python3 is essential; install it before --skip-packages.\n' >&2; exit 1; }
+  sudo apt-get update
+  sudo apt-get install -y --no-install-recommends python3
 fi
-OS_ID="${ID:-debian}"
-OS_CODENAME="${VERSION_CODENAME:-}"
-
-if [[ "$SKIP_PACKAGES" == 0 ]]; then
-log "Updating apt repositories..."
-sudo apt update
-
-log "Installing packages from apt..."
-sudo apt install -y \
-  build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
-  pkg-config libssl-dev python3 python3-pip python3-venv jq tree htop fontconfig \
-  xclip ripgrep fd-find bat fzf zoxide direnv rustc cargo rustfmt rust-clippy shellcheck shfmt bats btop zstd moreutils chafa parallel cmatrix cava ffmpeg 7zip \
-  libevent-dev libncurses-dev byacc ncurses-term ncurses-bin less bsdextrautils
-success "apt packages installed"
+python3 "$SCRIPT_DIR/install-tools.py" --methods "$methods" --dry-run >/dev/null
+report_init
+trap report_location EXIT
+export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
+if (( ! skip_packages )); then
+  report_optional apt-index sudo apt-get update
+  # Build prerequisites are best effort; missing libraries are explained by each build's log.
+  report_optional build-prerequisites sudo apt-get install -y --no-install-recommends \
+    build-essential ca-certificates unzip xz-utils pkg-config libssl-dev python3-pip python3-venv \
+    autoconf automake libtool cmake ninja-build gettext libevent-dev libncurses-dev byacc \
+    ncurses-term ncurses-bin less bsdextrautils fontconfig gnupg lsb-release
 fi
-
-if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
-  ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"
-fi
-if command -v batcat >/dev/null 2>&1 && ! command -v bat >/dev/null 2>&1; then
-  ln -sf "$(command -v batcat)" "$LOCAL_BIN/bat"
-fi
-
-install_archive_if_needed starship "starship-linux-$ARCH" starship "$LOCAL_BIN/starship"
-install_archive_if_needed eza "eza-linux-$ARCH" eza "$LOCAL_BIN/eza"
-install_archive_if_needed uv "uv-linux-$ARCH" uv "$LOCAL_BIN/uv"
-install_archive_if_needed uvx "uv-linux-$ARCH" uvx "$LOCAL_BIN/uvx"
-install_archive_if_needed delta "delta-linux-$ARCH" delta "$LOCAL_BIN/delta"
-install_archive_if_needed lazygit "lazygit-linux-$ARCH" lazygit "$LOCAL_BIN/lazygit"
-install_archive_if_needed chezmoi "chezmoi-linux-$GO_ARCH" chezmoi "$LOCAL_BIN/chezmoi"
-install_archive_if_needed just "just-linux-$ARCH" just "$LOCAL_BIN/just"
-install_binary_if_needed mise "mise-linux-$ARCH" "$LOCAL_BIN/mise"
-if ! asset_version_matches yazi "yazi-linux-$ARCH" --version || ! command -v ya >/dev/null 2>&1; then
-  install_yazi
-fi
-install_binary_if_needed yq "yq-linux-$GO_ARCH" "$LOCAL_BIN/yq"
-install_archive_if_needed sd "sd-linux-$ARCH" sd "$LOCAL_BIN/sd"
-install_archive_if_needed dust "dust-linux-$ARCH" dust "$LOCAL_BIN/dust"
-install_archive_if_needed duf "duf-linux-$ARCH" duf "$LOCAL_BIN/duf"
-install_archive_if_needed hyperfine "hyperfine-linux-$ARCH" hyperfine "$LOCAL_BIN/hyperfine"
-tokei_version_matches || install_tokei
-install_archive_if_needed watchexec "watchexec-linux-$ARCH" watchexec "$LOCAL_BIN/watchexec"
-install_archive_if_needed xh "xh-linux-$ARCH" xh "$LOCAL_BIN/xh"
-install_archive_if_needed lazydocker "lazydocker-linux-$ARCH" lazydocker "$LOCAL_BIN/lazydocker"
-install_archive_if_needed gitleaks "gitleaks-linux-x64" gitleaks "$LOCAL_BIN/gitleaks" version
-install_archive_if_needed actionlint "actionlint-linux-$GO_ARCH" actionlint "$LOCAL_BIN/actionlint"
-
-if ! asset_version_matches nvim "neovim-linux-$ARCH" --version; then
-  install_neovim
-fi
-if ! asset_version_matches go "go-linux-$GO_ARCH" version; then
-  install_go
-fi
-if ! asset_version_matches node "node-linux-$ARCH" --version; then
-  install_node
-fi
-"$SCRIPT_DIR/install-extra-tools.sh"
-# Explicit versions avoid a nonfunctional, uncached Corepack shim.
-# shellcheck source=scripts/runtime-versions.sh
-. "$SCRIPT_DIR/runtime-versions.sh"
-node_prefix="$(dirname "$(dirname "$(readlink "$LOCAL_BIN/node")")")"
-npm install --global --prefix "$node_prefix" "pnpm@$PNPM_VERSION" "@biomejs/biome@$BIOME_VERSION"
-for tool in pnpm pnpx biome; do
-  [[ ! -e "$node_prefix/bin/$tool" ]] || ln -sfn "$node_prefix/bin/$tool" "$LOCAL_BIN/$tool"
-done
-pnpm --version
-biome --version
-
-if [[ "$SKIP_DOCKER" == "1" ]]; then
-  warn "Skipped Docker installation."
-elif [[ "$SKIP_PACKAGES" == "1" ]]; then
-  warn "Skipped Docker package/repository changes (--skip-packages)."
-elif [[ "$ENV_TYPE" == "wsl" ]]; then
-  warn "WSL detected: install Docker Desktop and VS Code on Windows with WSL integration."
+args=(--methods "$methods")
+(( ! skip_packages )) || args+=(--skip-packages)
+(( ! skip_docker )) || args+=(--exclude lazydocker)
+python3 "$SCRIPT_DIR/install-tools.py" "${args[@]}"
+if (( skip_docker || skip_packages )) || [[ "$ENV_TYPE" == wsl ]]; then
+  python3 "$SCRIPT_DIR/install-tools.py" --record docker --reason "Docker APT setup disabled (skip-docker=$skip_docker, skip-packages=$skip_packages, environment=$ENV_TYPE)"
 else
-  docker_packages_ready=1
-  for package in docker-ce docker-ce-cli docker-compose-plugin docker-buildx-plugin; do
-    [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" == "install ok installed" ]] || docker_packages_ready=0
-  done
-  if [[ "$docker_packages_ready" == 1 ]] && command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && docker buildx version >/dev/null 2>&1; then
-    :
-  else
-    case "$OS_ID" in
-      debian|ubuntu) ;;
-      *) fatal "Docker apt repository is configured only for Debian/Ubuntu, detected $OS_ID" ;;
-    esac
-    log "Installing Docker from official apt repository..."
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_ID $OS_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-  fi
+  report_optional docker "$SCRIPT_DIR/install-docker.sh" "$ENV_TYPE" "$skip_docker" "$skip_packages" "$enable_docker_group"
 fi
-
-if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_PACKAGES" == 1 ]]; then
-  fatal "--enable-docker-group requires package changes; omit --skip-packages"
-fi
-if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]]; then
-  getent group docker >/dev/null || fatal "Docker group is absent; install the engine first."
-  sudo usermod -aG docker "$(id -un)"
-  warn "Docker group grants root-equivalent access; log out/in."
-fi
-
-if [[ "$SKIP_PACKAGES" == 1 ]]; then
-  warn "Skipped GitHub CLI package/repository changes (--skip-packages)."
-elif ! command -v gh >/dev/null 2>&1; then
-  log "Installing GitHub CLI from official apt repository..."
-  sudo mkdir -p -m 755 /etc/apt/keyrings
-  wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
-  sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
-  sudo apt update
-  sudo apt install -y gh
-fi
-
-warn "Claude Code is not installed automatically."
-warn "Ghostty has no official Debian package; install it manually from your trusted channel."
-success "Debian/WSL setup complete."
+printf 'Workstation tool installation complete; review optional failures in the report.\n'

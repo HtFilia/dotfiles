@@ -1,99 +1,60 @@
 #!/usr/bin/env bash
-# Install macOS packages via Homebrew. Direct upstream shell installers are not run.
-
+# Homebrew-native workstation installation, with independent CLI fallbacks.
 set -euo pipefail
-
-log() { printf "\033[0;34m==>\033[0m %s\n" "$*"; }
-success() { printf "\033[0;32m  +\033[0m %s\n" "$*"; }
-info() { printf "\033[0;36m  i\033[0m %s\n" "$*"; }
-warn() { printf "\033[0;33m  !\033[0m %s\n" "$*" >&2; }
-fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
-
-START_COLIMA=0
-SKIP_FONTS=0
-SKIP_DOCKER=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-BREWFILE="$REPO_ROOT/Brewfile"
-usage() {
-  cat <<EOF
-Usage: $0 [--start-colima] [--skip-fonts] [--skip-docker]
-
-Options:
-  --start-colima   start Colima and enable its Homebrew service
-EOF
-}
-
-while [[ $# -gt 0 ]]; do
+# shellcheck source=scripts/install-report.sh
+. "$SCRIPT_DIR/install-report.sh"
+start_colima=0 skip_fonts=0 skip_docker=0
+methods="${DOTFILES_INSTALL_METHODS:-native,github,source}"
+while (( $# )); do
   case "$1" in
-    --skip-fonts) SKIP_FONTS=1 ;;
-    --skip-docker) SKIP_DOCKER=1 ;;
-    --start-colima) START_COLIMA=1 ;;
-    -h|--help) usage; exit 0 ;;
-    *) fatal "Unknown argument: $1" ;;
+    --start-colima) start_colima=1 ;;
+    --skip-fonts) skip_fonts=1 ;;
+    --skip-docker) skip_docker=1 ;;
+    --methods) [[ $# -ge 2 ]] || exit 2; methods="$2"; shift ;;
+    -h|--help) printf 'Usage: %s [--methods native,github,source] [--start-colima] [--skip-fonts] [--skip-docker]\n' "$0"; exit 0 ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
   esac
   shift
 done
-
+validate_install_methods "$methods"
 if ! xcode-select -p >/dev/null 2>&1; then
-  log "Installing Xcode Command Line Tools..."
   xcode-select --install
-  info "Re-run this script once Xcode CLT installation completes."
+  printf 'Finish Command Line Tools installation, then rerun.\n'
   exit 2
 fi
-
-if ! command -v brew >/dev/null 2>&1; then
-  fatal "Homebrew is required. Install it manually from https://brew.sh, then re-run."
-fi
-
-info "Homebrew already installed; updating..."
-brew update
-
-[[ -f "$BREWFILE" ]] || fatal "Brewfile not found: $BREWFILE"
-temporary_brewfile="$(mktemp)"
-trap 'rm -f "$temporary_brewfile"' EXIT
-awk -v fonts="$SKIP_FONTS" -v docker="$SKIP_DOCKER" '
-  fonts == 1 && /font-fira-code-nerd-font/ { next }
-  docker == 1 && /brew "(docker|docker-compose|docker-buildx|colima|lazydocker)"/ { next }
-  { print }
-' "$BREWFILE" >"$temporary_brewfile"
-BREWFILE="$temporary_brewfile"
-log "Installing Homebrew bundle..."
-brew bundle install --file "$BREWFILE"
-success "Homebrew bundle satisfied"
-
+command -v brew >/dev/null || { printf 'Homebrew is required; install from https://brew.sh.\n' >&2; exit 1; }
+command -v python3 >/dev/null || brew install python
+python3 "$SCRIPT_DIR/install-tools.py" --methods "$methods" --dry-run >/dev/null
+report_init
+trap report_location EXIT
+report_optional brew-index brew update
+# Brewfile remains authoritative for the selection; catalog supplies fallback recipes.
+selection="$(python3 - "$SCRIPT_DIR/.." "$skip_fonts" "$skip_docker" <<'PY'
+import json,re,sys
+from pathlib import Path
+root=Path(sys.argv[1])
+packages=set(re.findall(r'^(?:brew|cask) "([^"]+)"', (root/'Brewfile').read_text(),re.M))
+if sys.argv[2]=='1': packages.discard('font-fira-code-nerd-font')
+if sys.argv[3]=='1': packages -= {'docker','docker-compose','docker-buildx','colima','lazydocker'}
+catalog=json.loads((root/'scripts/tool-catalog.json').read_text())
+print(','.join(t['name'] for t in catalog if t.get('brew') in packages))
+PY
+)"
+python3 "$SCRIPT_DIR/install-tools.py" --only "$selection" --methods "$methods" --reinstall
 if command -v rustup-init >/dev/null 2>&1 && ! rustup show active-toolchain >/dev/null 2>&1; then
-  log "Initializing Rust toolchain..."
-  rustup-init -y --no-modify-path --default-toolchain stable
+  report_optional rust-toolchain rustup-init -y --no-modify-path --default-toolchain stable
 fi
-
-if [[ "$SKIP_DOCKER" == 0 ]]; then
-log "Wiring Docker CLI plugins..."
-mkdir -p "$HOME/.docker/cli-plugins"
-brew_prefix="$(brew --prefix)"
-for plugin in docker-compose docker-buildx; do
-  target="$brew_prefix/opt/${plugin}/bin/${plugin}"
-  link="$HOME/.docker/cli-plugins/${plugin}"
-  if [[ -x "$target" ]]; then
-    ln -sfn "$target" "$link"
-    success "linked $plugin"
-  else
-    warn "Skipped $plugin; binary not found at $target"
+if (( ! skip_docker )); then
+  mkdir -p "$HOME/.docker/cli-plugins"
+  brew_prefix="$(brew --prefix)"
+  for plugin in docker-compose docker-buildx; do
+    target="$brew_prefix/opt/$plugin/bin/$plugin"
+    [[ ! -x "$target" ]] || ln -sfn "$target" "$HOME/.docker/cli-plugins/$plugin"
+  done
+  if (( start_colima )) && command -v colima >/dev/null; then
+    report_optional colima-start colima start --cpu 2 --memory 4 --disk 60
+    report_optional colima-service brew services start colima
   fi
-done
-
-if [[ "$START_COLIMA" == "1" ]] && command -v colima >/dev/null 2>&1; then
-  if ! colima status >/dev/null 2>&1; then
-    log "Starting Colima..."
-    colima start --cpu 2 --memory 4 --disk 60 || warn "Colima failed to start."
-  fi
-  if ! brew services list | grep -q "^colima .*started"; then
-    brew services start colima || warn "Could not enable colima as a service."
-  fi
-elif command -v colima >/dev/null 2>&1; then
-  warn "Colima installed but not started. Re-run with --start-colima to enable it."
 fi
-
-fi
-warn "Claude Code is not installed automatically; install it manually if you accept its upstream installer."
-success "macOS setup complete."
+printf 'macOS tool installation complete; review optional failures in the report.\n'

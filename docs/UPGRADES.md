@@ -11,7 +11,8 @@ just verify
 
 `just update` continues to update configuration only. `just tools-update` updates
 the supported OS packages and provisions the versions recorded in this checkout.
-It does not silently rewrite pins to whatever upstream publishes next week.
+Pinned downloads keep their reviewed versions. Selected extra/platform GitHub
+assets use the official latest-release digest and record that version.
 Review newer versions and checksums in `scripts/pinned-assets.sh`, regenerate
 `docs/ASSET-MANIFEST.md` with `just assets`, and test before committing changes.
 
@@ -29,8 +30,8 @@ Debian/Ubuntu packages follow the latest available versions in the configured
 supported distribution repositories; they are not all the latest upstream source
 releases. This deliberately preserves distro ownership of system components.
 
-macOS runs `brew update` and `brew bundle install`, allowing upgrades even when
-all declared tools were already installed. Homebrew formula/cask versions follow
+macOS runs `brew update`, then installs/upgrades each selected Homebrew package
+independently, using `Brewfile` for selection and the tool catalog for fallbacks. Homebrew formula/cask versions follow
 Homebrew. Windows host application updates are separate from WSL package updates.
 
 The current runtime selections are Node 26.9.0, Go 1.27.1, managed Python 3.14.7,
@@ -40,8 +41,8 @@ with uv under the user account; `/usr/bin/python3` remains owned by the distro.
 Node moves from the previous Node 24 baseline to current stable Node 26. Projects
 requiring Node 24 should declare that version with mise. Lockfiles are not rewritten.
 
-pnpm is installed explicitly into the versioned Node prefix, rather than leaving
-an unhydrated Corepack shim. Python project packages and arbitrary third-party
+pnpm and Biome install into separate managed npm prefixes, independent of the
+Node runtime and its Corepack shims. Python project packages and arbitrary third-party
 global tools are not mass-upgraded; their project lockfiles remain authoritative.
 
 New direct assets use publisher GitHub release SHA256 digests where available.
@@ -61,4 +62,8 @@ socket, avoiding disruption to existing sessions.
 The official sd v1.1.0 release still reports `sd 1.0.0` because its workspace
 metadata retains that package version. Verification therefore checks the expected
 reported string and the SHA256 of the binary extracted from the v1.1.0 archive.
-It does not accept an arbitrary old sd 1.0.0 binary.
+The strict verification command does not accept an arbitrary old sd 1.0.0 binary.
+The workstation installer now also supports source/distro installations, whose
+origin and observed version are recorded in its report.
+
+See [installation methods and reports](INSTALL-METHODS.md) for fallback controls.

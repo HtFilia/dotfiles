@@ -2,14 +2,14 @@
     defaultBranch = main
 
 [core]
-    editor = nvim
+    editor = "f() { if command -v nvim >/dev/null 2>&1; then nvim \"$@\"; else vi \"$@\"; fi; }; f"
     autocrlf = input
-    pager = delta
+    pager = "if command -v delta >/dev/null 2>&1; then delta; else less -FRX; fi"
     excludesfile = ~/.config/git/ignore
     attributesfile = ~/.config/git/attributes
 
 [interactive]
-    diffFilter = delta --color-only
+    diffFilter = "if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi"
 
 [delta]
     navigate = true
