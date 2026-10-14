@@ -44,9 +44,10 @@ run() {
   else "$@"; fi
 }
 if [[ "$profile" == workstation ]]; then
+  # Bash 3.2 treats empty arrays as unset under nounset; expand only populated arrays.
   selection_args=()
   (( dry_run )) || selection_args+=(--save)
-  resolve_tool_selection "${selection_args[@]}"
+  resolve_tool_selection ${selection_args[@]+"${selection_args[@]}"}
   if [[ ",$DOTFILES_INSTALL_METHODS," != *,native,* ]]; then skip_packages=1; fi
 fi
 if (( ! dry_run )); then
@@ -77,7 +78,7 @@ case "$(uname -s)" in
         languages_csv="$(IFS=,; printf '%s' "${languages[*]}")"
         args+=(--editor-languages "$languages_csv")
       fi
-      run "$SCRIPT_DIR/install-server.sh" "${args[@]}"
+      run "$SCRIPT_DIR/install-server.sh" ${args[@]+"${args[@]}"}
       if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
         run "$SCRIPT_DIR/setup-editor.sh" "${languages[@]}"
       fi

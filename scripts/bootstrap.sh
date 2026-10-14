@@ -135,7 +135,8 @@ main() {
   profile="$(dotfiles_profile "$profile")" || fatal "Unknown profile"
   [[ "$profile" == server || "$system_baseline" == 0 ]] || fatal "--system-baseline requires --profile server"
   if [[ -n "$editor_languages" ]]; then
-    [[ "$editor_languages" =~ ^(lua|python|go|rust|node|shell)(,(lua|python|go|rust|node|shell))*$ ]] || fatal "Invalid editor language list"
+    local language_pattern='^(lua|python|go|rust|node|shell)(,(lua|python|go|rust|node|shell))*$'
+    [[ "$editor_languages" =~ $language_pattern ]] || fatal "Invalid editor language list"
     local language
     IFS=, read -ra selected_languages <<< "$editor_languages"
     for language in "${selected_languages[@]}"; do
@@ -186,7 +187,7 @@ main() {
     (( ! skip_docker )) || selection_exclusions+=(docker docker-compose docker-buildx colima lazydocker)
     (( ! skip_fonts )) || selection_exclusions+=(font-fira-code-nerd-font)
     if (( ${#selection_exclusions[@]} )); then selection_args+=(--exclude "$(IFS=,; printf '%s' "${selection_exclusions[*]}")"); fi
-    resolve_tool_selection "${selection_args[@]}"
+    resolve_tool_selection ${selection_args[@]+"${selection_args[@]}"}
     if ! tool_selected docker; then skip_docker=1; fi
     if ! tool_selected font-fira-code-nerd-font; then skip_fonts=1; fi
     if ! tool_selected zsh; then install_shell_plugins=0; fi
@@ -258,14 +259,14 @@ main() {
       [[ "$start_colima" == "1" ]] && macos_args+=(--start-colima)
       [[ "$skip_fonts" == "1" ]] && macos_args+=(--skip-fonts)
       [[ "$skip_docker" == "1" ]] && macos_args+=(--skip-docker)
-      bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
+      bash "$SCRIPT_DIR/install-macos.sh" ${macos_args[@]+"${macos_args[@]}"}
       ;;
     linux|wsl)
       if [[ "$profile" == server ]]; then
         server_args=()
         [[ "$setup_editor" == "1" ]] && server_args+=(--setup-editor)
         [[ -z "$editor_languages" ]] || server_args+=(--editor-languages "$editor_languages")
-        bash "$SCRIPT_DIR/install-server.sh" "${server_args[@]}"
+        bash "$SCRIPT_DIR/install-server.sh" ${server_args[@]+"${server_args[@]}"}
         if (( system_baseline )); then "$SCRIPT_DIR/server-baseline.sh" --apply; fi
       else
       debian_args=("$os")
@@ -355,7 +356,7 @@ main() {
 
   guide_args=()
   [[ -z "$custom_tools" ]] || guide_args+=(--custom-tools "$custom_tools")
-  report_optional agent-guides python3 "$SCRIPT_DIR/generate-agent-guides.py" "${guide_args[@]}"
+  report_optional agent-guides python3 "$SCRIPT_DIR/generate-agent-guides.py" ${guide_args[@]+"${guide_args[@]}"}
 
   cat <<EOF
 

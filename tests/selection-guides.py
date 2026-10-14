@@ -155,6 +155,32 @@ class SelectionAndGuides(unittest.TestCase):
         path=self.home/'bad.json';path.write_text('{"command":"danger"}')
         result=self.run_cli('generate-agent-guides.py','--custom-tools',str(path))
         self.assertEqual(result.returncode,2);self.assertFalse((self.home/'AGENTS.additional.md').exists())
+    def test_default_bootstrap_preview_accepts_empty_optional_arguments(self):
+        result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--dry-run'],
+                              env=self.env,text=True,capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertIn('jq: native',result.stdout)
+        self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())
+    def test_macos_installer_reuses_saved_policy_without_optional_arguments(self):
+        fixture=self.home/'repo';shutil.copytree(ROOT/'scripts',fixture/'scripts')
+        shutil.copy(ROOT/'Brewfile',fixture/'Brewfile')
+        saved=self.run_cli('select-tools.py','--tools','none','--methods','github','--save')
+        self.assertEqual(saved.returncode,0,saved.stderr)
+        # Stub installation, but use the real selector and shell dispatch. No downloads.
+        dispatch=self.home/'dispatch'
+        with (fixture/'scripts/install-report.sh').open('a') as stream:
+            stream.write('\nreport_init() { :; }\n'
+                         'python3() { case "$1" in *install-tools.py) printf "%s\\n" "$@" > "$HOME/dispatch";; '
+                         '*select-tools.py) command python3 "$@";; *) return 99;; esac; }\n')
+        marker=self.home/'native-call';self.executable(self.bin/'brew',f'touch "{marker}"; exit 88')
+        result=subprocess.run(['bash',str(fixture/'scripts/install-macos.sh')],
+                              env=self.env,text=True,capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertFalse(marker.exists())
+        args=dispatch.read_text().splitlines()
+        self.assertEqual(set(args[args.index('--only')+1].split(',')),selector.REQUIRED)
+        self.assertEqual(args[args.index('--methods')+1],'github')
+
     def test_bootstrap_preview_resolves_only_selected_tools_and_policy(self):
         result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--tools','jq','--install-methods','github','--dry-run','--no-shell-plugins'],env=self.env,text=True,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)

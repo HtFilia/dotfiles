@@ -31,7 +31,7 @@ selection_exclusions=()
 (( ! skip_fonts )) || selection_exclusions+=(font-fira-code-nerd-font)
 (( ! skip_docker )) || selection_exclusions+=(docker docker-compose docker-buildx colima lazydocker)
 if (( ${#selection_exclusions[@]} )); then selection_args+=(--exclude "$(IFS=,; printf '%s' "${selection_exclusions[*]}")"); fi
-resolve_tool_selection "${selection_args[@]}" --save
+resolve_tool_selection ${selection_args[@]+"${selection_args[@]}"} --save
 methods="$DOTFILES_INSTALL_METHODS"
 if ! tool_selected docker; then skip_docker=1; fi
 if [[ ",$methods," == *,source,* ]] && ! xcode-select -p >/dev/null 2>&1; then
