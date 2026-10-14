@@ -9,6 +9,7 @@ import re
 import shlex
 import shutil
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('dotfiles_installer', ROOT / 'scripts/install-tools.py')
@@ -32,9 +33,16 @@ def custom_registry(path):
 
 
 def inventory(catalog, registry, env):
+    # Reuse the monitored runner without writing installer state into the home.
+    with tempfile.TemporaryDirectory(prefix='dotfiles-inventory-') as scratch:
+        probe = installer_module.Installer(installer_module.Report(scratch), [])
+        probe.env = dict(env)
+        probe.capture = lambda argv, **kwargs: probe.execute(argv, timeout=3, live=False, **kwargs)
+        return _inventory(catalog, registry, env, probe)
+
+
+def _inventory(catalog, registry, env, probe):
     path = env.get('PATH', '')
-    probe = installer_module.Installer.__new__(installer_module.Installer)
-    probe.env, probe.pins = dict(env), {}
     records = {}
     reserved = set()
     for tool in catalog:

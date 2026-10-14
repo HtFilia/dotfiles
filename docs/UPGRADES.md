@@ -66,4 +66,4 @@ The strict verification command does not accept an arbitrary old sd 1.0.0 binary
 The workstation installer now also supports source/distro installations, whose
 origin and observed version are recorded in its report.
 
-See [installation methods and reports](INSTALL-METHODS.md) for fallback controls.
+See [installation methods and reports](INSTALLATION.md) for fallback controls.

@@ -10,7 +10,7 @@ As your regular SSH user on supported Debian/Ubuntu x86_64:
 ```sh
 git clone git@github.com:HtFilia/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./scripts/bootstrap.sh --profile server --configure-shell --yes
+./scripts/bootstrap.sh --profile server --yes
 ./scripts/verify.sh --profile server
 ```
 

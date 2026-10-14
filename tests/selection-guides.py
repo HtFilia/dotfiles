@@ -86,20 +86,13 @@ class SelectionAndGuides(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         data=json.loads(result.stdout);self.assertNotIn('fzf',data['tools']);self.assertIn('git',data['tools'])
         self.assertEqual(json.loads(self.run_cli('select-tools.py').stdout),data)
-    @unittest.skipUnless(platform.system()=='Linux','Linux installer policy')
-    def test_disabled_native_never_calls_apt_and_installs_only_selected_tools(self):
-        fixture=self.home/'repo';shutil.copytree(ROOT/'scripts',fixture/'scripts')
-        (fixture/'scripts/preflight.sh').write_text('preflight_linux() { return 0; }\n')
-        version=subprocess.check_output(['bash','-c','source "$1"; pinned_asset_field chezmoi-linux-amd64 version','_',str(ROOT/'scripts/pinned-assets.sh')],text=True).strip()
-        self.executable(self.bin/'chezmoi',f'printf "chezmoi {version}\\n"')
-        marker=self.home/'native-call';self.executable(self.bin/'sudo',f'touch "{marker}"; exit 88')
-        result=subprocess.run(['bash',str(fixture/'scripts/install-debian.sh'),'--tools','none','--methods','github'],
-                              env=self.env,capture_output=True,text=True,timeout=15)
-        self.assertEqual(result.returncode,0,result.stdout+result.stderr);self.assertFalse(marker.exists())
-        reports=list((self.home/'.local/state/dotfiles/install-reports').glob('*/report.json'))
-        data=json.loads(reports[0].read_text())
-        actual={r['tool'] for r in data['tools'] if r['status']=='already-present'}
-        self.assertEqual(actual,selector.REQUIRED)
+    def test_disabled_native_never_authenticates_or_installs_packages(self):
+        installer=load('selection_installer','install-tools.py')
+        with patch.dict(os.environ,self.env), patch.object(installer.os,'geteuid',return_value=1000):
+            engine=installer.Installer(installer.Report(self.home/'report'),['github'])
+            with patch.object(engine,'run') as run, patch.object(installer.subprocess,'run') as auth:
+                engine.prepare_native([])
+            run.assert_not_called();auth.assert_not_called()
 
     def test_failed_known_binary_is_omitted(self):
         self.executable(self.bin/'broken','exit 7')
@@ -161,28 +154,18 @@ class SelectionAndGuides(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertIn('jq: native',result.stdout)
         self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())
-    def test_macos_installer_reuses_saved_policy_without_optional_arguments(self):
-        fixture=self.home/'repo';shutil.copytree(ROOT/'scripts',fixture/'scripts')
-        shutil.copy(ROOT/'Brewfile',fixture/'Brewfile')
+    def test_update_reuses_saved_selection_through_the_single_installer(self):
         saved=self.run_cli('select-tools.py','--tools','none','--methods','github','--save')
         self.assertEqual(saved.returncode,0,saved.stderr)
-        # Stub installation, but use the real selector and shell dispatch. No downloads.
-        dispatch=self.home/'dispatch'
-        with (fixture/'scripts/install-report.sh').open('a') as stream:
-            stream.write('\nreport_init() { :; }\n'
-                         'python3() { case "$1" in *install-tools.py) printf "%s\\n" "$@" > "$HOME/dispatch";; '
-                         '*select-tools.py) command python3 "$@";; *) return 99;; esac; }\n')
-        marker=self.home/'native-call';self.executable(self.bin/'brew',f'touch "{marker}"; exit 88')
-        result=subprocess.run(['bash',str(fixture/'scripts/install-macos.sh')],
+        result=subprocess.run(['bash',str(ROOT/'scripts/update-tools.sh'),'--profile','workstation','--dry-run'],
                               env=self.env,text=True,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
-        self.assertFalse(marker.exists())
-        args=dispatch.read_text().splitlines()
-        self.assertEqual(set(args[args.index('--only')+1].split(',')),selector.REQUIRED)
-        self.assertEqual(args[args.index('--methods')+1],'github')
+        self.assertIn('install-tools.py',result.stdout)
+        self.assertIn('--methods github',result.stdout)
+        self.assertNotIn('apt-get',result.stdout)
 
     def test_bootstrap_preview_resolves_only_selected_tools_and_policy(self):
-        result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--tools','jq','--install-methods','github','--dry-run','--no-shell-plugins'],env=self.env,text=True,capture_output=True,timeout=15)
+        result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--tools','jq','--install-methods','github','--dry-run'],env=self.env,text=True,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertIn('jq: github;',result.stdout);self.assertNotIn('cmatrix:',result.stdout)
         self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())

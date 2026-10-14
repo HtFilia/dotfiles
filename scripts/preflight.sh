@@ -13,6 +13,5 @@ preflight_linux() {
   esac
   if [[ "$profile" == workstation ]]; then
     (( EUID != 0 || ${2:-0} == 1 )) || { printf 'Run workstation bootstrap as your regular user.\n' >&2; return 1; }
-    command -v sudo >/dev/null || { printf 'sudo is required.\n' >&2; return 1; }
   fi
 }

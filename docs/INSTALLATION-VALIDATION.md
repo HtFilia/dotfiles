@@ -78,7 +78,7 @@ bash tests/script-contracts.sh
 
 Use a disposable home/environment for live installation tests. These commands intentionally install tools.
 For real-machine results, run the normal bootstrap and read its printed report path.
-The structured validation summary is in [INSTALLATION-VALIDATION.json](INSTALLATION-VALIDATION.json).
+This is a historical record of isolated artifact checks, not a guarantee that every catalog tool installs on every host. Current behavior and the failure policy are documented in [INSTALLATION.md](INSTALLATION.md).
 
 ## Runtime selection and guide generation follow-up
 
