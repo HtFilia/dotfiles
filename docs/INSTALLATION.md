@@ -56,8 +56,9 @@ terminal and in the log as it arrives. Quiet commands print elapsed time and the
 log location every 15 seconds. The default command limit is 300 seconds; builds
 may need an explicit allowance, e.g. `DOTFILES_INSTALL_TIMEOUT=1800 ./scripts/bootstrap.sh`.
 Git clones and downloads have shorter independent limits. Version probes have
-30-second limits; guide probes use three seconds. A timeout stops the process group
-and records a failure. Sudo authentication is visible and limited to 120 seconds.
+30-second limits; guide probes use three seconds. A timeout signals the process group and records a failure. Cleanup waits are
+bounded too; if the OS denies termination, the log identifies the process requiring
+administrator cleanup rather than hiding the timeout or waiting indefinitely. Sudo authentication is visible and limited to 120 seconds.
 
 ## Installation channels
 
