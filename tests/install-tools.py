@@ -132,12 +132,15 @@ class InstallerBehavior(unittest.TestCase):
         self.assertEqual(install.call_args.args[0]['name'],'sample');install.assert_called_once()
 
     def test_distribution_alias_is_recognized_without_package_installation(self):
-        self.executable(self.bin/'sample-dist','sample 0.5.0')
+        # macOS has /usr/bin/sample; use a name absent from the host's command set.
+        name='dotfiles-alias-fixture';alias=name+'-dist'
+        self.executable(self.bin/alias,'sample 0.5.0')
+        self.installer.methods=['native']
         with patch.object(self.installer,'native') as native:
-            self.assertTrue(self.installer.install(dict(self.tool,aliases=['sample-dist'])))
+            self.assertTrue(self.installer.install(dict(self.tool,name=name,bins=[name],aliases=[alias])))
         native.assert_not_called()
         self.assertEqual(self.report.data['tools'][0]['status'],'already-present')
-        self.assertFalse((self.bin/'sample').exists())
+        self.assertFalse((self.bin/name).exists())
 
     def test_existing_go_is_kept_with_gofmt_help_probe(self):
         tool=next(t for t in module.CATALOG if t['name']=='go')
