@@ -6,7 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A reproducible development and SSH administration environment for macOS,
-Debian/Ubuntu and WSL. Bash handles installation; Chezmoi manages user
+Debian/Ubuntu and WSL. Bash orchestrates setup, Python handles independent tool
+installation and reports, and Chezmoi manages user
 configuration. Workstations and servers share shell, Git, tmux and Neovim
 configuration, with explicit profile differences and host-local overrides.
 
@@ -36,8 +37,8 @@ restore.
 
 | Profile | Platform | Installed environment |
 |---|---|---|
-| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
-| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
+| Workstation | macOS with Homebrew and Xcode Command Line Tools | Selected CLI/editor/runtime tools; optional terminal, fonts and container setup |
+| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Selected CLI/editor/runtime tools; optional Docker Engine and fonts |
 | Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
 | Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
@@ -57,13 +58,15 @@ cd ~/.dotfiles
 ```
 
 Run as your regular development/SSH account. Linux package installation needs
-sudo. macOS requires Homebrew; if Command Line Tools installation is started,
-finish it and rerun bootstrap.
+sudo. macOS native installs use Homebrew. Finish requested build tools before source
+compilation. The workstation picker defaults to 13 practical/prerequisite tools;
+use `list` to inspect optional tools and choose fallback channels. See
+[selection and generated guides](docs/INSTALLATION.md) and [the tool audit](docs/TOOL-AUDIT.md).
 
 For a server:
 
 ```sh
-./scripts/bootstrap.sh --profile server --configure-shell --yes
+./scripts/bootstrap.sh --profile server --yes
 ./scripts/verify.sh --profile server
 ```
 
@@ -78,15 +81,19 @@ See [the VPS guide](docs/VPS-SERVER.md) for the system ownership boundary.
 Useful workstation choices:
 
 ```sh
-./scripts/bootstrap.sh --skip-docker --skip-fonts
-./scripts/bootstrap.sh --start-colima --configure-shell
-./scripts/bootstrap.sh --setup-editor
+./scripts/bootstrap.sh --tools rg,jq,fd --install-methods native,github --dry-run
+./scripts/bootstrap.sh --tools recommended --install-methods github --yes
 ```
 
-Shell plugins are installed by default. TPM is optional through `--with-tpm`.
-`--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
-extensions. Docker-group membership is opt-in with `--enable-docker-group` and
-grants root-equivalent access. See [installation](docs/INSTALLATION.md).
+Native Linux installation asks for sudo before logging package commands. Run
+bootstrap without sudo; user binaries and dotfiles stay owned by your account.
+Output streams to the terminal and report logs. A quiet command prints a heartbeat;
+commands time out after five minutes by default (`DOTFILES_INSTALL_TIMEOUT` can
+allow longer reviewed source builds). Optional failures continue to the next tool.
+
+Plugins, VS Code extensions, editor setup, shell changes and container service
+starts are explicit actions outside the bootstrap. See the single
+[installation guide](docs/INSTALLATION.md) for the workflow and failure policy.
 
 ## Apply and update
 
@@ -185,7 +192,7 @@ The default Operator shell layout uses graphite, teal and amber; editor and
 diff views use Gruvbox. Styles are selected explicitly and do not add startup
 animations or network calls.
 
-The workstation includes ouch, zstd, moreutils, ov, hexyl, dua, broot,
+The optional catalog offers ouch, zstd, moreutils, ov, hexyl, dua, broot,
 Czkawka CLI, xcp, chafa, viu, vivid, pastel, GNU Parallel, tealdeer (`tldr`),
 jc and jless. Fastfetch, cmatrix and cava provide explicit visual modes.
 See [workbooks](docs/WORKBOOKS.md), [visual styles](docs/VISUALS.md), and

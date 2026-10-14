@@ -48,7 +48,7 @@ esac
 admin=()
 if (( EUID != 0 )) && [[ "$SKIP_PACKAGES" == 0 ]]; then
   command -v sudo >/dev/null || { printf 'sudo is required for apt packages.\n' >&2; exit 1; }
-  admin=(sudo)
+  admin=(sudo -n)
 fi
 if [[ "$SKIP_PACKAGES" == 0 ]]; then
   editor_packages=()

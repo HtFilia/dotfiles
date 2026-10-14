@@ -17,7 +17,7 @@ network changes. Clone with an already working GitHub key:
 git clone git@github.com:HtFilia/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --dry-run
-./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --configure-shell
+./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline
 ./scripts/verify.sh --profile server
 ```
 

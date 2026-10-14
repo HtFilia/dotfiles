@@ -12,7 +12,6 @@ preflight_linux() {
     *) printf 'Supported Linux releases: Debian 12/13, Ubuntu 24.04/26.04.\n' >&2; return 1 ;;
   esac
   if [[ "$profile" == workstation ]]; then
-    (( EUID != 0 )) || { printf 'Run workstation bootstrap as your regular user.\n' >&2; return 1; }
-    command -v sudo >/dev/null || { printf 'sudo is required.\n' >&2; return 1; }
+    (( EUID != 0 || ${2:-0} == 1 )) || { printf 'Run workstation bootstrap as your regular user.\n' >&2; return 1; }
   fi
 }

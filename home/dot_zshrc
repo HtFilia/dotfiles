@@ -26,8 +26,14 @@ for _prefix in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
 done
 unset _prefix
 export PATH
-export EDITOR="nvim"
-export VISUAL="nvim"
+if command -v nvim &>/dev/null; then
+  export EDITOR=nvim
+elif command -v vi &>/dev/null; then
+  export EDITOR=vi
+else
+  export EDITOR=nano
+fi
+export VISUAL="$EDITOR"
 export PAGER="less"
 export LESS="-R --mouse --wheel-lines=3"
 if [[ "$DOTFILES_OS" == macos ]]; then

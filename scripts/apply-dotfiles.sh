@@ -188,4 +188,7 @@ if [[ "$DRY_RUN" == 0 ]]; then
   printf '%s\n' "$CHEZMOI_MODE" >"$DESTINATION/.local/state/dotfiles/materialize"
   printf '%s\n' "$REPO_ROOT" >"$DESTINATION/.local/state/dotfiles/source"
 fi
+if [[ "$DRY_RUN" == 0 ]]; then
+  python3 "$SCRIPT_DIR/generate-agent-guides.py" --destination "$DESTINATION" || warn "Could not regenerate host-specific agent guides"
+fi
 success "dotfiles deployed"
