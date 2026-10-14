@@ -38,7 +38,7 @@ selection_args=()
 [[ -z "$tools" ]] || selection_args+=(--tools "$tools")
 [[ -z "$methods" ]] || selection_args+=(--methods "$methods")
 (( ! skip_docker )) || selection_args+=(--exclude "docker,docker-compose,docker-buildx,colima,lazydocker")
-resolve_tool_selection "${selection_args[@]}" --save
+resolve_tool_selection ${selection_args[@]+"${selection_args[@]}"} --save
 methods="$DOTFILES_INSTALL_METHODS"
 if [[ ",$methods," != *,native,* ]]; then skip_packages=1; fi
 if ! tool_selected docker; then skip_docker=1; fi

@@ -24,8 +24,9 @@ fi
 
 validate_install_methods() {
   local methods="$1" method seen=,
+  local method_pattern='^(native|github|source)(,(native|github|source))*$'
   local -a values=()
-  [[ "$methods" =~ ^(native|github|source)(,(native|github|source))*$ ]] || { printf 'Invalid installation methods: %s\n' "$methods" >&2; return 2; }
+  [[ "$methods" =~ $method_pattern ]] || { printf 'Invalid installation methods: %s\n' "$methods" >&2; return 2; }
   IFS=, read -ra values <<< "$methods"
   for method in "${values[@]}"; do
     [[ "$seen" != *",$method,"* ]] || { printf 'Duplicate installation method: %s\n' "$method" >&2; return 2; }
