@@ -24,7 +24,7 @@ class InstallerBehavior(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix='dotfiles-installer-test-')
         self.addCleanup(temporary.cleanup)
-        self.root = Path(temporary.name)
+        self.root = Path(temporary.name).resolve()  # macOS /var aliases /private/var
         self.home = self.root / 'home'; self.home.mkdir()
         self.bin = self.home / '.local/bin'; self.bin.mkdir(parents=True)
         env = dict(HOME=str(self.home), LOCAL_BIN=str(self.bin), PATH='/usr/bin:/bin',
@@ -72,10 +72,12 @@ class InstallerBehavior(unittest.TestCase):
     def test_failed_upgrade_retains_existing_working_binary(self):
         self.executable(self.bin / 'sample', 'sample 0.5.0')
         self.installer.methods = ['github', 'source']
+        self.installer.reinstall = True  # Exercise failed upgrades on both native platforms.
         tool = dict(self.tool, version='1.0.0')
-        with patch.object(self.installer, 'github', side_effect=module.InstallError('blocked')), \
-             patch.object(self.installer, 'source', side_effect=module.InstallError('MSRV')):
+        with patch.object(self.installer, 'github', side_effect=module.InstallError('blocked')) as github, \
+             patch.object(self.installer, 'source', side_effect=module.InstallError('MSRV')) as source:
             self.assertTrue(self.installer.install(tool))
+        github.assert_called_once(); source.assert_called_once()
         self.assertEqual(self.report.data['tools'][0]['status'], 'retained')
         self.assertIn('0.5.0', self.installer.current(tool))
 
@@ -216,8 +218,8 @@ class InstallerBehavior(unittest.TestCase):
         if status.exists(): self.assertEqual(status.read_text().split()[2], 'Z')
 
     def test_reports_append_across_child_invocations(self):
-        self.assertEqual(self.cli('--step', 'one', '--', '/bin/true').returncode, 0)
-        self.assertEqual(self.cli('--step', 'two', '--', '/bin/false').returncode, 1)
+        self.assertEqual(self.cli('--step', 'one', '--', '/bin/sh', '-c', 'exit 0').returncode, 0)
+        self.assertEqual(self.cli('--step', 'two', '--', '/bin/sh', '-c', 'exit 1').returncode, 1)
         rows = json.loads(self.report.path.read_text())['tools']
         self.assertEqual([r['tool'] for r in rows], ['one', 'two'])
         self.assertIn('one', (self.report.directory / 'report.md').read_text())
