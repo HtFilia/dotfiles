@@ -72,6 +72,15 @@ if [[ "$profile" == server ]]; then
   fi
   (( ! system_baseline )) || bash "$SCRIPT_DIR/server-baseline.sh" --dry-run
 fi
+# Prefer the installed Homebrew runtime to Apple's older /usr/bin/python3.
+if [[ "$(uname -s)" == Darwin ]]; then
+  for prefix in /opt/homebrew /usr/local; do
+    if [[ -x "$prefix/bin/python3" ]]; then
+      export PATH="$prefix/bin:$prefix/sbin:$PATH"
+      break
+    fi
+  done
+fi
 # Python runs selection, installation, monitoring and reports; it must exist first.
 command -v python3 >/dev/null || { printf 'Python 3 is required. Install it first: sudo apt-get install python3 (Linux), or brew install python (macOS).\n' >&2; exit 1; }
 python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else "Python 3.11 or newer is required.")'
