@@ -111,7 +111,12 @@
     "category": "project",
     "description": "Go compiler and runtime",
     "usage": "go version",
-    "audit_reason": "Install for Go development or chosen source builds; not for prebuilt Go tools."
+    "audit_reason": "Install for Go development or chosen source builds; not for prebuilt Go tools.",
+    "companion_probes": {
+      "gofmt": [
+        "-h"
+      ]
+    }
   },
   {
     "name": "node",

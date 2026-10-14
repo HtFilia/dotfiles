@@ -95,6 +95,63 @@ class InstallerBehavior(unittest.TestCase):
         self.assertEqual([r['status'] for r in self.report.data['tools']], ['failed', 'already-present'])
         self.assertEqual(len(self.report.data['tools'][0]['attempts']), 3)
 
+    def test_existing_version_is_kept_for_every_channel_order(self):
+        existing=self.executable(self.bin/'sample','sample 0.5.0')
+        before=existing.read_bytes()
+        for size in (1,2,3):
+            for order in itertools.permutations(('native','github','source'),size):
+                with self.subTest(order=order):
+                    engine=module.Installer(module.Report(self.root/('keep-'+'-'.join(order))),list(order))
+                    with patch.object(engine,'native') as native, patch.object(engine,'github') as github, \
+                         patch.object(engine,'source') as source:
+                        self.assertTrue(engine.install(dict(self.tool,version='1.0.0')))
+                    native.assert_not_called();github.assert_not_called();source.assert_not_called()
+                    row=engine.report.data['tools'][0]
+                    self.assertEqual(row['status'],'already-present');self.assertEqual(row['attempts'],[])
+                    self.assertIn('0.5.0',row['version']);self.assertEqual(existing.read_bytes(),before)
+
+    def test_all_present_cli_does_not_prepare_packages_or_request_sudo(self):
+        binary=self.executable(self.bin/'sample','sample 0.5.0')
+        before=binary.read_bytes()
+        with patch.object(module,'CATALOG',[dict(self.tool,version='1.0.0')]), \
+             patch.object(module.sys,'argv',['installer','--only','sample','--methods','github,native']), \
+             patch.object(module.Installer,'prepare_native') as prepare:
+            self.assertEqual(module.main(),0)
+        prepare.assert_not_called();self.assertEqual(binary.read_bytes(),before)
+        self.assertEqual([r['status'] for r in json.loads(self.report.path.read_text())['tools']],['already-present'])
+
+    def test_native_preparation_receives_only_missing_tools(self):
+        self.executable(self.bin/'present')
+        present=dict(self.tool,name='present',bins=['present'])
+        with patch.object(module,'CATALOG',[present,self.tool]), \
+             patch.object(module.sys,'argv',['installer','--only','present,sample','--methods','native']), \
+             patch.object(module.Installer,'prepare_native') as prepare, \
+             patch.object(module.Installer,'install_missing',return_value=True) as install:
+            self.assertEqual(module.main(),0)
+        self.assertEqual([t['name'] for t in prepare.call_args.args[0]],['sample'])
+        self.assertEqual(install.call_args.args[0]['name'],'sample');install.assert_called_once()
+
+    def test_distribution_alias_is_recognized_without_package_installation(self):
+        self.executable(self.bin/'sample-dist','sample 0.5.0')
+        with patch.object(self.installer,'native') as native:
+            self.assertTrue(self.installer.install(dict(self.tool,aliases=['sample-dist'])))
+        native.assert_not_called()
+        self.assertEqual(self.report.data['tools'][0]['status'],'already-present')
+        self.assertFalse((self.bin/'sample').exists())
+
+    def test_existing_go_is_kept_with_gofmt_help_probe(self):
+        tool=next(t for t in module.CATALOG if t['name']=='go')
+        self.executable(self.bin/'go','go version go1.20.0 linux/amd64')
+        formatter=self.bin/'gofmt'
+        formatter.write_text('#!/bin/sh\n[ "$1" = "-h" ] || exit 2\necho "usage: gofmt"\n')
+        formatter.chmod(0o755)
+        self.installer.methods=['github','native']
+        with patch.object(self.installer,'github') as github, patch.object(self.installer,'native') as native:
+            self.assertTrue(self.installer.install(tool))
+        github.assert_not_called();native.assert_not_called()
+        self.assertEqual(self.report.data['tools'][0]['status'],'already-present')
+        self.assertIn('go1.20.0',self.report.data['tools'][0]['version'])
+
     def test_failed_upgrade_retains_existing_working_binary(self):
         self.executable(self.bin / 'sample', 'sample 0.5.0')
         self.installer.methods = ['github', 'source']

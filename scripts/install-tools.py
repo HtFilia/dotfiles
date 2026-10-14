@@ -212,10 +212,11 @@ class Installer:
         if not binary:
             raise InstallError(f"executable not found: {tool['name']}")
         output = self.capture([str(binary)] + tool.get('probe', ['--version']), exit_codes=tool.get('probe_exit_codes', [0]))
-        pin = self.pin(tool)
-        expected = pin.get('reported-version', pin.get('version', '')).lstrip('v')
-        if exact and expected and not re.search(r'(?<![\d.])' + re.escape(expected) + r'(?![\d.])', output):
-            raise InstallError(f'expected {expected}; observed {output[:200]}')
+        if exact:
+            pin = self.pin(tool)
+            expected = pin.get('reported-version', pin.get('version', '')).lstrip('v')
+            if expected and not re.search(r'(?<![\d.])' + re.escape(expected) + r'(?![\d.])', output):
+                raise InstallError(f'expected {expected}; observed {output[:200]}')
         return next((line for line in output.splitlines() if re.search(r'\d+\.\d+', line)), output.splitlines()[0] if output else 'executable probe passed')[:240]
 
     def current(self, tool, exact=False):
@@ -229,12 +230,15 @@ class Installer:
             for name in tool['bins']:
                 if not shutil.which(name, path=self.env['PATH']): raise InstallError(f'executable missing: {name}')
             return 'all package executables available'
-        version = self.probe(tool, exact=exact)
+        names = [tool.get('probe_name', tool['name'])] + tool.get('aliases', [])
+        binary = next((shutil.which(name, path=self.env['PATH']) for name in names
+                       if shutil.which(name, path=self.env['PATH'])), None)
+        version = self.probe(tool, binary=binary, exact=exact)
         for name in tool['bins'][1:]:
             binary = shutil.which(name, path=self.env['PATH'])
             if not binary:
                 raise InstallError(f'companion executable missing: {name}')
-            self.capture([binary, '--version'])
+            self.capture([binary] + tool.get('companion_probes', {}).get(name, ['--version']))
         return version
 
     def admin(self):
@@ -268,7 +272,7 @@ class Installer:
             self.run([prefix / 'bin/python', '-m', 'pip', 'install', tool['pip'] + '==' + self.pin(tool)['version'].lstrip('v')])
             version = self.probe(tool, prefix / 'bin' / tool['name'], exact=True)
             for name in tool['bins']:
-                self.capture([str(prefix / 'bin' / name), '--version'])
+                self.capture([str(prefix / 'bin' / name)] + tool.get('companion_probes', {}).get(name, ['--version']))
             for name in tool['bins']: self.link(prefix / 'bin' / name, name)
             self.pending.remove(prefix)
             return version
@@ -430,7 +434,7 @@ class Installer:
         for path in candidates.values(): path.chmod(path.stat().st_mode | 0o111)
         version = self.probe(tool, candidates[tool['name']], exact=exact)
         for name, path in candidates.items():
-            if name != tool['name']: self.capture([str(path), '--version'])
+            if name != tool['name']: self.capture([str(path)] + tool.get('companion_probes', {}).get(name, ['--version']))
         self.local_bin.mkdir(parents=True, exist_ok=True)
         for name, path in candidates.items():
             with tempfile.NamedTemporaryFile(dir=self.local_bin, delete=False) as file:
@@ -551,15 +555,24 @@ class Installer:
         if binaries: return self.publish_binaries(tool, binaries, exact=exact)
         return self.publish_runtime(tool, prefix, exact=exact)
 
-    def install(self, tool):
-        attempts = []
+    def skip_existing(self, tool):
+        if self.reinstall: return False
+        print(f"  ? {tool['name']}: checking existing installation", flush=True)
         try:
-            if self.reinstall: raise InstallError('explicit reinstall requested')
-            version = self.current(tool, exact=(self.os == 'linux' or bool(tool.get('npm'))) and bool(tool.get('asset') or tool.get('version')) and self.methods[0] != 'native')
-            self.report.add(dict(tool=tool['name'], status='already-present', method='existing', version=version,
-                reason='available before this run; original installation method unknown', attempts=[]))
-            print(f"  = {tool['name']}: already present", flush=True); return True
-        except InstallError: pass
+            version = self.current(tool)
+        except InstallError:
+            return False
+        self.report.add(dict(tool=tool['name'], status='already-present', method='existing', version=version,
+            reason='working installation retained; original installation method unknown', attempts=[]))
+        print(f"  = {tool['name']}: already present ({version}); keeping it", flush=True)
+        return True
+
+    def install(self, tool):
+        if self.skip_existing(tool): return True
+        return self.install_missing(tool)
+
+    def install_missing(self, tool):
+        attempts = []
         for method in self.methods:
             self.log = self.report.directory / (tool['name'] + '-' + method + '.log'); self.details = []
             print(f"  > {tool['name']}: {method}", flush=True)
@@ -618,9 +631,15 @@ def main():
         tools = [t for t in CATALOG if t['name'] in names]
     if not (args.only or args.step or args.record or args.new_report):
         parser.error('supply an explicit --only selection, or use scripts/bootstrap.sh')
+    system = 'linux' if platform.system() == 'Linux' else 'darwin'
+    tools = [t for t in tools if not t.get('platforms') or system in t['platforms']]
     if args.dry_run:
-        for tool in tools:
-            print(f"{tool['name']}: {','.join(args.methods)}; official repository={tool.get('repo') or 'unavailable'}; ref={tool.get('ref') or 'unavailable'}")
+        # Read-only probes share the real detection policy; temporary logs only.
+        with tempfile.TemporaryDirectory(prefix='dotfiles-preview-') as scratch:
+            preview = Installer(Report(scratch), args.methods, args.skip_packages, args.timeout, args.reinstall)
+            for tool in tools:
+                if preview.skip_existing(tool): continue
+                print(f"{tool['name']}: {','.join(args.methods)}; official repository={tool.get('repo') or 'unavailable'}; ref={tool.get('ref') or 'unavailable'}")
         return 0
     if args.command and not args.step: parser.error('unexpected positional arguments')
     report = Report(args.report_dir)
@@ -647,11 +666,12 @@ def main():
             print(f'Warning: {args.step}: {error}', file=sys.stderr); return 1
     failed_required = False
     try:
-        installer.prepare_native(tools)
-        for tool in tools:
-            if tool.get('platforms') and installer.os not in tool['platforms']: continue
-            tool = dict(tool, required=tool['name'] in ('chezmoi', 'git'))
-            if not installer.install(tool) and tool['required']: failed_required = True
+        tools = [dict(tool, required=tool['name'] in ('chezmoi', 'git')) for tool in tools]
+        pending = [tool for tool in tools if not installer.skip_existing(tool)]
+        print('Tools needing installation: ' + (', '.join(t['name'] for t in pending) or 'none'), flush=True)
+        if pending: installer.prepare_native(pending)
+        for tool in pending:
+            if not installer.install_missing(tool) and tool['required']: failed_required = True
     except KeyboardInterrupt:
         installer.cleanup_pending()
         report.add(dict(tool='installation', status='interrupted', reason='interrupted by user; completed results retained'))

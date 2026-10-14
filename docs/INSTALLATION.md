@@ -14,14 +14,18 @@ bootstrap stops with the native installation command before changing the host.
 2. Choose the primary method and independently allow or deny native, GitHub-release,
    and source-build fallbacks. New hosts default to `native,github`. Selection is
    saved in `~/.local/state/dotfiles/tool-selection.json`; updates reuse it.
-3. Authenticate sudo visibly before native Linux package commands. Bootstrap stays
+3. Probe every selected tool before any package preparation. Working tools are
+   retained with their observed version, including distro aliases such as `fdfind`
+   and `batcat`. A different version from the reviewed download pin does not trigger
+   reinstallation. The preview shows these retained tools too.
+4. Authenticate sudo visibly only when tools are missing and native is allowed. Bootstrap stays
    under your account. Logged children keep the login session for sudo credentials, use `sudo -n`,
    have stdin disconnected, and
    never wait for a hidden password, package question, or Git credential prompt.
    In unattended use, run `sudo -v` beforehand or use passwordless package access.
-4. One installer iterates the selected tools. Each receives the same ordered
+5. One installer iterates only the missing tools. Each receives the same ordered
    channel policy; failures are recorded before trying the next allowed method.
-5. Apply Chezmoi configuration, then generate the installed-tool agent guides.
+6. Apply Chezmoi configuration, then generate the installed-tool agent guides.
 
 ```sh
 ./scripts/bootstrap.sh
@@ -39,6 +43,8 @@ The [tool audit](TOOL-AUDIT.md) explains the usefulness of every catalog entry.
 
 | Situation | Result |
 |---|---|
+| Every selected tool already works | Report `already-present`; no sudo, package preparation, downloads or builds |
+| Installed version differs from download pin | Keep it during bootstrap; explicit updates remain separate |
 | Native disabled | No sudo authentication, APT, Homebrew or build-prerequisite package operations |
 | Native authentication denied/unavailable | Record why native packages cannot run; try permitted GitHub/source fallbacks |
 | A channel fails or times out | Save its reason and log; try the next permitted channel |
@@ -83,7 +89,9 @@ there are no separate skip-fonts/skip-docker toggles.
 
 Packages may be already present with installation origin unknown. Native package
 versions follow the configured repositories; reviewed artifact/source replacements
-are checked before publication. Existing links are replaced atomically, never
+are checked before publication. Bootstrap keeps existing functional versions;
+`scripts/update-tools.sh` is the explicit update operation, and the installer
+`--reinstall` flag is reserved for an explicitly requested replacement. Existing links are replaced atomically, never
 written through into an administrator-owned binary. Verified download caches and
 versioned source prefixes support reruns after failure.
 
