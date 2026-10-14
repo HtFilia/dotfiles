@@ -289,6 +289,14 @@ class InstallerBehavior(unittest.TestCase):
         self.installer.run(['/bin/sh','-c','read answer || echo stdin-closed'],timeout=1)
         self.assertIn('stdin-closed',self.installer.log.read_text())
 
+    def test_cleanup_permission_error_does_not_hide_timeout_or_leave_child_waiting(self):
+        with patch.object(module.os,'killpg',side_effect=PermissionError('group denied')):
+            started=time.monotonic()
+            with self.assertRaisesRegex(module.InstallError,'timed out'):
+                self.installer.run([sys.executable,'-c','import time; time.sleep(30)'],timeout=0.1)
+        self.assertLess(time.monotonic()-started,5)
+        self.assertIn('cannot signal process group',self.installer.log.read_text())
+
     def test_output_is_visible_while_a_command_is_still_running(self):
         proc=subprocess.Popen([sys.executable,str(ROOT/'scripts/install-tools.py'),'--timeout','2',
             '--step','progress','--','/bin/sh','-c','echo child-ready; sleep 30'],

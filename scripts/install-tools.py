@@ -104,42 +104,51 @@ class Installer:
             log.write('$ ' + shlex.join(argv) + '\n'); log.flush()
             reader.seek(log.tell())
             try:
-                with subprocess.Popen(argv, cwd=cwd, env=env or self.env, stdin=subprocess.DEVNULL,
-                                      # Keep the login TTY/session for sudo's cached credentials.
-                                      stdout=log, stderr=log, process_group=0) as proc:
-                    try:
-                        while True:
+                proc = subprocess.Popen(argv, cwd=cwd, env=env or self.env, stdin=subprocess.DEVNULL,
+                    # Keep the login TTY/session for sudo's cached credentials.
+                    stdout=log, stderr=log, process_group=0)
+                def cleanup_note(message):
+                    log.write(message + '\n'); log.flush()
+                    print(message, file=sys.stderr, flush=True)
+                def stop_group(sig):
+                    try: os.killpg(proc.pid, sig)
+                    except ProcessLookupError: pass
+                    except PermissionError:
+                        cleanup_note(f'Warning: cannot signal process group {proc.pid}; trying its direct child')
+                        if proc.poll() is None:
+                            try: proc.send_signal(sig)
+                            except ProcessLookupError: pass
+                            except PermissionError:
+                                cleanup_note(f'Warning: permission denied stopping child {proc.pid}; inspect the log')
+                try:
+                    while True:
+                        chunk = reader.read()
+                        if chunk:
+                            output.append(chunk)
+                            if live: print(chunk, end='', flush=True)
+                        code = proc.poll()
+                        if code is not None:
                             chunk = reader.read()
                             if chunk:
                                 output.append(chunk)
                                 if live: print(chunk, end='', flush=True)
-                            code = proc.poll()
-                            if code is not None:
-                                chunk = reader.read()
-                                if chunk:
-                                    output.append(chunk)
-                                    if live: print(chunk, end='', flush=True)
-                                break
-                            now = time.monotonic()
-                            if now - started >= limit:
-                                raise InstallError(f'timed out after {limit}s: {shlex.join(argv)}')
-                            if live and now >= heartbeat:
-                                print(f'    still running ({int(now-started)}s); log: {log_path}', flush=True)
-                                heartbeat = now + 15
-                            time.sleep(0.05)
-                    finally:
-                        # Also stop descendants after a failed command or cancellation.
-                        if proc.poll() is None or proc.returncode:
-                            try: os.killpg(proc.pid, signal.SIGTERM)
-                            except ProcessLookupError: pass
-                            try: proc.wait(timeout=2)
-                            except subprocess.TimeoutExpired:
-                                try: os.killpg(proc.pid, signal.SIGKILL)
-                                except ProcessLookupError: pass
-                                proc.wait()
-                            # The parent can exit before a descendant ignoring TERM.
-                            try: os.killpg(proc.pid, signal.SIGKILL)
-                            except ProcessLookupError: pass
+                            break
+                        now = time.monotonic()
+                        if now - started >= limit:
+                            raise InstallError(f'timed out after {limit}s: {shlex.join(argv)}')
+                        if live and now >= heartbeat:
+                            print(f'    still running ({int(now-started)}s); log: {log_path}', flush=True)
+                            heartbeat = now + 15
+                        time.sleep(0.05)
+                finally:
+                    if proc.poll() is None or proc.returncode:
+                        stop_group(signal.SIGTERM)
+                        try: proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired: pass
+                        stop_group(signal.SIGKILL)
+                        try: proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            cleanup_note(f'Warning: child {proc.pid} is still running; administrator cleanup may be required')
             except OSError as error:
                 raise InstallError(str(error)) from error
         text = ''.join(output).strip()
