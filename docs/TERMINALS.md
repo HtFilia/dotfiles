@@ -29,7 +29,7 @@ extended keys and clipboard capabilities. `set-clipboard external` supports
 OSC 52 copying to the terminal client without X11 utilities on a remote server.
 Client clipboard permissions still apply.
 
-TPM is optional (`bootstrap --with-tpm`). Add selected plugins to
+TPM is optional (`scripts/install-plugin.sh tmux-tpm "$HOME/.tmux/plugins"`). Add selected plugins to
 `~/.tmux.conf.local` and use prefix I to install them. TPM updates can change
 checkouts; review pin drift rather than assuming updates remain reproducible.
 No reboot restoration plugins or automatic tmux attachment are part of the base.

@@ -16,7 +16,6 @@ import sys
 import tarfile
 import tempfile
 import time
-import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -75,7 +74,7 @@ class Report:
 
 
 class Installer:
-    def __init__(self, report, methods, skip_packages=False, timeout=1800, reinstall=False):
+    def __init__(self, report, methods, skip_packages=False, timeout=300, reinstall=False):
         self.report, self.methods, self.skip_packages, self.timeout = report, methods, skip_packages, timeout
         self.local_bin = Path(os.environ.get('LOCAL_BIN', str(Path.home() / '.local/bin')))
         self.env = dict(os.environ)
@@ -84,43 +83,108 @@ class Installer:
         self.env.update(GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1', GIT_TERMINAL_PROMPT='0')
         self.log, self.details, self.pins = None, [], {}
         self.reinstall = reinstall
+        self.native_error = ''
+        self.source_prepared = False
+        self.env.update(DEBIAN_FRONTEND='noninteractive', HOMEBREW_NO_AUTO_UPDATE='1', PIP_NO_INPUT='1', CI='1')
         self.pending = []
         self.os = 'linux' if platform.system() == 'Linux' else 'darwin'
         self.arch = 'aarch64' if platform.machine() in ('aarch64', 'arm64') else 'x86_64'
         self.goarch = 'arm64' if self.arch == 'aarch64' else 'amd64'
 
-    def run(self, argv, cwd=None, env=None, timeout=None):
+    def execute(self, argv, cwd=None, env=None, timeout=None, live=True, exit_codes=(0,)):
+        """One runner for packages, builds, probes and bootstrap steps."""
         argv = [str(a) for a in argv]
-        with self.log.open('a') as log:
+        limit = timeout or self.timeout
+        log_path = self.log or self.report.directory / 'probes.log'
+        started = time.monotonic()
+        heartbeat = started + 15
+        output = []
+        print(f"    $ {shlex.join(argv)} (limit {limit}s; log {log_path})", flush=True) if live else None
+        with log_path.open('a', errors='replace') as log, log_path.open('r', errors='replace') as reader:
             log.write('$ ' + shlex.join(argv) + '\n'); log.flush()
+            reader.seek(log.tell())
             try:
-                with subprocess.Popen(argv, cwd=cwd, env=env or self.env, stdout=log,
-                                      stderr=log, start_new_session=True) as proc:
+                with subprocess.Popen(argv, cwd=cwd, env=env or self.env, stdin=subprocess.DEVNULL,
+                                      # Keep the login TTY/session for sudo's cached credentials.
+                                      stdout=log, stderr=log, process_group=0) as proc:
                     try:
-                        code = proc.wait(timeout=timeout or self.timeout)
-                    except BaseException:
-                        os.killpg(proc.pid, signal.SIGTERM)
-                        try:
-                            proc.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-                            os.killpg(proc.pid, signal.SIGKILL); proc.wait()
-                        raise
-            except subprocess.TimeoutExpired as error:
-                raise InstallError(f'timed out after {error.timeout}s: {shlex.join(argv)}') from error
+                        while True:
+                            chunk = reader.read()
+                            if chunk:
+                                output.append(chunk)
+                                if live: print(chunk, end='', flush=True)
+                            code = proc.poll()
+                            if code is not None:
+                                chunk = reader.read()
+                                if chunk:
+                                    output.append(chunk)
+                                    if live: print(chunk, end='', flush=True)
+                                break
+                            now = time.monotonic()
+                            if now - started >= limit:
+                                raise InstallError(f'timed out after {limit}s: {shlex.join(argv)}')
+                            if live and now >= heartbeat:
+                                print(f'    still running ({int(now-started)}s); log: {log_path}', flush=True)
+                                heartbeat = now + 15
+                            time.sleep(0.05)
+                    finally:
+                        # Also stop descendants after a failed command or cancellation.
+                        if proc.poll() is None or proc.returncode:
+                            try: os.killpg(proc.pid, signal.SIGTERM)
+                            except ProcessLookupError: pass
+                            try: proc.wait(timeout=2)
+                            except subprocess.TimeoutExpired:
+                                try: os.killpg(proc.pid, signal.SIGKILL)
+                                except ProcessLookupError: pass
+                                proc.wait()
+                            # The parent can exit before a descendant ignoring TERM.
+                            try: os.killpg(proc.pid, signal.SIGKILL)
+                            except ProcessLookupError: pass
             except OSError as error:
                 raise InstallError(str(error)) from error
-        if code:
-            raise InstallError(f'exit {code}: {self.log.read_text(errors="replace")[-1600:].strip()}')
+        text = ''.join(output).strip()
+        if code not in exit_codes:
+            raise InstallError(f'exit {code}: {text[-1600:]}')
+        return text
+
+    def run(self, argv, cwd=None, env=None, timeout=None):
+        return self.execute(argv, cwd=cwd, env=env, timeout=timeout)
 
     def capture(self, argv, timeout=30, env=None, exit_codes=(0,)):
+        return self.execute(argv, timeout=timeout, env=env, exit_codes=exit_codes, live=False)
+
+    def prepare_native(self, tools):
+        """Authenticate on the terminal once, then never prompt inside a logged child."""
+        self.native_error = ''
+        if 'native' not in self.methods or self.skip_packages: return
+        self.log = self.report.directory / 'native-prerequisites.log'
         try:
-            result = subprocess.run(argv, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    timeout=timeout, env=env or self.env)
-        except (OSError, subprocess.TimeoutExpired) as error:
-            raise InstallError(str(error)) from error
-        if result.returncode not in exit_codes:
-            raise InstallError(f'exit {result.returncode}: {result.stdout[-1200:]}')
-        return result.stdout.strip()
+            if self.os == 'darwin':
+                if not shutil.which('brew', path=self.env['PATH']):
+                    raise InstallError('Homebrew is missing; install it first or choose GitHub/source')
+                self.run(['brew', 'update'])
+                return
+            if os.geteuid() != 0:
+                if not shutil.which('sudo', path=self.env['PATH']):
+                    raise InstallError('sudo is unavailable; choose GitHub/source or ask an administrator')
+                if sys.stdin.isatty():
+                    print('Native packages need sudo. Authenticate here; bootstrap stays under your user.', flush=True)
+                    # Inherit the terminal only for this bounded authentication step.
+                    try: result = subprocess.run(['sudo', '-v'], timeout=120)
+                    except subprocess.TimeoutExpired as error: raise InstallError('sudo authentication timed out after 120s') from error
+                    if result.returncode: raise InstallError('sudo authentication denied or cancelled')
+                else:
+                    self.run(['sudo', '-n', '-v'], timeout=30)
+            self.run(self.admin() + ['apt-get', 'update'])
+            packages = ['ca-certificates', 'unzip', 'xz-utils', 'ncurses-term', 'ncurses-bin', 'less', 'bsdextrautils']
+            names = {t['name'] for t in tools}
+            if names & {'uv', 'jc'}: packages += ['python3-venv', 'python3-pip']
+            if 'font-fira-code-nerd-font' in names: packages += ['fontconfig']
+            self.run(self.admin() + ['apt-get', 'install', '-y', '--no-install-recommends'] + packages)
+        except InstallError as error:
+            self.native_error = f'Native preparation failed: {error}. Run sudo -v in a terminal and retry, or choose GitHub/source.'
+            print('Warning: ' + self.native_error, file=sys.stderr, flush=True)
+            self.report.add(dict(tool='native-prerequisites', status='failed', method='native', reason=self.native_error))
 
     def pin(self, tool):
         key = tool.get('asset')
@@ -146,6 +210,10 @@ class Installer:
         return next((line for line in output.splitlines() if re.search(r'\d+\.\d+', line)), output.splitlines()[0] if output else 'executable probe passed')[:240]
 
     def current(self, tool, exact=False):
+        if tool['name'] == 'font-fira-code-nerd-font' and self.os == 'linux':
+            if 'FiraCode Nerd Font' not in self.capture(['fc-list']):
+                raise InstallError('FiraCode Nerd Font not installed')
+            return 'FiraCode Nerd Font available'
         if tool.get('cask'):
             return self.capture(['brew', 'list', '--cask', '--versions', tool['brew']])
         if tool.get('presence_only'):
@@ -161,9 +229,17 @@ class Installer:
         return version
 
     def admin(self):
-        return [] if os.geteuid() == 0 else ['sudo']
+        return [] if os.geteuid() == 0 else ['sudo', '-n']
 
     def native(self, tool, stage):
+        if self.native_error and (self.os == 'darwin' or tool.get('apt') or tool['name'] == 'docker'):
+            raise InstallError(self.native_error)
+        if tool['name'] == 'docker' and self.os == 'linux':
+            if self.skip_packages: raise InstallError('native packages disabled')
+            if 'microsoft' in Path('/proc/sys/kernel/osrelease').read_text().lower():
+                raise InstallError('WSL uses the Windows host container engine')
+            self.run(['bash', ROOT / 'scripts/install-docker.sh'])
+            return self.current(tool)
         if self.os == 'darwin' and tool.get('brew'):
             if self.skip_packages:
                 raise InstallError('Homebrew disabled by --skip-packages')
@@ -189,7 +265,7 @@ class Installer:
             return version
         elif tool.get('npm'):
             prefix = stage / 'prefix'
-            self.run(['npm', 'install', '--global', '--prefix', prefix, tool['npm'] + '@' + tool['version']])
+            self.run(['npm', 'install', '--global', '--no-audit', '--no-fund', '--prefix', prefix, tool['npm'] + '@' + tool['version']])
             self.publish_runtime(tool, prefix, exact=True)
         elif tool.get('runtime') in ('go', 'node'):
             metadata = self.pin(tool)
@@ -240,10 +316,10 @@ class Installer:
     def github_metadata(self, tool):
         if not tool.get('repo') or not tool.get('release_pattern'):
             raise InstallError('no compatible, verified official GitHub artifact recipe')
-        request = urllib.request.Request(f'https://api.github.com/repos/{tool["repo"]}/releases/latest',
-            headers={'User-Agent': 'dotfiles-bootstrap', 'Accept': 'application/vnd.github+json'})
-        with urllib.request.urlopen(request, timeout=30) as response:
-            release = json.load(response)
+        release = json.loads(self.capture(['curl', '--fail', '--silent', '--show-error',
+            '--location', '--connect-timeout', '15', '--max-time', '30',
+            '-H', 'Accept: application/vnd.github+json', '-A', 'dotfiles-bootstrap',
+            f'https://api.github.com/repos/{tool["repo"]}/releases/latest'], timeout=40))
         pattern = tool['release_pattern'].format(os=self.os, arch=self.arch, goarch=self.goarch)
         matches = [a for a in release['assets'] if fnmatch.fnmatch(a['name'], pattern)]
         if len(matches) != 1:
@@ -355,6 +431,9 @@ class Installer:
         return version
 
     def github(self, tool, stage):
+        if tool['name'] == 'font-fira-code-nerd-font' and self.os == 'linux':
+            self.run(['bash', ROOT / 'scripts/install-fonts.sh'])
+            return self.current(tool)
         metadata = self.pin(tool)
         if self.os != 'linux' or not metadata.get('url', '').startswith('https://github.com/'):
             metadata = self.github_metadata(tool)
@@ -382,6 +461,16 @@ class Installer:
             raise InstallError(tool.get('note', 'no supported official GitHub source build recipe'))
         ref = tool.get('ref')
         if not ref: raise InstallError('no reviewed source ref; refusing an unpinned default branch build')
+        if self.os == 'linux' and 'native' in self.methods and not self.skip_packages and not self.native_error and not self.source_prepared:
+            self.source_prepared = True
+            try:
+                self.run(self.admin() + ['apt-get', 'install', '-y', '--no-install-recommends',
+                    'build-essential', 'pkg-config', 'libssl-dev', 'autoconf', 'automake', 'libtool',
+                    'cmake', 'ninja-build', 'gettext', 'libevent-dev', 'libncurses-dev', 'byacc'])
+            except InstallError as error:
+                self.details.append('build prerequisites unavailable: ' + str(error))
+        if self.os == 'darwin' and not shutil.which('clang', path=self.env['PATH']):
+            raise InstallError('Command Line Tools are missing; install them and retry the source build')
         directory, prefix = stage / 'checkout', stage / 'prefix'
         self.run(['git', 'clone', '--depth', '1', '--branch', ref,
                   f'https://github.com/{tool["repo"]}.git', directory], timeout=180)
@@ -494,12 +583,12 @@ def parse_methods(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--methods', type=parse_methods, default=os.environ.get('DOTFILES_INSTALL_METHODS', 'github,native,source'))
+    parser.add_argument('--methods', type=parse_methods, default=os.environ.get('DOTFILES_INSTALL_METHODS', 'native,github'))
     parser.add_argument('--reinstall', action='store_true', help='attempt selected methods even when a working version exists')
     parser.add_argument('--skip-packages', action='store_true'); parser.add_argument('--dry-run', action='store_true')
-    parser.add_argument('--only', help='comma-separated tool names'); parser.add_argument('--group', choices=['extra'])
-    parser.add_argument('--exclude', help='comma-separated tool names to skip'); parser.add_argument('--report-dir'); parser.add_argument('--new-report', action='store_true')
-    parser.add_argument('--timeout', type=int, default=int(os.environ.get('DOTFILES_INSTALL_TIMEOUT', '1800')))
+    parser.add_argument('--only', help='explicit comma-separated tool names; normally supplied by bootstrap')
+    parser.add_argument('--report-dir'); parser.add_argument('--new-report', action='store_true')
+    parser.add_argument('--timeout', type=int, default=os.environ.get('DOTFILES_INSTALL_TIMEOUT', '300'))
     parser.add_argument('--record', help='record an intentionally skipped component')
     parser.add_argument('--reason', default='disabled by option')
     parser.add_argument('--step', help='record isolated bootstrap component; command follows --')
@@ -518,12 +607,13 @@ def main():
         names = args.only.split(','); unknown = set(names) - {t['name'] for t in CATALOG}
         if unknown: parser.error('unknown tools: ' + ','.join(sorted(unknown)))
         tools = [t for t in CATALOG if t['name'] in names]
-    if args.exclude: tools = [t for t in tools if t['name'] not in args.exclude.split(',')]
-    if args.group: tools = [t for t in tools if t.get('group') == args.group]
+    if not (args.only or args.step or args.record or args.new_report):
+        parser.error('supply an explicit --only selection, or use scripts/bootstrap.sh')
     if args.dry_run:
         for tool in tools:
             print(f"{tool['name']}: {','.join(args.methods)}; official repository={tool.get('repo') or 'unavailable'}; ref={tool.get('ref') or 'unavailable'}")
         return 0
+    if args.command and not args.step: parser.error('unexpected positional arguments')
     report = Report(args.report_dir)
     if args.new_report: print(report.directory); return 0
     if args.record:
@@ -539,13 +629,16 @@ def main():
             report.add(dict(tool=args.step, status='completed', method='bootstrap', reason=shlex.join(command),
                 attempts=[dict(method='bootstrap', status='completed', detail=shlex.join(command), log=str(installer.log))]))
             return 0
+        except KeyboardInterrupt:
+            report.add(dict(tool=args.step, status='interrupted', reason='cancelled; child process group stopped'))
+            return 130
         except InstallError as error:
             report.add(dict(tool=args.step, status='failed', method='bootstrap', reason=str(error),
                 attempts=[dict(method='bootstrap', status='failed', detail=str(error), log=str(installer.log))]))
             print(f'Warning: {args.step}: {error}', file=sys.stderr); return 1
-    if args.command: parser.error('unexpected positional arguments')
     failed_required = False
     try:
+        installer.prepare_native(tools)
         for tool in tools:
             if tool.get('platforms') and installer.os not in tool['platforms']: continue
             tool = dict(tool, required=tool['name'] in ('chezmoi', 'git'))
@@ -554,9 +647,14 @@ def main():
         installer.cleanup_pending()
         report.add(dict(tool='installation', status='interrupted', reason='interrupted by user; completed results retained'))
         return 130
-    print(f'Report: {report.directory / "report.md"}')
+    counts = {status: sum(row['status'] == status for row in report.data['tools'])
+              for status in ('installed', 'already-present', 'retained', 'failed')}
+    print('Results: ' + ', '.join(f'{count} {status}' for status, count in counts.items()), flush=True)
+    print(f'Report: {report.directory / "report.md"}', flush=True)
     return 1 if failed_required else 0
 
 
 if __name__ == '__main__':
+    def cancel(*_): raise KeyboardInterrupt()
+    signal.signal(signal.SIGTERM, cancel)
     sys.exit(main())

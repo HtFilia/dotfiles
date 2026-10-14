@@ -21,7 +21,7 @@ while (( $# )); do
   shift
 done
 if [[ -n "${DOTFILES_INSTALL_METHODS:-}" ]]; then
-  python3 "$SCRIPT_DIR/install-tools.py" --methods "$DOTFILES_INSTALL_METHODS" --dry-run >/dev/null
+  validate_install_methods "$DOTFILES_INSTALL_METHODS"
 fi
 profile="$(dotfiles_profile "$explicit_profile")" || exit 2
 if [[ "$(uname -s)" == Linux ]]; then
@@ -59,40 +59,29 @@ optional_run() {
   if (( dry_run )); then run "$@"; else report_optional "$component" "$@"; fi
 }
 printf 'Tool update: profile=%s, packages=%s\n' "$profile" "$([[ "$skip_packages" == 1 ]] && printf skipped || printf enabled)"
-case "$(uname -s)" in
-  Darwin)
-    [[ "$profile" == workstation ]] || { printf 'Server profile requires Linux\n' >&2; exit 2; }
-    if [[ "$skip_packages" == 1 && ",$DOTFILES_INSTALL_METHODS," == *,native,* ]]; then printf '%s\n' '--skip-packages requires a method policy without native on macOS.' >&2; exit 2; fi
-    run "$SCRIPT_DIR/install-macos.sh"
-    ;;
-  Linux)
-    if (( ! skip_packages )); then
-      optional_run apt-index sudo apt-get update
-      optional_run apt-upgrade sudo apt-get upgrade --with-new-pkgs --no-remove -y
-    fi
-    if [[ "$profile" == server ]]; then
-      args=()
-      (( skip_packages )) && args+=(--skip-packages)
-      if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
-        read -ra languages < "$HOME/.local/state/dotfiles/editor-languages"
-        languages_csv="$(IFS=,; printf '%s' "${languages[*]}")"
-        args+=(--editor-languages "$languages_csv")
-      fi
-      run "$SCRIPT_DIR/install-server.sh" ${args[@]+"${args[@]}"}
-      if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
-        run "$SCRIPT_DIR/setup-editor.sh" "${languages[@]}"
-      fi
-    else
-      if tool_selected rustup && command -v rustup >/dev/null 2>&1; then optional_run rustup rustup update stable; fi
-      args=(linux)
-      if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/sys/kernel/osrelease; then args=(wsl); fi
-      (( skip_packages )) && args+=(--skip-packages)
-      run "$SCRIPT_DIR/install-debian.sh" "${args[@]}"
-    fi
+if [[ "$profile" == workstation ]]; then
+  args=(--only "$DOTFILES_TOOLS" --methods "$DOTFILES_INSTALL_METHODS" --reinstall)
+  (( ! skip_packages )) || args+=(--skip-packages)
+  run python3 "$SCRIPT_DIR/install-tools.py" "${args[@]}"
+else
+  [[ "$(uname -s)" == Linux ]] || { printf 'Server profile requires Linux\n' >&2; exit 2; }
+  if (( ! skip_packages )); then
+    (( dry_run )) || python3 -c 'import subprocess; subprocess.run(["sudo", "-v"], timeout=120, check=True)'
+    optional_run apt-index sudo -n apt-get update
+    optional_run apt-upgrade sudo -n apt-get upgrade --with-new-pkgs --no-remove -y
+  fi
+  args=()
+  (( ! skip_packages )) || args+=(--skip-packages)
+  if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
+    read -ra languages < "$HOME/.local/state/dotfiles/editor-languages"
+    languages_csv="$(IFS=,; printf '%s' "${languages[*]}")"
+    args+=(--editor-languages "$languages_csv")
+  fi
+  if (( dry_run )); then run "$SCRIPT_DIR/install-server.sh" ${args[@]+"${args[@]}"};
+  else python3 "$SCRIPT_DIR/install-tools.py" --step server-tools -- bash "$SCRIPT_DIR/install-server.sh" ${args[@]+"${args[@]}"}; fi
+  if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then optional_run editor-setup "$SCRIPT_DIR/setup-editor.sh" "${languages[@]}"; fi
+fi
 
-    ;;
-  *) printf 'Unsupported platform\n' >&2; exit 2 ;;
-esac
 plugin_channels=1
 if [[ "$profile" == workstation && ",$DOTFILES_INSTALL_METHODS," != *,github,* && ",$DOTFILES_INSTALL_METHODS," != *,source,* ]]; then plugin_channels=0; fi
 if (( plugin_channels )) && [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed ]]; then

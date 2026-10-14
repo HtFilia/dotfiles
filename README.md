@@ -61,12 +61,12 @@ Run as your regular development/SSH account. Linux package installation needs
 sudo. macOS native installs use Homebrew. Finish requested build tools before source
 compilation. The workstation picker defaults to 13 practical/prerequisite tools;
 use `list` to inspect optional tools and choose fallback channels. See
-[selection and generated guides](docs/TOOL-SELECTION.md) and [the tool audit](docs/TOOL-AUDIT.md).
+[selection and generated guides](docs/INSTALLATION.md) and [the tool audit](docs/TOOL-AUDIT.md).
 
 For a server:
 
 ```sh
-./scripts/bootstrap.sh --profile server --configure-shell --yes
+./scripts/bootstrap.sh --profile server --yes
 ./scripts/verify.sh --profile server
 ```
 
@@ -81,25 +81,19 @@ See [the VPS guide](docs/VPS-SERVER.md) for the system ownership boundary.
 Useful workstation choices:
 
 ```sh
-./scripts/bootstrap.sh --skip-docker --skip-fonts
-./scripts/bootstrap.sh --start-colima --configure-shell
-./scripts/bootstrap.sh --setup-editor
+./scripts/bootstrap.sh --tools rg,jq,fd --install-methods native,github --dry-run
+./scripts/bootstrap.sh --tools recommended --install-methods github --yes
 ```
 
-Shell plugins are installed by default. TPM is optional through `--with-tpm`.
-`--no-shell-plugins` skips shell plugins; `--skip-vscode-extensions` skips editor
-extensions. Docker-group membership is opt-in with `--enable-docker-group` and
-grants root-equivalent access. See [installation](docs/INSTALLATION.md).
+Native Linux installation asks for sudo before logging package commands. Run
+bootstrap without sudo; user binaries and dotfiles stay owned by your account.
+Output streams to the terminal and report logs. A quiet command prints a heartbeat;
+commands time out after five minutes by default (`DOTFILES_INSTALL_TIMEOUT` can
+allow longer reviewed source builds). Optional failures continue to the next tool.
 
-### Installation fallbacks and reports
-
-Workstation utilities now have independent installation attempts. Select their
-order with `--install-methods native,github,source` (or a subset). Optional failures
-are recorded and do not stop configuration deployment. Every run prints the path
-to its Markdown/JSON report, including successful methods, observed versions,
-failed attempts and logs. See [installation methods](docs/INSTALL-METHODS.md) for
-coverage, prerequisites and source-build limits. Deployed `AGENTS.additional.md` / `CLAUDE.additional.md` are generated from tools
-available on that host, including described custom Go/Rust binaries.
+Plugins, VS Code extensions, editor setup, shell changes and container service
+starts are explicit actions outside the bootstrap. See the single
+[installation guide](docs/INSTALLATION.md) for the workflow and failure policy.
 
 ## Apply and update
 

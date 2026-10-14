@@ -19,7 +19,7 @@ the reviewed manifest, not independently against the publisher's signing key.
 shell manifest, not the generated table. Source-build recipes use reviewed release refs and report resolved commits;
 Cargo builds use `--locked`. Dependencies can still require non-GitHub registries.
 Selected extra release assets require GitHub's SHA256 digest. Native packages
-follow their repositories. See [installation methods](INSTALL-METHODS.md).
+follow their repositories. See [installation methods](INSTALLATION.md).
 
 ## Executed plugins and editor tools
 

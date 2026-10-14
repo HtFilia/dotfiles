@@ -33,7 +33,7 @@ if (( EUID == 0 )); then
 else
   [[ "$(id -un)" == "$user" ]] || { printf 'Select the current account.\n' >&2; exit 2; }
   command -v sudo >/dev/null || { printf 'sudo is required.\n' >&2; exit 2; }
-  admin=(sudo)
+  admin=(sudo -n)
 fi
 user_home="$(printf '%s' "$account" | cut -d: -f6)"
 [[ -d "$user_home" && "$user_home" != / ]] || { printf 'Administrator home is missing.\n' >&2; exit 2; }

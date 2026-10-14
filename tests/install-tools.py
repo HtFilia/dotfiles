@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Offline installer behavior; no package operations or external downloads."""
 import importlib.util
+import itertools
 import io
+import queue
+import threading
+import time
 import json
 import os
 from pathlib import Path
@@ -58,6 +62,28 @@ class InstallerBehavior(unittest.TestCase):
         self.assertEqual(row['status'], 'installed'); self.assertEqual(row['method'], 'github')
         self.assertIn('package unavailable', row['attempts'][0]['detail'])
         self.assertEqual(row['attempts'][1]['status'], 'installed')
+
+    def test_every_ordered_channel_policy_uses_only_its_permitted_attempts(self):
+        for size in (1,2,3):
+            for order in itertools.permutations(('native','github','source'),size):
+                with self.subTest(order=order):
+                    report=module.Report(self.root/('-'.join(order)))
+                    engine=module.Installer(report,list(order),reinstall=True)
+                    attempts=[]
+                    def fail(method):
+                        def attempt(*args):
+                            attempts.append(method);raise module.InstallError(method+' unavailable')
+                        return attempt
+                    def github(*args):
+                        attempts.append('github');self.executable(self.bin/'sample');return 'sample 1.0.0'
+                    (self.bin/'sample').unlink(missing_ok=True)
+                    with patch.object(engine,'native',fail('native')), patch.object(engine,'source',fail('source')), \
+                         patch.object(engine,'github',github):
+                        usable=engine.install(self.tool)
+                    expected=list(order[:order.index('github')+1]) if 'github' in order else list(order)
+                    self.assertEqual(attempts,expected)
+                    self.assertEqual(usable,'github' in order)
+                    self.assertEqual([r['method'] for r in report.data['tools'][0]['attempts']],expected)
 
     def test_optional_failure_does_not_prevent_next_tool(self):
         with patch.object(self.installer, 'native', side_effect=module.InstallError('no package')), \
@@ -217,6 +243,85 @@ class InstallerBehavior(unittest.TestCase):
         status = Path(f'/proc/{pid}/stat')
         if status.exists(): self.assertEqual(status.read_text().split()[2], 'Z')
 
+    def test_non_root_native_authenticates_before_logged_packages(self):
+        self.installer.os='linux';self.installer.skip_packages=False;commands=[]
+        def package(argv, **kwargs):
+            self.assertTrue(auth.called, 'Package commands started before terminal authentication')
+            commands.append(argv)
+        with patch.object(module.os,'geteuid',return_value=1000), \
+             patch.object(module.sys.stdin,'isatty',return_value=True), \
+             patch.object(module.shutil,'which',return_value='/usr/bin/sudo'), \
+             patch.object(module.subprocess,'run',return_value=subprocess.CompletedProcess(['sudo','-v'],0)) as auth, \
+             patch.object(self.installer,'run',side_effect=package):
+            self.installer.prepare_native([self.tool])
+        self.assertEqual(auth.call_args.args[0],['sudo','-v'])
+        self.assertNotIn('stdin',auth.call_args.kwargs)
+        self.assertNotIn('stdout',auth.call_args.kwargs)
+        self.assertTrue(commands)
+        self.assertTrue(all(argv[:2]==['sudo','-n'] for argv in commands))
+
+    def test_denied_native_credentials_are_reported_before_github_fallback(self):
+        self.installer.os='linux';self.installer.skip_packages=False;self.installer.methods=['native','github']
+        with patch.object(module.os,'geteuid',return_value=1000), \
+             patch.object(module.sys.stdin,'isatty',return_value=False), \
+             patch.object(module.shutil,'which',return_value='/usr/bin/sudo'), \
+             patch.object(self.installer,'run',side_effect=module.InstallError('sudo: a password is required')):
+            self.installer.prepare_native([self.tool])
+        def fallback(*args):
+            self.executable(self.bin/'sample');return 'sample 1.0.0'
+        with patch.object(self.installer,'github',side_effect=fallback):
+            self.assertTrue(self.installer.install(dict(self.tool,apt='sample')))
+        rows=self.report.data['tools']
+        self.assertEqual(rows[0]['status'],'failed')
+        self.assertIn('sudo -v',rows[0]['reason'])
+        self.assertEqual(rows[1]['method'],'github')
+        self.assertIn('password',rows[1]['attempts'][0]['detail'])
+
+    def test_commands_keep_the_sudo_session_with_an_isolated_process_group(self):
+        result=self.installer.capture([sys.executable,'-c',
+            'import os,json;print(json.dumps([os.getsid(0),os.getpgrp(),os.getpid()]))'])
+        session,group,pid=json.loads(result)
+        self.assertEqual(session,os.getsid(0))
+        self.assertEqual(group,pid)
+        self.assertNotEqual(group,os.getpgrp())
+
+    def test_logged_commands_cannot_wait_for_hidden_input(self):
+        self.installer.run(['/bin/sh','-c','read answer || echo stdin-closed'],timeout=1)
+        self.assertIn('stdin-closed',self.installer.log.read_text())
+
+    def test_output_is_visible_while_a_command_is_still_running(self):
+        proc=subprocess.Popen([sys.executable,str(ROOT/'scripts/install-tools.py'),'--timeout','2',
+            '--step','progress','--','/bin/sh','-c','echo child-ready; sleep 30'],
+            env=dict(os.environ),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        self.addCleanup(lambda: proc.kill() if proc.poll() is None else None)
+        lines=queue.Queue()
+        def read():
+            for line in proc.stdout: lines.put(line)
+        reader=threading.Thread(target=read,daemon=True);reader.start()
+        deadline=time.monotonic()+1.5
+        while True:
+            line=lines.get(timeout=max(0.01,deadline-time.monotonic()))
+            if 'child-ready'==line.strip(): break
+            self.assertLess(time.monotonic(),deadline)
+        self.assertIsNone(proc.poll())
+        proc.wait(timeout=5);reader.join(timeout=1)
+        self.assertEqual(proc.returncode,1)
+        self.assertIn('timed out',json.loads(self.report.path.read_text())['tools'][0]['reason'])
+        proc.stdout.close();proc.stderr.close()
+
+    def test_cancellation_saves_report_and_stops_a_waiting_step(self):
+        ready=self.root/'ready'
+        proc=subprocess.Popen([sys.executable,str(ROOT/'scripts/install-tools.py'),
+            '--step','cancel','--','/bin/sh','-c',f'touch "{ready}"; sleep 30'],
+            env=dict(os.environ),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        self.addCleanup(lambda: proc.kill() if proc.poll() is None else None)
+        deadline=time.monotonic()+3
+        while not ready.exists():
+            self.assertIsNone(proc.poll());self.assertLess(time.monotonic(),deadline);time.sleep(0.02)
+        proc.send_signal(signal.SIGTERM);proc.communicate(timeout=5)
+        self.assertEqual(proc.returncode,130)
+        self.assertEqual(json.loads(self.report.path.read_text())['tools'][0]['status'],'interrupted')
+
     def test_reports_append_across_child_invocations(self):
         self.assertEqual(self.cli('--step', 'one', '--', '/bin/sh', '-c', 'exit 0').returncode, 0)
         self.assertEqual(self.cli('--step', 'two', '--', '/bin/sh', '-c', 'exit 1').returncode, 1)
@@ -251,10 +356,10 @@ class InstallerBehavior(unittest.TestCase):
         self.assertTrue((self.bin / 'sample').exists())
 
     def test_skipped_component_is_explicitly_reported(self):
-        result = self.cli('--record', 'docker', '--reason', 'disabled by --skip-docker')
+        result = self.cli('--record', 'docker', '--reason', 'not selected')
         self.assertEqual(result.returncode, 0)
         row = json.loads(self.report.path.read_text())['tools'][0]
-        self.assertEqual(row['status'], 'skipped'); self.assertIn('--skip-docker', row['reason'])
+        self.assertEqual(row['status'], 'skipped'); self.assertIn('not selected', row['reason'])
 
     def test_catalog_covers_brewfile_and_linux_extras(self):
         import re

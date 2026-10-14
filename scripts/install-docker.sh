@@ -32,12 +32,12 @@ else
       *) fatal "Docker apt repository is configured only for Debian/Ubuntu, detected $OS_ID" ;;
     esac
     log "Installing Docker from official apt repository..."
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_ID $OS_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo -n install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" | sudo -n gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo -n chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_ID $OS_CODENAME stable" | sudo -n tee /etc/apt/sources.list.d/docker.list >/dev/null
+    sudo -n apt update
+    sudo -n apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
   fi
 fi
@@ -47,6 +47,6 @@ if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_PACKAGES" == 1 ]]; then
 fi
 if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]]; then
   getent group docker >/dev/null || fatal "Docker group is absent; install the engine first."
-  sudo usermod -aG docker "$(id -un)"
+  sudo -n usermod -aG docker "$(id -un)"
   warn "Docker group grants root-equivalent access; log out/in."
 fi
