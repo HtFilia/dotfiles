@@ -152,7 +152,7 @@ class SelectionAndGuides(unittest.TestCase):
         result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--dry-run'],
                               env=self.env,text=True,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
-        self.assertIn('jq: native',result.stdout)
+        self.assertIn('jq:',result.stdout)
         self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())
     def test_update_reuses_saved_selection_through_the_single_installer(self):
         saved=self.run_cli('select-tools.py','--tools','none','--methods','github','--save')
@@ -164,10 +164,21 @@ class SelectionAndGuides(unittest.TestCase):
         self.assertIn('--methods github',result.stdout)
         self.assertNotIn('apt-get',result.stdout)
 
+    def test_bootstrap_preview_identifies_working_selected_tools_without_replacing_them(self):
+        binary=self.executable(self.bin/'jq','printf "jq-0.1\\n"')
+        before=binary.read_bytes()
+        result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--tools','jq',
+            '--install-methods','github','--dry-run'],env=self.env,text=True,capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertIn('jq: already present (jq-0.1); keeping it',result.stdout)
+        self.assertNotIn('jq: github;',result.stdout)
+        self.assertEqual(binary.read_bytes(),before)
+        self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())
+
     def test_bootstrap_preview_resolves_only_selected_tools_and_policy(self):
         result=subprocess.run(['bash',str(ROOT/'scripts/bootstrap.sh'),'--tools','jq','--install-methods','github','--dry-run'],env=self.env,text=True,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
-        self.assertIn('jq: github;',result.stdout);self.assertNotIn('cmatrix:',result.stdout)
+        self.assertIn('jq:',result.stdout);self.assertNotIn('cmatrix:',result.stdout)
         self.assertFalse((self.home/'.local/state/dotfiles/tool-selection.json').exists())
 
 
