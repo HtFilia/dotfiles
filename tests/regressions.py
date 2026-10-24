@@ -73,7 +73,7 @@ class Contracts(unittest.TestCase):
             script = 'pinned_asset_field() { echo vfixture; }; cached_asset_path() { return 99; }; fatal() { exit 1; }; ARCH=x86_64; SKIP_PACKAGES=1\n' + functions + '\ninstall_node; install_node'
             self.run_command("bash", "-euc", script, env=dict(self.env, LOCAL_BIN=str(local_bin)))
             for binary in ("node", "npm", "npx"):
-                self.assertEqual((local_bin / binary).resolve(), runtime / binary)
+                self.assertEqual((local_bin / binary).resolve(), (runtime / binary).resolve())
 
     def test_retired_binary_is_backed_up_without_execution(self):
         scripts = self.work / "scripts"
