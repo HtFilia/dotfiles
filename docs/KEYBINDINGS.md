@@ -77,7 +77,7 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Action | Keys |
 |---|---|
 | New tab | `Ctrl-Shift-t` |
-| Close tab | `Ctrl-Shift-w` |
+| Close split or tab | `Ctrl-Shift-w` |
 | Next / Previous tab | `Ctrl-Tab` / `Ctrl-Shift-Tab` |
 | Split right | `Ctrl-Shift-d` |
 | Split down | `Ctrl-Shift-e` |

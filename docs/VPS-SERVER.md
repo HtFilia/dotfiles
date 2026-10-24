@@ -2,8 +2,8 @@
 
 Dotfiles owns the portable user shell, editor, Git, SSH client, tmux, tools,
 their installation scripts, and the optional Debian 13 base policy for APT,
-journal retention and administrator journal access. The separate `homelab-infra`
-repository owns this host's SSH daemon, UFW, Fail2ban, WireGuard, Caddy,
+journal retention and administrator journal access. The separate, private
+`homelab-infra` repository owns this host's SSH daemon, UFW, Fail2ban, WireGuard, Caddy,
 application services, health checks and backups. Neither repository contains
 credentials or host keys.
 

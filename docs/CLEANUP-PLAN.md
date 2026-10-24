@@ -1,6 +1,6 @@
 # Dotfiles cleanup: target state and proposed commits
 
-Status: approved; implementation in progress.
+Status: implemented in September 2026. Kept as the record of the agreed target state.
 
 ## Objective
 

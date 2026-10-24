@@ -63,7 +63,7 @@ extract dispatch does not automatically install rar/7z utilities.
 
 ## Containers
 
-`d` is Docker when installed, otherwise Podman. `dc` is Compose. Docker aliases:
+When Docker is installed, `d` is Docker and `dc` is Compose. Docker aliases:
 `dps`/`dpsa` list running/all containers, `di` lists images, `dex` enters a
 container, `dlog` follows logs, and `dprune` runs interactive system pruning
 without volume removal. Volume cleanup is a separate explicit decision.
