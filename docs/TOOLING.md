@@ -30,8 +30,8 @@ pager, gh versus Git, and a GUI editor versus a remote terminal editor. Remove
 packages from your personal manifest when you do not use that mode; no extra
 abstraction is needed to justify keeping everything installed.
 
-The base uses Gruvbox Material Dark for Ghostty/tmux/Starship/editor UI, and
-built-in `gruvbox-dark` syntax themes for bat/delta. fzf shares matching colors.
+Ghostty, tmux, Starship and fzf use Operator. Editors retain Gruvbox Material,
+with built-in `gruvbox-dark` syntax themes for bat/delta.
 Palette values remain local to their native configuration files so each is easy
 to read and adjust.
 
