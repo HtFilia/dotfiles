@@ -22,9 +22,14 @@ desktop.ini
 *.code-workspace
 
 # ============================================================================
-# Local environment & overrides
+# Machine-local overrides: they live only on each machine, never in this
+# repository (including copies made with `chezmoi add`).
 # ============================================================================
 *.local
+*zshrc.settings
+kitty.d/
+**/nvim/lua/config/local.lua
+**/nvim/lua/plugins/local.lua
 .env
 .env.local
 

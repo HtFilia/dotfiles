@@ -1,8 +1,9 @@
 # Zsh startup and customization
 
 `.zshenv` adds `~/.local/bin`, Cargo binaries, and Go binaries using Zsh's
-unique PATH array. It runs no external commands and prints nothing, so
-noninteractive SSH commands can locate user-installed tools.
+unique PATH array, then reads `~/.zshenv.local`. It runs no external commands
+and prints nothing, so noninteractive SSH commands can locate user-installed
+tools.
 
 `.zshrc` is a chezmoi template rendered for each machine. It reads
 `.zshrc.settings`, sets PATH (with Homebrew's prefix on macOS), pager, locale
@@ -33,7 +34,9 @@ That flag enables interactive `cat`/`less` → bat, `grep` → rg, `find` → fd
 `mkdir` → `mkdir -p`. Their argument semantics differ from the original commands;
 leave it unset if that causes friction. Shell scripts do not inherit aliases.
 
-Use `~/.zshrc.local` for final aliases/environment changes and custom widgets.
+Point `STARSHIP_CONFIG`, `RIPGREP_CONFIG_PATH` or `ATUIN_CONFIG_DIR` at a
+local copy there to replace a managed configuration on one machine. Use
+`~/.zshrc.local` for final aliases/environment changes and custom widgets.
 Syntax highlighting loads after those widgets. Local files execute shell code;
 keep them private and review copied content.
 

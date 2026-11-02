@@ -3,3 +3,5 @@
 typeset -U path PATH
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/go/bin" $path)
 export PATH
+# Environment for every zsh on this machine, including non-interactive ones.
+[[ -f "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"

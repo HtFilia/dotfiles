@@ -94,7 +94,9 @@ Files are deployed as copies, so applications that rewrite their settings
 once and never overwritten.
 
 To change an answer, such as the context or gaming, edit the `[data]` section
-of `~/.config/chezmoi/chezmoi.toml`, then run `chezmoi apply`.
+of `~/.config/chezmoi/chezmoi.toml`, then run `chezmoi apply`. Settings for one
+machine only go in local files that chezmoi never touches:
+[local overrides](docs/LOCAL-OVERRIDES.md).
 
 ## Packages and pinned binaries
 
@@ -133,6 +135,7 @@ what is pinned and why.
 
 ## Guides
 
+- [Local overrides](docs/LOCAL-OVERRIDES.md)
 - [Shell startup and customization](docs/SHELL.md)
 - [Aliases and helper functions](docs/ALIASES.md)
 - [Git behavior](docs/GIT.md)

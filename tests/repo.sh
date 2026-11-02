@@ -42,6 +42,14 @@ for machine in "${machines[@]}"; do
   printf 'ok - %s\n' "$machine"
 done
 
+step 'Local override files cannot be committed'
+for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/private_config.local \
+    home/dot_config/kitty/kitty.d/screen.conf home/dot_config/nvim/lua/config/local.lua \
+    home/dot_config/nvim/lua/plugins/local.lua; do
+  git check-ignore -q "$path" || { printf 'not ignored: %s\n' "$path"; exit 1; }
+done
+echo 'ok - .gitignore covers every local override file'
+
 step 'Dropped platforms are gone'
 # .chezmoiremove names the files those platforms left behind, and GitHub's
 # Linux runners are called ubuntu-latest.

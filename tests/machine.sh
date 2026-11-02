@@ -32,3 +32,6 @@ done
 
 step 'zsh helpers'
 bash "$root/tests/shell-functions.sh"
+
+step 'Local overrides'
+bash "$root/tests/overrides.sh"

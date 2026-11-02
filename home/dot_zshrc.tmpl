@@ -10,7 +10,9 @@
 {{- $share := "/usr/share" }}
 {{- if $brew }}{{ $share = printf "%s/share" $brew }}{{ end }}
 
-# Inputs read before the integrations below, such as command-override flags.
+# Inputs read before the integrations below: command-override flags, or
+# STARSHIP_CONFIG, RIPGREP_CONFIG_PATH and ATUIN_CONFIG_DIR pointing at a local
+# copy of a managed configuration.
 [[ -f "$HOME/.zshrc.settings" ]] && source "$HOME/.zshrc.settings"
 
 typeset -U path PATH fpath
@@ -34,7 +36,7 @@ command -v bat &>/dev/null && command -v col &>/dev/null && export MANPAGER="sh 
 # Kitty and tmux advertise true color; SSH need not forward COLORTERM.
 [[ "$TERM" == xterm-kitty || "$TERM" == tmux-256color ]] && export COLORTERM=truecolor
 export BAT_THEME="gruvbox-dark"
-export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+export RIPGREP_CONFIG_PATH="${RIPGREP_CONFIG_PATH:-$HOME/.config/ripgrep/config}"
 
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=100000
@@ -82,7 +84,7 @@ if _dotfiles_safe_source {{ $share }}/zsh-autosuggestions/zsh-autosuggestions.zs
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374"
 fi
 
-export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh)"
