@@ -43,11 +43,10 @@
     autoSetupRemote = true
     followTags = true
 
-# Keep GitHub remotes on SSH so clone, fetch, pull and push use ~/.ssh/github.
+# Clone and fetch GitHub over HTTPS, which needs no key; push over SSH with
+# the key selected in ~/.ssh/config.
 [url "git@github.com:"]
-    insteadOf = https://github.com/
-    insteadOf = http://github.com/
-    insteadOf = git://github.com/
+    pushInsteadOf = https://github.com/
 
 [rebase]
     autoStash = true

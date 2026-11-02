@@ -30,11 +30,14 @@ git config --file ~/.gitconfig.local user.name 'Your Name'
 git config --file ~/.gitconfig.local user.email 'you@example.com'
 ```
 
-Use conditional includes in that file for work/personal identities. Configure
-credential helpers or signing there according to your existing account setup.
-The dotfiles repository's origin and update workflow use GitHub SSH:
-`git@github.com:HtFilia/dotfiles.git`. Other upstream plugin/download URLs do not
-require GitHub account authentication. See [SSH](SSH.md).
+Use conditional includes in that file for work and personal identities; see
+[local overrides](LOCAL-OVERRIDES.md#git-a-work-identity-for-work-repositories).
+Configure credential helpers or signing there too.
+
+GitHub remotes keep their HTTPS URLs: clone, fetch and pull need no key, so
+`chezmoi init`, `chezmoi update` and plugin managers work on a machine without
+one. `pushInsteadOf` sends pushes to `git@github.com:` over SSH with the key
+chosen in [SSH](SSH.md). `git remote -v` shows both URLs.
 
 ## Internal aliases
 

@@ -51,6 +51,16 @@ write ~/.config/nvim/lua/config/local.lua 'vim.g.overrides_test = "from-config-l
 check 'Neovim: lua/config/local.lua runs after the managed options' from-config-local \
   "$(nvim --headless -u NONE '+lua require("config.options"); io.write(vim.g.overrides_test or "")' +qa 2>&1)"
 
+# lazy.nvim clones the locked plugins from https://github.com, which Git must
+# not rewrite to SSH, then LazyVim imports lua/plugins/local.lua.
+mkdir -p /tmp/overrides-plugin && created+=(/tmp/overrides-plugin)
+write ~/.config/nvim/lua/plugins/local.lua 'return { { dir = "/tmp/overrides-plugin", name = "overrides-plugin", lazy = false, config = function() vim.g.overrides_plugin = "loaded" end } }'
+nvim --headless '+Lazy! restore' +qa >/dev/null 2>&1
+check 'Neovim: lazy.nvim installs the locked plugins over HTTPS' 0 \
+  "$(nvim --headless '+lua io.write(#vim.tbl_filter(function(p) return not p._.installed end, require("lazy").plugins()))' +qa 2>&1)"
+check 'Neovim: lua/plugins/local.lua adds a plugin' loaded \
+  "$(nvim --headless '+lua io.write(vim.g.overrides_plugin or "")' +qa 2>&1)"
+
 if [[ "$profile" == workstation ]]; then
   write ~/.config/kitty/kitty.d/screen.conf 'font_size 18.0'
   check 'Kitty: kitty.d/*.conf overrides the managed config' 18.0 \

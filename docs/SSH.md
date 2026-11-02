@@ -25,6 +25,10 @@ ssh-keygen -t ed25519 -f ~/.ssh/github -C "github $(hostname)"
 ssh -T git@github.com    # authenticates; GitHub offers no shell
 ```
 
+Git clones and fetches GitHub repositories over HTTPS and pushes over SSH (see
+[Git](GIT.md)), so a machine without a key can still clone, run
+`chezmoi update` and install Neovim plugins.
+
 ## Other hosts and accounts
 
 Put servers in `~/.ssh/config.local`:
