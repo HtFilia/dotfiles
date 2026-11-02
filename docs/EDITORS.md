@@ -3,10 +3,15 @@
 ## Neovim
 
 The single profile uses a pinned LazyVim distribution and lazy.nvim manager.
-`lazy-lock.json` records the plugin graph. A drifted lazy.nvim checkout is refused;
-review local changes and restore its pinned commit deliberately. `:Lazy restore`
-uses the lock; `:Lazy update` changes unpinned dependencies and the lockfile.
-Review resulting changes before committing them.
+`lazy-lock.json` records the plugin graph. On first start, `init.lua` clones
+lazy.nvim and LazyVim at their pinned commits, then lazy.nvim installs every
+other plugin at its locked commit. A drifted lazy.nvim checkout is refused;
+review local changes and restore its pinned commit deliberately.
+
+`:Lazy restore` returns to the lock. `:Lazy update` changes the plugins and the
+deployed `lazy-lock.json`; `chezmoi diff` then shows the new lock, and
+`chezmoi re-add ~/.config/nvim/lazy-lock.json` brings it into the repository
+after review.
 
 The active theme is Gruvbox Material. Mason tool installation and Treesitter
 parser installation are not automatically requested during ordinary startup.
