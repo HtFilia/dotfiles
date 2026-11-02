@@ -36,6 +36,7 @@ return {
         rust_analyzer = "rust-analyzer",
         ts_ls = "typescript-language-server",
         bashls = "bash-language-server",
+        clangd = "clangd",
       }
       for server, binary in pairs(servers) do
         opts.servers[server] = vim.tbl_deep_extend("force", opts.servers[server] or {}, {

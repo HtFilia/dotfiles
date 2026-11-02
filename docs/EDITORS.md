@@ -16,7 +16,10 @@ after review.
 The active theme is Gruvbox Material. Mason tool installation and Treesitter
 parser installation are not automatically requested during ordinary startup.
 Configured servers enable only when their executable is available: Lua,
-BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, and Bash.
+BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, Bash and clangd. On the
+personal workstations the packages add a C++ compiler, CMake, Ninja, clangd
+and a debugger (gdb on Fedora, lldb from Apple's Command Line Tools);
+`setup-editor.sh cpp` adds the C, C++ and CMake parsers.
 
 ### Explicit provisioning
 

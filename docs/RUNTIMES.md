@@ -9,6 +9,7 @@ Projects that need a specific version declare it in version-controlled files.
 | Node | `nodejs24` | `nodejs` 20 and `npm` | `node` | lockfile, `engines`, `packageManager` |
 | Go | `golang` | not installed | `go` | `go.mod`, including its `toolchain` line |
 | Rust | rustup, stable toolchain | rustup, stable toolchain (work workstation) | rustup, stable toolchain | `rust-toolchain.toml`, `Cargo.lock` |
+| C, C++ | g++, CMake, Ninja, clangd, gdb | not installed | Apple clang, CMake, Ninja, clangd, lldb | `CMakeLists.txt`, `compile_commands.json` |
 
 ## Python
 

@@ -56,6 +56,11 @@ packages:
       - code
     perso:
       - golang
+      - gcc-c++
+      - cmake
+      - ninja-build
+      - clang-tools-extra
+      - gdb
     gaming:
       - gamemode
       - mangohud
@@ -170,6 +175,10 @@ packages:
     perso:
       brews:
         - go
+        - cmake
+        - ninja
+        # clangd; Apple's clang and lldb come with the Command Line Tools.
+        - llvm
 
 # VS Code extensions, installed where VS Code is: always on Fedora and macOS,
 # and on a Debian workstation once someone has installed `code`.
@@ -201,3 +210,4 @@ vscode:
   perso:
     - anthropic.claude-code
     - golang.go
+    - llvm-vs-code-extensions.vscode-clangd

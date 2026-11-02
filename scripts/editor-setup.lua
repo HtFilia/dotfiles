@@ -6,6 +6,8 @@ local targets = {
   rust = { tools = { "rust-analyzer" }, parsers = { "rust" } },
   node = { tools = { "typescript-language-server" }, parsers = { "javascript", "typescript", "tsx", "json" } },
   shell = { tools = { "bash-language-server", "shfmt", "shellcheck" }, parsers = { "bash" } },
+  -- clangd comes from the system packages on the personal workstations.
+  cpp = { tools = {}, parsers = { "c", "cpp", "cmake" } },
 }
 local function provision()
   require("lazy").load({ plugins = { "mason.nvim", "nvim-treesitter" } })

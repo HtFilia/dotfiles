@@ -4,11 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$PATH"
 case "${1:-}" in
-  -h|--help) printf 'Usage: %s [lua|python|go|rust|node|shell ...]\nDefault: lua python go rust node shell. Python requires python3 with venv support; Go requires Go; Node or shell requires Node/npm; Treesitter requires a C compiler.\n' "$0"; exit 0 ;;
+  -h|--help) printf 'Usage: %s [lua|python|go|rust|node|shell|cpp ...]\nDefault: lua python go rust node shell. Python requires python3 with venv support; Go requires Go; Node or shell requires Node/npm; Treesitter requires a C compiler.\n' "$0"; exit 0 ;;
 esac
 [[ $# -gt 0 ]] || set -- lua python go rust node shell
 for language in "$@"; do
-  case "$language" in lua|python|go|rust|node|shell) ;; *) printf 'Unknown language: %s\n' "$language" >&2; exit 1 ;; esac
+  case "$language" in lua|python|go|rust|node|shell|cpp) ;; *) printf 'Unknown language: %s\n' "$language" >&2; exit 1 ;; esac
 done
 needs_python=0
 needs_go=0

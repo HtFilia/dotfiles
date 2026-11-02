@@ -136,6 +136,18 @@
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.inlayHints.chainingHints.enable": true,
 
+  // C and C++ through clangd (personal workstations)
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+{{- if eq .chezmoi.os "darwin" }}
+  // Homebrew's llvm is keg-only and VS Code may not inherit the shell's PATH.
+  "clangd.path": "{{ ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}/opt/llvm/bin/clangd",
+{{- end }}
+
   // JSON / YAML / Markdown
   "[markdown]": {
     "editor.wordWrap": "on"

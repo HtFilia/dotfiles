@@ -19,7 +19,8 @@ typeset -U path PATH fpath
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" $path)
 {{- if $brew }}
 export HOMEBREW_PREFIX={{ $brew }}
-path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt/rustup/bin")
+# rustup and llvm are keg-only; llvm comes last so Apple's clang stays first.
+path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt/rustup/bin" "$HOMEBREW_PREFIX/opt/llvm/bin")
 fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
 {{- end }}
 export PATH

@@ -45,7 +45,10 @@ if [[ "$profile" == workstation ]]; then
     debian) commands+=(podman podman-compose) ;;
     darwin) commands+=(docker colima code) ;;
   esac
-  [[ "$context" == perso && "$osid" != debian ]] && commands+=(go)
+  if [[ "$context" == perso && "$osid" != debian ]]; then
+    commands+=(go c++ cmake ninja clangd)
+    [[ "$osid" == fedora ]] && commands+=(gdb)
+  fi
 fi
 [[ "$gaming" == true ]] && commands+=(mangohud gamemoded)
 [[ "$profile" == server ]] && commands+=(ncdu ip ss dig ping ps)
