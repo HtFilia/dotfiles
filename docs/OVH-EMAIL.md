@@ -2,7 +2,7 @@
 
 This is the integration guide for the health checker in `homelab-infra`, the
 author's private infrastructure repository. Dotfiles provides the shell and
-Debian baseline; `homelab-infra` owns notification code,
+the [Debian baseline](VPS-SERVER.md#system-baseline); `homelab-infra` owns notification code,
 its systemd unit and host-local mail settings. Run the commands below on the VPS
 as your regular sudo-capable account. No password belongs in either repository.
 

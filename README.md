@@ -20,7 +20,8 @@ the few pinned binaries a platform lacks.
 ## Install
 
 Run the commands as your regular user. The package scripts print what they
-install and say so before each command that uses sudo.
+install and say so before each command that uses sudo. A machine set up with
+the former Bash scripts follows the [migration guide](docs/MIGRATION.md) once.
 
 ### Fedora
 
@@ -64,22 +65,16 @@ chezmoi init --apply HtFilia
 
 ### Questions and first steps
 
-`chezmoi init` clones this repository over HTTPS and asks once for:
+`chezmoi init` clones this repository over HTTPS and asks once for `profile`
+(`workstation` or `server`) and `context` (`perso` or `travail`), then
+`gaming` on the Fedora personal workstation or `systemBaseline` on a Debian
+server ([VPS](docs/VPS-SERVER.md#system-baseline)). Afterwards, run
+`chsh -s "$(command -v zsh)"` and put your Git identity in
+`~/.gitconfig.local` ([Git](docs/GIT.md)).
 
-| Answer | Values | Asked on |
-|---|---|---|
-| `profile` | `workstation`, `server` | every machine |
-| `context` | `perso`, `travail` | every machine |
-| `gaming` | `true`, `false` | Fedora personal workstation |
-| `systemBaseline` | `true`, `false` | Debian server |
-
-Afterwards, make zsh your login shell with `chsh -s "$(command -v zsh)"` and
-put your Git identity in `~/.gitconfig.local` ([Git](docs/GIT.md)).
-
-With `gaming = true`, Fedora also gets GameMode, MangoHud and its overlay
-config. Steam comes from RPM Fusion's nonfree repository, which the repository
-does not add: enable RPM Fusion as its documentation describes, then run
-`sudo dnf install steam`.
+With `gaming = true`, Fedora also gets GameMode and MangoHud with its overlay
+config. Steam comes from RPM Fusion's nonfree repository, which this
+repository does not add: enable RPM Fusion, then `sudo dnf install steam`.
 
 ## Daily use
 
@@ -92,16 +87,13 @@ does not add: enable RPM Fusion as its documentation describes, then run
 | `chezmoi edit FILE` | Edit the source of a deployed file |
 | `chezmoi cd` | Open a shell in the source checkout |
 | `chezmoi data` | Show this machine's answers and facts |
-| `scripts/verify.sh` | Check this machine's tools and files |
+| `scripts/verify.sh` | Check this machine's tools and files (run from `chezmoi cd`) |
 
 Files are deployed as copies, so applications that rewrite their settings
-(VS Code, htop, lazy.nvim) change only the deployed file. `htoprc` is deployed
-once and never overwritten.
-
-To change an answer, such as the context or gaming, edit the `[data]` section
-of `~/.config/chezmoi/chezmoi.toml`, then run `chezmoi apply`. Settings for one
-machine only go in local files that chezmoi never touches:
-[local overrides](docs/LOCAL-OVERRIDES.md).
+(VS Code, htop, lazy.nvim) change only the deployed file. To change an answer,
+such as the context or gaming, edit `[data]` in
+`~/.config/chezmoi/chezmoi.toml`, then run `chezmoi apply`. Settings for one
+machine only go in [local overrides](docs/LOCAL-OVERRIDES.md).
 
 ## Packages and pinned binaries
 
@@ -121,37 +113,31 @@ curl -fsSLO https://github.com/OWNER/TOOL/releases/download/vX.Y.Z/ARCHIVE
 sha256sum ARCHIVE    # must match the checksum file the project publishes
 ```
 
-Packaged tools are upgraded by the package manager (`dnf upgrade`,
-`apt upgrade`, `brew upgrade`). [Supply chain](docs/SUPPLY-CHAIN.md) lists
-what is pinned and why.
+The package manager upgrades packaged tools (`dnf upgrade`, `apt upgrade`,
+`brew upgrade`); [supply chain](docs/SUPPLY-CHAIN.md) lists what is pinned.
 
 ## Repository map
 
 | Path | Content |
 |---|---|
-| `home/` | chezmoi source: dotfiles, templates and run scripts |
+| `home/` | chezmoi source: dotfiles, templates, `run_*` scripts |
 | `home/.chezmoi.toml.tmpl` | Questions asked once per machine |
 | `home/.chezmoidata/packages.yaml` | Packages and VS Code extensions per platform |
 | `home/.chezmoiexternal.toml.tmpl` | Pinned release binaries |
-| `home/.chezmoiignore`, `home/.chezmoiremove` | Files skipped on a machine; old files to delete |
-| `home/run_*` | Package, VS Code extension and Rust toolchain scripts |
+| `home/.chezmoiignore`, `.chezmoiremove` | Files skipped on a machine; old files to delete |
 | `scripts/` | `verify.sh`; `setup-editor.sh` for Neovim language tools |
 | `tests/` | Installs in Podman containers and machine checks |
 
 ## Guides
 
-- [Local overrides](docs/LOCAL-OVERRIDES.md)
-- [Shell startup and customization](docs/SHELL.md)
-- [Aliases and helper functions](docs/ALIASES.md)
-- [Git behavior](docs/GIT.md)
-- [SSH hosts and identities](docs/SSH.md)
-- [Kitty and tmux](docs/TERMINALS.md)
-- [Neovim and VS Code](docs/EDITORS.md)
-- [Runtimes and project environments](docs/RUNTIMES.md)
-- [Keybindings](docs/KEYBINDINGS.md)
-- [Operator appearance](docs/VISUALS.md)
-- [Supply chain](docs/SUPPLY-CHAIN.md)
-- [Debian VPS](docs/VPS-SERVER.md)
+[Local overrides](docs/LOCAL-OVERRIDES.md) ·
+[Migration from the former scripts](docs/MIGRATION.md) ·
+[Shell](docs/SHELL.md) · [Aliases](docs/ALIASES.md) · [Git](docs/GIT.md) ·
+[SSH](docs/SSH.md) · [Kitty and tmux](docs/TERMINALS.md) ·
+[Neovim and VS Code](docs/EDITORS.md) · [Runtimes](docs/RUNTIMES.md) ·
+[Keybindings](docs/KEYBINDINGS.md) · [Appearance](docs/VISUALS.md) ·
+[Supply chain](docs/SUPPLY-CHAIN.md) · [Debian VPS](docs/VPS-SERVER.md) ·
+[VPS email alerts](docs/OVH-EMAIL.md)
 
 ## Check the repository
 
@@ -160,8 +146,7 @@ tests/container.sh fedora-perso    # also debian-travail, debian-server, debian-
 ```
 
 Each run installs one machine from scratch in a Podman container with the
-commands above, then checks it, applies a second time and expects no change.
-`--worktree` tests uncommitted changes. CI runs the four containers and a
-macOS install.
+commands above, checks it, applies again and expects no change; `--worktree`
+tests uncommitted changes. CI runs the four containers and a macOS install.
 
 MIT licensed.

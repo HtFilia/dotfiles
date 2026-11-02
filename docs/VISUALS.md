@@ -1,22 +1,16 @@
-# Operator terminal appearance
+# Operator appearance
 
-Operator is the single native theme for Starship, tmux and Kitty. Apply the
-dotfiles, restart Zsh, and reload Kitty and tmux configuration. No style-selection command or generated override is needed.
-Editors and Git syntax highlighting retain Gruvbox.
+Operator is the palette of Kitty, tmux, Starship, fzf and the MangoHud overlay.
+Each tool keeps its colours in its own configuration file; there is no theme
+switcher. Neovim, VS Code, and the syntax highlighting in bat and delta keep
+Gruvbox Material.
 
-Fonts belong on the terminal client; SSH servers do not need fonts. Left Option
-sends Alt on macOS while right Option remains available for accented characters.
+Fira Code is the font everywhere. Nerd Font symbols come from the font bundled
+with Kitty, shared with other applications on Linux through fontconfig and
+installed from Homebrew on macOS; see [Kitty and tmux](TERMINALS.md). SSH
+servers need no fonts.
 
-## Upgrade
-
-`chezmoi apply` deletes the old style files, saved choices, generated overrides
-and CRT shader listed in `.chezmoiremove`.
-
-## htop
-
-The native htop config uses Black Night, a compact process list sorted by CPU,
-CPU/memory/swap meters, and a 500 ms refresh interval. These settings are supported
-by the [htop 3.2.2 settings parser](https://github.com/htop-dev/htop/blob/3.2.2/Settings.c)
-and [color scheme definitions](https://github.com/htop-dev/htop/blob/3.2.2/CRT.h).
-Adjust further with F2. chezmoi deploys `htoprc` once and never overwrites it,
-so settings saved by htop stay on that machine.
+htop uses its built-in Black Night scheme, a compact process list sorted by
+CPU, CPU, memory and swap meters, and a 500 ms refresh. chezmoi deploys
+`htoprc` once and never overwrites it, so settings saved with F2 stay on that
+machine.
