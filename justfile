@@ -6,13 +6,13 @@ check:
     shellcheck scripts/*.sh tests/*.sh
     bash tests/script-contracts.sh
 
-dry-run:
-    tmp_dir="$(mktemp -d)"; trap 'rm -rf "$tmp_dir"' EXIT; ./scripts/apply-dotfiles.sh --dry-run --destination "$tmp_dir"
+diff:
+    chezmoi diff
 
 verify:
     ./scripts/verify.sh
 
-audit: check dry-run verify
+audit: check diff verify
 
 # These checks use already-installed tools and do not install dependencies.
 security:
@@ -28,7 +28,7 @@ editor *languages:
     ./scripts/setup-editor.sh {{languages}}
 
 update:
-    ./scripts/update-dotfiles.sh
+    chezmoi update
 
 # Upgrade packages and managed user tools; --skip-packages avoids sudo.
 tools-update *options:

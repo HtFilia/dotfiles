@@ -1,18 +1,24 @@
-{{ if eq (env "DOTFILES_PROFILE") "server" }}
+{{- $osid := includeTemplate "osid" . -}}
+# Targets that are not deployed on this machine.
+{{- if ne .chezmoi.os "darwin" }}
+Library
+Library/**
+{{- end }}
+{{- if eq .chezmoi.os "darwin" }}
+.config/Code
+.config/Code/**
+{{- end }}
+{{- if eq .profile "server" }}
 .config/Code
 .config/Code/**
 .config/kitty
 .config/kitty/**
 .config/fastfetch
 .config/fastfetch/**
-.config/tealdeer/pages
-.config/tealdeer/pages/**
-Library
-Library/**
-{{ else if eq .chezmoi.os "darwin" }}
+{{- end }}
+{{- /* The repository never installs VS Code on Debian; deploy its settings
+       only where someone installed it. */}}
+{{- if and (eq $osid "debian") (not (lookPath "code")) }}
 .config/Code
 .config/Code/**
-{{ else }}
-Library
-Library/**
-{{ end }}
+{{- end }}

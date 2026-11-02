@@ -1,0 +1,34 @@
+{{- /* Answers asked once per machine by `chezmoi init`, then kept in
+       ~/.config/chezmoi/chezmoi.toml. The prompt text is the answer's key,
+       so `--promptChoice profile=server` answers it non-interactively. */ -}}
+{{- $osid := .chezmoi.os -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-   $osid = .chezmoi.osRelease.id -}}
+{{- end -}}
+{{- if not (has $osid (list "fedora" "debian" "darwin")) -}}
+{{-   fail (printf "unsupported operating system %q: use Fedora, Debian 13 or macOS" $osid) -}}
+{{- end -}}
+{{- if and (eq .chezmoi.os "linux") (ne .chezmoi.arch "amd64") -}}
+{{-   fail "Linux machines must be x86_64" -}}
+{{- end -}}
+{{- if and (eq $osid "debian") (ne .chezmoi.osRelease.versionID "13") -}}
+{{-   fail "Debian 13 (trixie) is required" -}}
+{{- end -}}
+{{- $profile := promptChoiceOnce . "profile" "profile" (list "workstation" "server") -}}
+{{- if and (eq $profile "server") (ne $osid "debian") -}}
+{{-   fail "the server profile requires Debian 13" -}}
+{{- end -}}
+{{- $context := promptChoiceOnce . "context" "context" (list "perso" "travail") -}}
+{{- $gaming := false -}}
+{{- if and (eq $osid "fedora") (eq $profile "workstation") (eq $context "perso") -}}
+{{-   $gaming = promptBoolOnce . "gaming" "gaming" -}}
+{{- end -}}
+{{- $systemBaseline := false -}}
+{{- if and (eq $osid "debian") (eq $profile "server") -}}
+{{-   $systemBaseline = promptBoolOnce . "systemBaseline" "systemBaseline" -}}
+{{- end -}}
+[data]
+    profile = {{ $profile | quote }}
+    context = {{ $context | quote }}
+    gaming = {{ $gaming }}
+    systemBaseline = {{ $systemBaseline }}

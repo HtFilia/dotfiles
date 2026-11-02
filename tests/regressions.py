@@ -1,11 +1,9 @@
 """Offline behavioral checks. All mutable state is confined to temporary homes."""
 import json
-import hashlib
 import os
 from pathlib import Path
 import shutil
 import subprocess
-import tarfile
 import tempfile
 import unittest
 
@@ -37,9 +35,6 @@ class Contracts(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return result
 
-    def apply(self, *args):
-        return self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), *args)
-
     def function(self, name):
         lines = (ROOT / "home/dot_zshrc").read_text().splitlines()
         start = next(i for i, line in enumerate(lines) if line.startswith(name + "()"))
@@ -50,7 +45,7 @@ class Contracts(unittest.TestCase):
 
     def test_cli_validation(self):
         for script in (ROOT / "scripts").glob("*.sh"):
-            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "profile.sh", "server-packages.sh", "asset-manifest.sh"}:
+            if script.name in {"pinned-assets.sh", "pinned-plugins.sh", "preflight.sh", "server-packages.sh", "asset-manifest.sh"}:
                 continue
             self.run_command(str(script), "--help")
         result = self.run_command(str(ROOT / "scripts/bootstrap.sh"), "--profile", "invalid", "--yes", success=False)
@@ -75,72 +70,6 @@ class Contracts(unittest.TestCase):
             for binary in ("node", "npm", "npx"):
                 self.assertEqual((local_bin / binary).resolve(), (runtime / binary).resolve())
 
-    def test_retired_binary_is_backed_up_without_execution(self):
-        scripts = self.work / "scripts"
-        scripts.mkdir()
-        shutil.copy2(ROOT / "scripts/retire-dotfiles.py", scripts)
-        binary = self.home / ".local/bin/tmux"
-        binary.parent.mkdir(parents=True)
-        payload = b"old compiled executable fixture"
-        binary.write_bytes(payload)
-        (scripts / "retired-files.json").write_text(json.dumps([{
-            "target": ".local/bin/tmux", "sha256": [hashlib.sha256(payload).hexdigest()]}]))
-        self.run_command("python3", str(scripts / "retire-dotfiles.py"), "--destination", str(self.home),
-                         "--source", str(ROOT / "home"), "--profile", "workstation")
-        self.assertFalse(binary.exists())
-        backup = next((self.home / ".local/state/dotfiles/backups").glob("retired-*"))
-        with tarfile.open(backup / "contents.tar") as archive:
-            self.assertEqual(archive.extractfile(".local/bin/tmux").read(), payload)
-
-    def test_profile_retirement_backs_up_and_restores(self):
-        target = self.home / ".config/dotfiles/style"
-        target.parent.mkdir(parents=True)
-        original = b"operator\n"
-        target.write_bytes(original)
-        self.apply("--profile", "server", "--dry-run")
-        self.assertEqual(target.read_bytes(), original)
-        self.assertFalse((self.home / ".local/state/dotfiles/backups").exists())
-        self.apply("--profile", "server", "--force")
-        self.assertFalse(target.exists())
-        backups = list((self.home / ".local/state/dotfiles/backups").glob("retired-*"))
-        self.assertEqual(len(backups), 1)
-        self.assertEqual(backups[0].stat().st_mode & 0o777, 0o700)
-        self.assertEqual((backups[0] / "contents.tar").stat().st_mode & 0o777, 0o600)
-        self.apply("--profile", "server")
-        self.assertEqual(len(list(backups[0].parent.glob("retired-*"))), 1)
-        self.run_command(str(ROOT / "scripts/restore-dotfiles.sh"), str(backups[0]), str(self.home))
-        self.assertEqual(target.read_bytes(), original)
-
-    def test_retirement_preserves_modified_and_unknown_targets(self):
-        target = self.home / ".config/ghostty/config.ghostty"
-        target.parent.mkdir(parents=True)
-        target.write_text("custom config\n")
-        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "server", success=False)
-        self.assertEqual(result.returncode, 2)
-        self.assertIn("Unresolved cleanup", result.stderr)
-        self.assertEqual(target.read_text(), "custom config\n")
-        target.unlink()
-        unknown = self.work / "unknown"
-        unknown.write_text("unknown link target\n")
-        target.symlink_to(unknown)
-        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "server", success=False)
-        self.assertEqual(result.returncode, 2)
-        self.assertTrue(target.is_symlink())
-
-    def test_retirement_handles_old_checkout_dangling_links(self):
-        target = self.home / ".config/ghostty/config.ghostty"
-        target.parent.mkdir(parents=True)
-        old = self.work / "moved-checkout"
-        target.symlink_to(old / "home/dot_config/ghostty/config.ghostty")
-        state = self.home / ".local/state/dotfiles"
-        state.mkdir(parents=True)
-        (state / "source").write_text(str(old) + "\n")
-        self.apply("--profile", "server")
-        self.assertFalse(target.is_symlink())
-        backup = next((state / "backups").glob("retired-*"))
-        with tarfile.open(backup / "targets.tar") as archive:
-            self.assertTrue(archive.getmember(".config/ghostty/config.ghostty").issym())
-
     def test_tool_update_dispatch_and_package_boundaries(self):
         scripts = self.work / "scripts"
         shutil.copytree(ROOT / "scripts", scripts)
@@ -156,23 +85,19 @@ class Contracts(unittest.TestCase):
         for name in ("install-debian.sh", "install-server.sh", "install-macos.sh"):
             stub(scripts / name, 'printf "%s %s\\n" "' + name + '" "$*" >> "$CALLS"')
         stub(binaries / "uname", 'printf "%s\\n" "$TEST_OS"')
-        state = self.home / ".local/state/dotfiles"
-        state.mkdir(parents=True)
         env = dict(self.env, PATH=str(binaries) + ":/usr/bin:/bin", CALLS=str(log), TEST_OS="Linux")
-        (state / "profile").write_text("server\n")
-        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", env=env)
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--profile", "server", "--skip-packages", env=env)
         self.assertEqual(log.read_text(), "install-server.sh --skip-packages\n")
         log.unlink()
-        (state / "profile").write_text("workstation\n")
-        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", "--skip-docker", env=env)
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--profile", "workstation", "--skip-packages", "--skip-docker", env=env)
         calls = log.read_text()
         self.assertIn("install-debian.sh --skip-packages --skip-docker", calls)
         self.assertNotIn("sudo", calls)
         log.unlink()
         env["TEST_OS"] = "Darwin"
-        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", env=env)
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--profile", "workstation", "--skip-packages", env=env)
         self.assertFalse(log.exists())
-        self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-fonts", "--skip-docker", env=env)
+        self.run_command("bash", str(scripts / "update-tools.sh"), "--profile", "workstation", "--skip-fonts", "--skip-docker", env=env)
         self.assertEqual(log.read_text(), "install-macos.sh --skip-fonts --skip-docker\n")
 
     def test_server_fallback_preserves_existing_launchers(self):
@@ -197,32 +122,12 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("complete dotfiles checkout", result.stderr)
 
-    def test_dry_run_has_no_destination_writes(self):
-        destination = self.work / "dry"
-        self.apply("--destination", str(destination), "--dry-run")
-        self.assertFalse(destination.exists())
-
-    def test_profile_and_materialization_persist(self):
-        self.apply("--destination", str(self.home), "--profile", "server", "--force")
-        self.assertFalse((self.home / ".zshrc").is_symlink())
-        self.assertFalse((self.home / ".config/Code").exists())
-        self.assertFalse((self.home / ".local/bin/dotfiles-deck").exists())
-        self.assertFalse((self.home / ".local/share/dotfiles/workbooks").exists())
-        self.assertFalse((self.home / ".config/dotfiles/windows-terminal.json").exists())
-        self.assertFalse((self.home / ".config/dotfiles/shaders").exists())
-        self.assertFalse((self.home / ".config/dotfiles/styles/operator/ghostty.conf").exists())
-        self.apply("--destination", str(self.home))
-        self.assertFalse((self.home / ".config/Code").exists())
-        self.assertEqual((self.home / ".local/state/dotfiles/profile").read_text().strip(), "server")
-        self.assertEqual((self.home / ".local/state/dotfiles/source").read_text().strip(), str(ROOT))
-
     def test_profile_update_preview_never_uses_workstation_installer(self):
         state = self.home / ".local/state/dotfiles"
         state.mkdir(parents=True)
-        (state / "profile").write_text("server\n")
         (state / "editor-languages").write_text("python shell\n")
         if os.uname().sysname == "Darwin":
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "server", "--dry-run", success=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("Server profile requires Linux", result.stderr)
             self.assertNotIn("would run:", result.stdout)
@@ -230,15 +135,14 @@ class Contracts(unittest.TestCase):
             self.assertIn("install-macos.sh", result.stdout)
             self.assertNotIn("install-server.sh", result.stdout)
         else:
-            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--skip-packages", "--dry-run")
+            result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "server", "--skip-packages", "--dry-run")
             self.assertIn("install-server.sh --skip-packages --editor-languages python\\,shell", result.stdout)
             self.assertIn("setup-editor.sh python shell", result.stdout)
             self.assertNotIn("sudo", result.stdout)
             self.assertNotIn("install-debian.sh", result.stdout)
             result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "workstation", "--skip-packages", "--dry-run")
             self.assertIn("install-debian.sh", result.stdout)
-        (state / "profile").write_text("broken\n")
-        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--dry-run", success=False)
+        result = self.run_command(str(ROOT / "scripts/update-tools.sh"), "--profile", "broken", "--dry-run", success=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertNotIn("would run:", result.stdout)
 
@@ -274,75 +178,6 @@ class Contracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Unknown editor language", result.stderr)
         self.assertNotIn("apt-get", result.stdout)
-
-    def test_local_git_and_ssh_overrides(self):
-        self.apply("--destination", str(self.home), "--profile", "server")
-        local = self.home / ".gitconfig.local"
-        self.run_command("git", "config", "--file", str(local), "user.name", "Local Person")
-        name = self.run_command("git", "config", "--includes", "--file", str(self.home / ".gitconfig"), "user.name")
-        self.assertEqual(name.stdout.strip(), "Local Person")
-        ssh_local = self.home / ".ssh/config.local"
-        ssh_local.write_text("Host audit-alias\n  HostName 192.0.2.1\n  User audit-user\n")
-        config = self.home / ".ssh/config"
-        config.write_text(config.read_text().replace("~/.ssh/config.local", str(ssh_local)))
-        options = self.run_command("ssh", "-G", "-F", str(config), "audit-alias").stdout
-        self.assertIn("hostname 192.0.2.1\n", options)
-        self.assertIn("user audit-user\n", options)
-
-    def test_atuin_policy_is_deployed(self):
-        self.apply("--destination", str(self.home), "--profile", "server")
-        import tomllib
-        policy = tomllib.loads((self.home / ".config/atuin/config.toml").read_text())
-        self.assertEqual({key: policy[key] for key in ("auto_sync", "update_check", "enter_accept")},
-                         {"auto_sync": False, "update_check": False, "enter_accept": False})
-
-    def test_apply_repairs_plugin_parent_permissions(self):
-        parent = self.home / ".local/share/zsh/plugins"
-        parent.mkdir(parents=True)
-        for path in [self.home / ".local", self.home / ".local/share", self.home / ".local/share/zsh", parent]:
-            path.chmod(0o775)
-        self.apply("--destination", str(self.home), "--profile", "server")
-        for path in [self.home / ".local", self.home / ".local/share", self.home / ".local/share/zsh", parent]:
-            self.assertFalse(path.stat().st_mode & 0o022, str(path))
-
-    def test_link_and_content_backups(self):
-        source = self.work / "source"
-        shutil.copytree(ROOT / "home", source)
-        original = self.work / "original"
-        original.write_text("original contents\n")
-        (self.home / ".zshrc").symlink_to(original)
-        self.apply("--source", str(source), "--destination", str(self.home), "--profile", "server", "--force")
-        backups = list((self.home / ".local/state/dotfiles/backups").glob("*"))
-        with tarfile.open(backups[0] / "targets.tar") as archive:
-            self.assertTrue(archive.getmember(".zshrc").issym())
-        with tarfile.open(backups[0] / "contents.tar") as archive:
-            self.assertEqual(archive.extractfile(".zshrc").read(), b"original contents\n")
-        original.write_text("changed\n")
-        self.run_command(str(ROOT / "scripts/restore-dotfiles.sh"), str(backups[0]), str(self.home))
-        self.assertEqual((self.home / ".zshrc").read_text(), "original contents\n")
-
-    def test_identity_roundtrip(self):
-        self.env.update(DOTFILES_GIT_NAME='A "Name" # comment', DOTFILES_GIT_EMAIL="a@example.com")
-        self.apply("--destination", str(self.home), "--profile", "server")
-        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig.local"), "user.name")
-        self.assertEqual(result.stdout.strip(), self.env["DOTFILES_GIT_NAME"])
-        self.assertEqual((self.home / ".gitconfig.local").stat().st_mode & 0o777, 0o600)
-
-    def test_effective_identity_survives_migration(self):
-        (self.home / ".gitconfig").write_text('[user]\n name = Existing User\n email = existing@example.com\n')
-        self.apply("--profile", "server", "--force")
-        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.name")
-        self.assertEqual(result.stdout.strip(), "Existing User")
-        (self.home / ".gitconfig.local").write_text('[user]\n name = Local Override\n email = local@example.com\n')
-        self.apply("--profile", "server", "--force")
-        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.name")
-        self.assertEqual(result.stdout.strip(), "Local Override")
-
-    def test_symlink_identity_survives_post_pull_migration(self):
-        (self.home / ".gitconfig").symlink_to(ROOT / "home/dot_gitconfig")
-        self.apply("--profile", "server", "--force")
-        result = self.run_command("git", "config", "--file", str(self.home / ".gitconfig"), "--includes", "user.email")
-        self.assertEqual(result.stdout.strip(), "contact@lucaslebihan.dev")
 
     def test_fga_handles_spaces_and_dashes(self):
         self.run_command("git", "init", "-q", str(self.work))
@@ -387,52 +222,10 @@ if install_pinned_plugin zsh-autosuggestions "$2"; then exit 1; fi
 '''
         self.run_command("bash", "-euc", script, "_", str(ROOT / "scripts/pinned-plugins.sh"), str(self.work / "plugins"))
 
-    @unittest.skipUnless(os.uname().sysname == "Linux", "server bootstrap requires Linux")
-    def test_bootstrap_sees_child_installed_tools(self):
-        fixture = self.work / "repository"
-        shutil.copytree(ROOT / "scripts", fixture / "scripts")
-        (fixture / "home").mkdir()
-        (fixture / "home/dot_zshrc").write_text("# fixture")
-        (fixture / "scripts/preflight.sh").write_text("preflight_linux() { return 0; }\n")
-        (fixture / "scripts/install-server.sh").write_text('mkdir -p "$HOME/.local/bin"\nprintf "#!/bin/sh\\nexit 0\\n" >"$HOME/.local/bin/chezmoi"\nchmod +x "$HOME/.local/bin/chezmoi"\n')
-        (fixture / "scripts/apply-dotfiles.sh").write_text('#!/bin/sh\ncommand -v chezmoi >"$HOME/found"\n')
-        self.env.update(PATH="/usr/bin:/bin", SHELL="/bin/bash")
-        state = self.home / ".local/state/dotfiles"
-        state.mkdir(parents=True)
-        (state / "profile").write_text("server\n")
-        self.run_command("bash", str(fixture / "scripts/bootstrap.sh"), "--yes", "--no-shell-plugins")
-        self.assertEqual((self.home / "found").read_text().strip(), str(self.home / ".local/bin/chezmoi"))
-
     def test_verification_fails_when_required_tools_missing(self):
         result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("verification failure", result.stdout)
-
-    def test_verification_detects_managed_server_drift(self):
-        self.apply("--destination", str(self.home), "--profile", "server", "--force")
-        result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
-        self.assertIn("ok - all managed server files match source", result.stdout)
-        (self.home / ".config/ripgrep/config").write_text("--hidden\n")
-        result = self.run_command(str(ROOT / "scripts/verify.sh"), "--profile", "server", success=False)
-        self.assertIn("FAIL - all managed server files match source", result.stderr)
-
-    def test_existing_ssh_identity_is_preserved(self):
-        ssh = self.home / ".ssh"
-        ssh.mkdir(mode=0o700)
-        (ssh / "config").write_text("Host github.com\n  IdentityFile ~/.ssh/personal-key\n")
-        self.apply("--destination", str(self.home), "--profile", "server", "--force")
-        self.assertIn("personal-key", (ssh / "config.local").read_text())
-        managed = (ssh / "config").read_text()
-        self.assertIn("Host github.com", managed)
-        self.assertIn("IdentityFile ~/.ssh/github", managed)
-        self.assertIn("IdentitiesOnly yes", managed)
-        self.assertIn("IdentityAgent none", managed)
-        self.assertIn("Include ~/.ssh/config.local", managed)
-        rewrites = self.run_command(
-            "git", "config", "--file", str(self.home / ".gitconfig"),
-            "--get-all", "url.git@github.com:.insteadOf",
-        ).stdout.splitlines()
-        self.assertEqual(set(rewrites), {"https://github.com/", "http://github.com/", "git://github.com/"})
 
     def test_cache_is_versioned_and_replaces_corruption(self):
         script = r'''source "$1"
@@ -451,14 +244,6 @@ second=$(cached_asset_path tool "$2")
 [[ "$second" == "$2/tool/v2/same.tar.gz" && -f "$first" ]] || exit 1
 '''
         self.run_command("bash", "-euc", script, "_", str(ROOT / "scripts/pinned-assets.sh"), str(self.work / "cache"))
-
-    def test_mac_native_settings_target(self):
-        if os.uname().sysname != "Darwin":
-            self.skipTest("native macOS routing is covered on macOS CI")
-        self.apply("--destination", str(self.home), "--profile", "workstation")
-        native = self.home / "Library/Application Support/Code/User/settings.json"
-        self.assertEqual(native.resolve(), (ROOT / "home/dot_config/Code/User/settings.json").resolve())
-        self.assertFalse((self.home / ".config/Code").exists())
 
     def test_mergetool_quotes_path_arguments(self):
         result = self.run_command("git", "config", "--file", str(ROOT / "home/dot_gitconfig"), "mergetool.nvim.cmd")
@@ -483,25 +268,6 @@ second=$(cached_asset_path tool "$2")
         self.assertEqual(original.read_text(), "original")
         self.assertFalse(link.is_symlink())
         self.assertEqual(link.read_text(), "updated")
-
-    def test_operator_is_native_without_style_initialization(self):
-        self.apply("--profile", "workstation")
-        self.assertIn("142727", (self.home / ".config/kitty/kitty.conf").read_text())
-        self.assertIn("142727", (self.home / ".tmux.conf").read_text())
-        self.assertNotIn("DOTFILES_STYLE", (self.home / ".zshrc").read_text())
-        self.assertFalse((self.home / ".config/dotfiles/style").exists())
-
-    def test_generated_style_cleanup_and_unknown_preservation(self):
-        root = self.home / ".config/dotfiles"
-        root.mkdir(parents=True)
-        (root / "style").write_text("operator\n")
-        (root / "ghostty-style.conf").write_text('# Use the managed Gruvbox theme.\ncustom-shader = "' + str(root / 'shaders/scanlines.glsl') + '"\ncustom-shader-animation = false\n')
-        (root / "tmux-style.conf").write_text("custom settings\n")
-        result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "workstation", success=False)
-        self.assertEqual(result.returncode, 2)
-        self.assertFalse((root / "style").exists())
-        self.assertFalse((root / "ghostty-style.conf").exists())
-        self.assertEqual((root / "tmux-style.conf").read_text(), "custom settings\n")
 
 
 if __name__ == "__main__":

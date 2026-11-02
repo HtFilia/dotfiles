@@ -22,9 +22,8 @@ project-specific build-output and secret policies in each repository.
 
 ## Identity and authentication
 
-`~/.gitconfig.local` is included last. Apply creates it privately when both a
-name and email are supplied; existing files are preserved.
-Values in the local file take precedence over managed identity defaults.
+`~/.gitconfig.local` is included last; chezmoi never creates or changes it.
+Values in the local file take precedence over the managed configuration.
 
 ```sh
 git config --file ~/.gitconfig.local user.name 'Your Name'

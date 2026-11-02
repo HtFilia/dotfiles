@@ -20,9 +20,10 @@ by offline CI.
 
 `.gitleaks.toml` extends all built-in detection rules. Its two exceptions to the
 generic API key rule are narrow: the historical VS Code keybindings path with the
-literal `shift+alt+down` keyboard shortcut, and the SHA-256 digests that
-`scripts/retired-files.json` records for retired `keybindings.json` contents. Full history remains scanned,
-including deleted files; other values in that file still receive normal checks.
+literal `shift+alt+down` keyboard shortcut, and the SHA-256 digests that the
+deleted `scripts/retired-files.json` recorded for retired `keybindings.json`
+contents. Full history remains scanned, including deleted files; other values
+in those files still receive normal checks.
 To investigate a failure, run `gitleaks git --redact --no-banner --verbose` and
 inspect the rule, path, commit, and fingerprint before adding an exception.
 CI prints the scanner version and verbose, redacted findings directly in the
@@ -36,7 +37,8 @@ use the CI version when validating this repository's allowlist configuration.
 ./scripts/verify.sh --profile server
 ```
 
-The saved profile determines required tools and deployed leaf files. Linux
+The profile recorded by chezmoi determines required tools; `chezmoi verify`
+checks every managed file. Linux
 upstream binary pins are compared as complete version tokens. Existing plugins
 must match pins and have clean working trees. Verification returns nonzero for
 required failures. Plugins deliberately skipped during installation are
@@ -54,7 +56,7 @@ just workflow
 just security
 ```
 
-`update` snapshots before an SSH fast-forward source update. Review upgrades to
+`update` runs `chezmoi update`: a fast-forward pull, then apply. Review upgrades to
 Homebrew/apt separately; bootstrap does not upgrade the entire system. Tool pins
 are intentional: update URL/version/hash together using upstream release metadata,
 then regenerate inventory with `just assets`. Test the affected installation path

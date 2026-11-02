@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# ~/.zshrc - managed by dotfiles/scripts/apply-dotfiles.sh
+# ~/.zshrc - managed by chezmoi
 # shellcheck disable=all
 
 case "$OSTYPE" in
@@ -154,8 +154,7 @@ alias mkd='mkdir -p' df='df -h' du='du -h'
 [[ "$DOTFILES_OS" == macos ]] || alias free='free -h'
 alias reload='exec zsh' zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
-alias dotfiles='cd "${DOTFILES_DIR:-$(cat "$HOME/.local/state/dotfiles/source" 2>/dev/null || printf "%s" "$HOME/dotfiles")}"'
-alias dotupdate='dotfiles-update'
+alias dotfiles='chezmoi cd'
 
 if [[ "$DOTFILES_OS" == "macos" ]]; then
   alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'

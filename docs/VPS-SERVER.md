@@ -14,11 +14,12 @@ an independent provider-console login. Keep that SSH session open during host
 network changes. Clone with an already working GitHub key:
 
 ```sh
-git clone git@github.com:HtFilia/dotfiles.git ~/dotfiles
+git clone https://github.com/HtFilia/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --dry-run
 ./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --configure-shell
-./scripts/verify.sh --profile server
+chezmoi init --apply --promptChoice profile=server,context=perso HtFilia
+./scripts/verify.sh
 ```
 
 Review the preview, package and shell prompts before accepting them. The default
@@ -35,33 +36,28 @@ homelab journal drop-in, and adds the administrator to `systemd-journal`. Sign
 in again before checking journal access. If existing settings differ, it stops
 for review. It does not manage SSH, networking, the firewall or application services.
 
-The first `apply-dotfiles.sh` makes private snapshots of existing managed files.
-It preserves local identities and SSH hosts in `.gitconfig.local` and
-`.ssh/config.local`. Server files are independent copies, so a Git pull alone
-does not activate new configuration.
+chezmoi keeps local identities and SSH hosts in `.gitconfig.local` and
+`.ssh/config.local` untouched. Server files are independent copies, so a Git
+pull alone does not activate new configuration.
 
 ## Changes and recovery
 
 ```sh
-./scripts/update-tools.sh --profile server --dry-run
-./scripts/apply-dotfiles.sh --profile server --dry-run
-./scripts/update-dotfiles.sh
-./scripts/verify.sh --profile server
+./scripts/update-tools.sh --dry-run
+chezmoi diff
+chezmoi update
+./scripts/verify.sh
 ```
 
-Use `--skip-packages` for pinned user-tool updates without apt/sudo. The
-configuration update command snapshots before pulling and applying. Review
-`~/.local/state/dotfiles/backups/` and use `scripts/restore-dotfiles.sh` with a
-trusted snapshot when needed. A previous `~/.dotfiles` checkout should be
-reviewed manually before deletion; the saved `source` file identifies the active
-checkout.
+Use `--skip-packages` for pinned user-tool updates without apt/sudo.
+`chezmoi diff` previews every change before `chezmoi update` applies it.
 
 Application and security provisioning follows `homelab-infra` documentation
 after user setup. The dotfiles bootstrap requires a working sudo account and
 GitHub SSH access. The administrator identity, authorized keys, service secrets,
 provider networking and backup destinations remain private inputs.
 Its current offsite backup is intentionally deferred. Local database dumps and
-dotfiles snapshots do not substitute for offsite recovery. Do not enable daily
+local copies do not substitute for offsite recovery. Do not enable daily
 Proton Drive backups until a backup, repository check and isolated restore have
 all passed. Review service/backup health manually at least weekly.
 

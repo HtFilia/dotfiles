@@ -9,9 +9,8 @@ sends Alt on macOS while right Option remains available for accented characters.
 
 ## Upgrade
 
-Apply retires recognizable old style files, saved choices, generated overrides,
-and the CRT shader after backing them up. Modified files are preserved and
-reported for review. Native configs no longer load old style overrides.
+`chezmoi apply` deletes the old style files, saved choices, generated overrides
+and CRT shader listed in `.chezmoiremove`.
 
 ## htop
 
@@ -19,5 +18,5 @@ The native htop config uses Black Night, a compact process list sorted by CPU,
 CPU/memory/swap meters, and a 500 ms refresh interval. These settings are supported
 by the [htop 3.2.2 settings parser](https://github.com/htop-dev/htop/blob/3.2.2/Settings.c)
 and [color scheme definitions](https://github.com/htop-dev/htop/blob/3.2.2/CRT.h).
-Adjust further with F2. htop may rewrite its config when saving settings; on a
-symlink workstation those edits affect the checkout. Apply backs up prior settings.
+Adjust further with F2. chezmoi deploys `htoprc` once and never overwrites it,
+so settings saved by htop stay on that machine.

@@ -1,12 +1,10 @@
 # Installation
 
-`bootstrap.sh` selects a profile, checks the platform, installs packages and
-verified assets, installs optional plugins, applies configuration, installs
-VS Code extensions when its CLI is available, and optionally changes the shell.
-It does not run a system upgrade.
-An explicit `--profile` wins, followed by `DOTFILES_PROFILE`, the saved profile,
-then `workstation` on a new host. An invalid saved profile stops before changes.
-A plain rerun therefore does not turn a server into a workstation.
+`bootstrap.sh` checks the platform, installs packages and verified assets,
+installs optional plugins, installs VS Code extensions when its CLI is
+available, and optionally changes the shell. `chezmoi init --apply HtFilia`
+then deploys the configuration. Bootstrap does not run a system upgrade.
+`--profile` defaults to `workstation`.
 
 ## Prerequisites
 

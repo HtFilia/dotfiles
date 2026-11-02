@@ -2,8 +2,6 @@
 # Upgrade packages and user tools using the selected deployment profile.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/profile.sh
-. "$SCRIPT_DIR/profile.sh"
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
 skip_packages=0 dry_run=0 explicit_profile=""
@@ -19,7 +17,10 @@ while (( $# )); do
   esac
   shift
 done
-profile="$(dotfiles_profile "$explicit_profile")" || exit 2
+profile="$explicit_profile"
+[[ -n "$profile" ]] || profile="$(chezmoi execute-template '{{ get . "profile" }}' 2>/dev/null || true)"
+profile="${profile:-workstation}"
+[[ "$profile" == workstation || "$profile" == server ]] || { printf 'Invalid profile: %s\n' "$profile" >&2; exit 2; }
 if [[ "$(uname -s)" == Linux ]]; then
   # shellcheck source=scripts/preflight.sh
   . "$SCRIPT_DIR/preflight.sh"
@@ -82,7 +83,7 @@ case "$(uname -s)" in
     ;;
   *) printf 'Unsupported platform\n' >&2; exit 2 ;;
 esac
-if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed ]]; then
+if [[ -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" ]]; then
   if (( dry_run )); then
     printf 'would update pinned zsh-autosuggestions and zsh-syntax-highlighting checkouts\n'
   else

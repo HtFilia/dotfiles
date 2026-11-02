@@ -3,14 +3,12 @@
 # Read-only acceptance checks for installed tools and managed leaf files.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/profile.sh
-. "$SCRIPT_DIR/profile.sh"
 # shellcheck source=scripts/pinned-assets.sh
 . "$SCRIPT_DIR/pinned-assets.sh"
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
 export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
-profile="${DOTFILES_PROFILE:-}"
+profile=""
 if [[ $# -gt 0 ]]; then
   case "$1" in
     -h|--help) printf 'Usage: %s [--profile server|workstation]\nExits nonzero for missing required components or pin drift.\n' "$0"; exit 0 ;;
@@ -18,7 +16,9 @@ if [[ $# -gt 0 ]]; then
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
   esac
 fi
-profile="$(dotfiles_profile "$profile")" || exit 1
+[[ -n "$profile" ]] || profile="$(chezmoi execute-template '{{ get . "profile" }}' 2>/dev/null || true)"
+profile="${profile:-workstation}"
+[[ "$profile" == workstation || "$profile" == server ]] || { printf 'Invalid profile: %s\n' "$profile" >&2; exit 1; }
 failures=0
 check() {
   local label="$1"
@@ -39,12 +39,7 @@ done
 for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/htop/htoprc .config/nvim/init.lua .config/nvim/lazy-lock.json; do
   check "$target deployed" test -f "$HOME/$target"
 done
-if [[ -f "$HOME/.local/state/dotfiles/materialize" ]] && [[ "$(cat "$HOME/.local/state/dotfiles/materialize")" == file ]]; then
-  for target in .zshenv .zshrc .tmux.conf .gitconfig .config/atuin/config.toml; do
-    source_file="$SCRIPT_DIR/../home/$(printf '%s' "$target" | sed -e 's#^\.config/#dot_config/#' -e 's#^\.local/#dot_local/#' -e 's#^\.#dot_#' -e 's#/\.#/dot_#g')"
-    check "$target matches source" cmp -s "$source_file" "$HOME/$target"
-  done
-fi
+check 'managed files match the chezmoi source state' chezmoi verify
 check 'Zsh syntax' zsh -n "$HOME/.zshrc"
 check 'Completion permissions' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
 check 'bat Gruvbox theme' bash -c 'bat --list-themes | rg -x gruvbox-dark >/dev/null'
@@ -52,14 +47,6 @@ check 'Starship configuration' bash -c 'TERM=xterm-256color STARSHIP_LOG=error s
 check 'tmux terminfo' bash -c 'infocmp -x tmux-256color >/dev/null 2>&1'
 # Terminfo output is useful on failure but verbose on success; hide via wrapper below.
 if [[ "$profile" == server ]]; then
-  if [[ -f "$HOME/.local/state/dotfiles/source" ]]; then
-    source_root="$(cat "$HOME/.local/state/dotfiles/source")"
-    if [[ -d "$source_root/home" ]] && available chezmoi; then
-      check 'all managed server files match source' bash -c \
-        'diff=$(DOTFILES_PROFILE=server chezmoi --config /dev/null --config-format toml --source "$1" --destination "$2" --mode "$3" diff --no-pager) || exit; [[ -z "$diff" ]]' \
-        _ "$source_root/home" "$HOME" "$(cat "$HOME/.local/state/dotfiles/materialize" 2>/dev/null || printf file)"
-    fi
-  fi
   check 'Kitty terminfo' bash -c 'infocmp -x xterm-kitty >/dev/null 2>&1'
   for tool in atuin ncdu tldr htop gitleaks actionlint; do check "$tool available" available "$tool"; done
   check 'tldr pages available' bash -c 'tldr tar >/dev/null 2>&1'
@@ -102,7 +89,7 @@ for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
     check "$plugin pin and clean checkout" plugin_matches "$plugin" "$HOME/.local/share/zsh/plugins"
   else printf 'optional - %s\n' "$plugin"; fi
 done
-if [[ "$(cat "$HOME/.local/state/dotfiles/shell-plugins" 2>/dev/null || true)" == installed || ( -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" && -d "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting" ) ]]; then
+if [[ -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" && -d "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting" ]]; then
   check 'Zsh plugins actually load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
 fi
 if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then

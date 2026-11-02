@@ -20,7 +20,7 @@ that should omit those components; bootstrap flags are not saved preferences.
 Review newer versions and checksums in `scripts/pinned-assets.sh`, regenerate
 `docs/ASSET-MANIFEST.md` with `just assets`, and test before committing changes.
 
-On Linux, tool updates use the saved profile. Server updates run the smaller
+On Linux, tool updates use the profile chezmoi recorded. Server updates run the smaller
 server installer and repeat only editor-language provisioning already recorded
 under `~/.local/state/dotfiles`. `--skip-packages` avoids apt, repository edits
 and sudo; it still updates pinned user binaries. Use the preview to inspect
@@ -28,9 +28,8 @@ commands before a package update. Reboots remain operator decisions.
 
 On Linux, direct binary tools install under `~/.local/bin`. Replacement is atomic
 and replaces existing symlinks rather than overwriting their targets in `/usr`.
-Linux tmux comes from the distro package. Apply backs up and retires the known
-former user-local build so new invocations use the distro binary. Unknown custom
-builds are preserved and reported; running tmux sessions are not terminated.
+Linux tmux comes from the distro package. `chezmoi apply` removes the former
+user-local build listed in `.chezmoiremove`; running tmux sessions keep going.
 `scripts/extra-tools.tsv` declares additional executables and archive members.
 Debian packages follow the latest available versions in the configured
 supported distribution repositories; they are not all the latest upstream source

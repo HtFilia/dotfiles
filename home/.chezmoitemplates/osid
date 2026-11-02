@@ -1,0 +1,2 @@
+{{- /* Operating system identifier: fedora, debian or darwin. */ -}}
+{{- if eq .chezmoi.os "linux" -}}{{ .chezmoi.osRelease.id }}{{- else -}}{{ .chezmoi.os }}{{- end -}}

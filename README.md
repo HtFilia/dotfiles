@@ -15,9 +15,9 @@ configuration, with explicit profile differences and host-local overrides.
 - **Separate user and system configuration.** `home/` contains Chezmoi source;
   the optional Debian 13 baseline in `system/debian/` owns update policy and
   journal retention. Application deployment and network policy belong elsewhere.
-- **Make changes inspectable and recoverable.** Bootstrap and deployment have
-  previews; apply takes snapshots; updates preserve the chosen profile.
-  Servers receive independent files so pulling Git does not activate edits.
+- **Use chezmoi natively.** Machine answers live in chezmoi's own config;
+  `chezmoi diff`, `apply`, `update` and `re-add` work without a wrapper, and
+  deployed files are copies, so pulling Git does not activate edits.
 - **Verify downloaded code.** Direct Linux binaries have version/checksum pins;
   shell and editor plugin revisions are recorded. Debian and Homebrew packages
   follow their repositories. [Supply-chain details](docs/SUPPLY-CHAIN.md).
@@ -25,8 +25,7 @@ configuration, with explicit profile differences and host-local overrides.
   applies and verifies the server profile twice in a clean Debian 13 container.
   Regressions cover profile selection, drift, local overrides and recovery.
 
-For a code review, start with [profile resolution](scripts/profile.sh),
-[deployment and snapshots](scripts/apply-dotfiles.sh),
+For a code review, start with [machine answers](home/.chezmoi.toml.tmpl),
 [verification](scripts/verify.sh), and [behavioral tests](tests/regressions.py).
 The [VPS guide](docs/VPS-SERVER.md) documents the system ownership boundary and
 rebuild procedure. CI does not test boot, remote connectivity or a full machine
@@ -88,28 +87,17 @@ grants root-equivalent access. See [installation](docs/INSTALLATION.md).
 ## Apply and update
 
 ```sh
-./scripts/apply-dotfiles.sh --dry-run
-./scripts/apply-dotfiles.sh
-./scripts/update-dotfiles.sh
-# or, after deployment, from any directory:
-dotfiles-update
-# after a manual git pull:
-UPDATE
+chezmoi init --apply HtFilia   # once, after the packages are installed
+chezmoi diff                   # preview
+chezmoi apply                  # deploy
+chezmoi update                 # git pull, then apply
+chezmoi re-add ~/.config/nvim/lazy-lock.json   # bring a changed file back
 ```
 
-The selected profile and materialization mode are saved under
-`~/.local/state/dotfiles`. Workstations use file-level symlinks; servers use
-independent files. Choose a mode explicitly with `--materialize file` or
-`--materialize symlink`. Apply supports isolated `--destination` and `--source`
-paths. Dry runs do not create destination files or persistent state.
-
-The update helper requires a clean checkout and GitHub SSH origin. It snapshots
-live contents before a fast-forward pull, then applies the saved profile. Use
-`dotfiles-update --after-pull` when the pull was already performed manually.
-The installed `UPDATE` command is the explicit post-pull form. The saved source
-path, profile and materialization mode make repeated updates safe and
-predictable. This matters for symlinks: source edits take effect immediately. See
-[deployment and recovery](docs/DEPLOYMENT.md).
+`chezmoi init` asks for the machine's profile (`workstation` or `server`) and
+context (`perso` or `travail`) once and keeps the answers in
+`~/.config/chezmoi/chezmoi.toml`. Files are deployed as copies; applications
+that rewrite their config change only the deployed copy.
 
 ## Personal settings
 
@@ -121,9 +109,8 @@ predictable. This matters for symlinks: source edits take effect immediately. Se
 | `~/.tmux.conf.local` | Extra tmux bindings/plugins |
 | `~/.ssh/config.local` | SSH hosts and identity paths |
 
-Existing managed files are backed up before apply. Git identity is prompted
-when appropriate or supplied through `DOTFILES_GIT_NAME`/`DOTFILES_GIT_EMAIL`.
-Existing identity files are preserved.
+chezmoi never creates or changes these files. Create `~/.gitconfig.local` with
+your identity before your first commit.
 
 ## Repository map
 
@@ -131,7 +118,7 @@ Existing identity files are preserved.
 |---|---|
 | `Brewfile`, `extensions.txt` | macOS packages and VS Code extensions |
 | `home/` | Chezmoi source files, templates, and platform exclusions |
-| `scripts/` | Installation, deployment, snapshots, updates, editor setup, verification |
+| `scripts/` | Package installation, tool updates, editor setup, verification |
 | `system/debian/` | Opt-in Debian 13 APT and journald baseline |
 | `scripts/pinned-assets.sh`, `scripts/pinned-plugins.sh` | Authoritative download and plugin pins |
 | `tests/` | Offline behavioral regressions using temporary homes |

@@ -41,7 +41,7 @@ jobs:
           # shellcheck disable=SC2016
           runuser -u dotfiles-ci -- bash -c 'cd "$1" && bash tests/script-contracts.sh' _ "$GITHUB_WORKSPACE"
           # shellcheck disable=SC2016
-          runuser -u dotfiles-ci -- bash -c 'cd "$1" && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server && scripts/install-server.sh --skip-packages && scripts/apply-dotfiles.sh --profile server --force && scripts/verify.sh --profile server' _ "$GITHUB_WORKSPACE"
+          runuser -u dotfiles-ci -- bash -c 'cd "$1" && mkdir -p ~/.local/share && ln -s "$1" ~/.local/share/chezmoi && scripts/install-server.sh --skip-packages && chezmoi init --apply --promptChoice profile=server,context=perso --promptBool systemBaseline=false && scripts/verify.sh && scripts/install-server.sh --skip-packages && chezmoi apply && scripts/verify.sh' _ "$GITHUB_WORKSPACE"
 
   scripts:
     name: Checks (${{ matrix.os }})

@@ -1,0 +1,46 @@
+# Files left in $HOME by earlier versions of this repository.
+# chezmoi apply deletes each listed target; only exact files are listed.
+
+# Ghostty configuration and its compiled terminfo entries.
+.config/ghostty/config.ghostty
+.config/ghostty/config
+Library/Application Support/com.mitchellh.ghostty/config
+Library/Application Support/com.mitchellh.ghostty/config.ghostty
+.terminfo/x/xterm-ghostty
+.terminfo/g/ghostty
+.terminfo/G/Ghostty
+
+# Windows Terminal colour scheme.
+.config/dotfiles/windows-terminal.json
+
+# Retired style selector, alternate styles and CRT shader.
+.config/dotfiles/style
+.config/dotfiles/ghostty-style.conf
+.config/dotfiles/tmux-style.conf
+.config/dotfiles/shaders/scanlines.glsl
+.config/dotfiles/styles/matrix/ghostty.conf
+.config/dotfiles/styles/matrix/starship.toml
+.config/dotfiles/styles/matrix/tmux.conf
+.config/dotfiles/styles/neon/ghostty.conf
+.config/dotfiles/styles/neon/starship.toml
+.config/dotfiles/styles/neon/tmux.conf
+.config/dotfiles/styles/operator/ghostty.conf
+.config/dotfiles/styles/operator/starship.toml
+.config/dotfiles/styles/operator/tmux.conf
+.config/dotfiles/styles/studio/ghostty.conf
+.config/dotfiles/styles/studio/starship.toml
+.config/dotfiles/styles/studio/tmux.conf
+.local/bin/dotfiles-style
+
+# Retired workbooks, dashboards and monitors.
+.config/tealdeer/pages/dotfiles-lab.page.md
+.local/bin/dotfiles-deck
+.local/bin/dotfiles-lab
+.local/share/dotfiles/workbooks/lab.py
+.local/share/dotfiles/workbooks/lessons.json
+.config/btop/btop.conf
+
+# Former locally built tmux and the wrapper commands replaced by chezmoi.
+.local/bin/tmux
+.local/bin/dotfiles-update
+.local/bin/UPDATE

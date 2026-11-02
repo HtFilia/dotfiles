@@ -38,5 +38,5 @@ Do not confuse a plugin lock with a complete operating-system/environment lock.
 Obtain metadata from the publisher, review the version/URL/hash changes together,
 regenerate inventory, run `just check`, `just dry-run`, `just workflow` and
 `just security` when their tools are installed. Exercise changed assets on a
-disposable supported host. Keep snapshots/revisions for rollback. Personal secret
+disposable supported host. Keep Git revisions for rollback. Personal secret
 files, accounts and SSH keys belong outside tracked source.

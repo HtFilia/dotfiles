@@ -10,11 +10,11 @@ id = "generic-api-key"
 description = "Historical VS Code duplicate-line keyboard shortcut, not a credential"
 condition = "AND"
 regexTarget = "line"
-paths = ['''^home/dot_config/Code/User/keybindings\.json$''']
+paths = ['''^home/(dot_config/Code/User/keybindings|\.chezmoitemplates/vscode-keybindings)\.json$''']
 regexes = ['''^\s*"key":\s*"shift\+alt\+down",?\s*$''']
 
 [[rules.allowlists]]
-description = "SHA-256 digests of retired keybindings.json contents, not credentials"
+description = "SHA-256 digests of retired keybindings.json contents in history, not credentials"
 condition = "AND"
 regexTarget = "line"
 paths = ['''^scripts/retired-files\.json$''']

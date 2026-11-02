@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command dotfiles installer.
+# Install packages and tools; chezmoi applies the configuration afterwards.
 
 set -euo pipefail
 
@@ -18,8 +18,6 @@ dotfiles_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
   fatal "Run bootstrap from a complete dotfiles checkout."
 # shellcheck source=scripts/pinned-plugins.sh
 . "$SCRIPT_DIR/pinned-plugins.sh"
-# shellcheck source=scripts/profile.sh
-. "$SCRIPT_DIR/profile.sh"
 
 detect_os() {
   case "$(uname -s)" in
@@ -107,7 +105,8 @@ main() {
     esac
     shift
   done
-  profile="$(dotfiles_profile "$profile")" || fatal "Unknown profile"
+  profile="${profile:-workstation}"
+  [[ "$profile" == workstation || "$profile" == server ]] || fatal "Unknown profile: $profile"
   [[ "$profile" == server || "$system_baseline" == 0 ]] || fatal "--system-baseline requires --profile server"
   if [[ -n "$editor_languages" ]]; then
     [[ "$editor_languages" =~ ^(lua|python|go|rust|node|shell)(,(lua|python|go|rust|node|shell))*$ ]] || fatal "Invalid editor language list"
@@ -117,7 +116,6 @@ main() {
       case "$language" in lua|python|go|rust|node|shell) ;; *) fatal "Unknown editor language: $language" ;; esac
     done
   fi
-  export DOTFILES_PROFILE="$profile"
   if [[ "$profile" == server ]]; then
     skip_fonts=1
     install_code_extensions=0
@@ -158,8 +156,6 @@ main() {
       info 'would run workstation installer and selected optional tools'
     fi
     (( install_shell_plugins == 0 )) || info 'would install pinned Zsh plugins'
-    info 'would apply Chezmoi source'
-    if command -v chezmoi >/dev/null 2>&1; then "$SCRIPT_DIR/apply-dotfiles.sh" --profile "$profile" --dry-run; fi
     return 0
   fi
 
@@ -222,9 +218,6 @@ main() {
     warn "Skipped Zsh plugin installation."
   fi
 
-  log "Applying dotfiles..."
-  "$dotfiles_dir/scripts/apply-dotfiles.sh" --profile "$profile" --force
-
   if [[ "$install_code_extensions" == "1" ]]; then
     install_vscode_extensions "$dotfiles_dir/extensions.txt"
   else
@@ -238,8 +231,6 @@ main() {
       "$dotfiles_dir/scripts/setup-editor.sh"
     fi
   fi
-  mkdir -p "$HOME/.local/state/dotfiles"
-  if [[ "$install_shell_plugins" == 1 ]]; then printf 'installed\n' > "$HOME/.local/state/dotfiles/shell-plugins"; else printf 'skipped\n' > "$HOME/.local/state/dotfiles/shell-plugins"; fi
 
   if [[ "$os" == macos ]]; then
     current_shell="$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')"
@@ -263,8 +254,9 @@ main() {
 ${GREEN}${BOLD}Done.${RESET}
 
 Next steps:
-  1. Restart your terminal or run: exec zsh
-  2. Run: ./scripts/verify.sh --profile $profile
+  1. Apply the configuration: chezmoi init --apply HtFilia
+  2. Restart your terminal or run: exec zsh
+  3. Run: ./scripts/verify.sh
 EOF
 }
 

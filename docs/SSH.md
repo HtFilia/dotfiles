@@ -36,8 +36,7 @@ git remote -v
 ```
 
 GitHub's authentication test reports successful authentication but does not offer
-an interactive shell. Your repository uses `git@github.com:HtFilia/dotfiles.git`;
-the update helper requires an SSH origin. Git rewrites GitHub HTTPS and git
+an interactive shell. Git rewrites GitHub HTTPS and git
 protocol URLs to `git@github.com:` through the managed Git config, so new and
 existing GitHub remotes use SSH automatically.
 
