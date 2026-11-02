@@ -16,9 +16,10 @@ Merge conflicts use `zdiff3`; diff uses histogram and moved-line coloring.
 Rerere records conflict resolutions for reuse. Line endings use `autocrlf=input`;
 repository-local `.gitattributes` is authoritative for project rules.
 
-Global ignores cover OS/editor debris and generated caches. Project lockfiles,
-runtime pins, shared `.vscode` files, and vendored code remain visible. Put
-project-specific build-output and secret policies in each repository.
+The global ignore file lists only operating system and editor files (Finder
+metadata, swap and backup files, `.idea/`). Build output, dependencies, logs,
+virtual environments and `.env` files stay visible until a repository's own
+`.gitignore` excludes them, so each project states its policy.
 
 ## Identity and authentication
 

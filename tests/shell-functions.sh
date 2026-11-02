@@ -48,10 +48,11 @@ check 'git mergetool quotes file names' "nvim received $arguments" \
 
 repository
 hidden=()
-for path in Cargo.lock .python-version .vscode/tasks.json vendor/code.go; do
+for path in Cargo.lock .python-version .vscode/tasks.json vendor/code.go target/debug/app \
+    build.log coverage/index.html env/bin/python lib.so a.out; do
   git -C "$work/repo" check-ignore -q "$path" && hidden+=("$path")
 done
-check 'the global ignore keeps lockfiles, runtime pins and shared editor files' "hidden: ${hidden[*]:-}" \
+check 'the global ignore leaves project files, build output and logs to each project' "hidden: ${hidden[*]:-}" \
   test "${#hidden[@]}" -eq 0
 
 (( failures == 0 ))

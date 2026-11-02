@@ -1,18 +1,19 @@
-# ============================================================================
-# Global .gitignore — applies to all repos
-# ============================================================================
+# Global ignores: operating system and editor files only. Build output,
+# dependencies, logs and secrets belong in each repository's .gitignore.
 
-# --- OS ---
+# macOS Finder metadata
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Thumbnail and folder caches copied from other systems
 ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# --- Editors ---
+# Editors
 .idea/
 *.swp
 *.swo
@@ -20,51 +21,4 @@ desktop.ini
 .netrwhist
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
-
-# --- Python ---
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
-venv/
-env/
-
-# --- Node ---
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# --- Rust ---
-target/
-**/*.rs.bk
-
-# --- Go ---
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-
-# --- Env / Secrets ---
-.env
-.env.local
-.env.*.local
-
-# --- Build output ---
-coverage/
-
-# --- Misc ---
-*.log
-.direnv/
-.terraform/
-*.tfstate*
-
 **/.claude/settings.local.json
