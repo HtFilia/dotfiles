@@ -74,5 +74,3 @@ macOS: `showfiles`, `hidefiles`, `flushdns`, `brewup`.
 Linux: `aptup` updates indexes and interactively upgrades; `apti`, `apts`,
 `aptrm`, `aptshow`; `sc`, `scu`, `jcf`, `jcu`, `jcb` for systemd/journald;
 `open` uses xdg-open when available. `df`, `du`, and Linux `free` use human units.
-WSL: `pbcopy`, `pbpaste`, `explorer`, `winhome` use Windows interoperability.
-`winhome` resolves the actual Windows profile rather than assuming matching names.

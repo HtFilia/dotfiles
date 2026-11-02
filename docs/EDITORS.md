@@ -22,7 +22,7 @@ virtual-environment and compiler prerequisites. Selecting `python` requires
 installs BasedPyright and Ruff in isolated Python environments:
 
 ```sh
-sudo apt install python3 python3-venv  # Debian/Ubuntu VPS
+sudo apt install python3 python3-venv  # Debian VPS
 ./scripts/setup-editor.sh lua python go rust node shell
 # Select only languages you use:
 ./scripts/setup-editor.sh python shell
@@ -50,9 +50,7 @@ installing any prerequisites yourself when you choose that mode.
 
 Linux uses `~/.config/Code/User`; macOS uses
 `~/Library/Application Support/Code/User`, pointing to the shared source User
-directory. Source settings are JSONC, allowing comments. Windows-hosted VS Code
-under WSL must import/copy these settings through Windows's User settings UI;
-Linux deployment does not edit Windows `%APPDATA%`.
+directory. Source settings are JSONC, allowing comments.
 
 The extension manifest supplies themes, language tooling, formatting, remote
 connections, and optional assistant interfaces. Extensions update through

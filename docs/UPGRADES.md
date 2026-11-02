@@ -32,7 +32,7 @@ Linux tmux comes from the distro package. Apply backs up and retires the known
 former user-local build so new invocations use the distro binary. Unknown custom
 builds are preserved and reported; running tmux sessions are not terminated.
 `scripts/extra-tools.tsv` declares additional executables and archive members.
-Debian/Ubuntu packages follow the latest available versions in the configured
+Debian packages follow the latest available versions in the configured
 supported distribution repositories; they are not all the latest upstream source
 releases. This deliberately preserves distro ownership of system components.
 Workstations request fzf, ripgrep, fd, bat, zoxide, direnv, and jq only through
@@ -41,7 +41,7 @@ copies are not automatically uninstalled; package dependencies may still need th
 
 macOS runs `brew update` and `brew bundle install`, allowing upgrades even when
 all declared tools were already installed. Homebrew formula/cask versions follow
-Homebrew. Windows host application updates are separate from WSL package updates.
+Homebrew.
 
 The current runtime selections are Node 26.9.0, Go 1.27.1, managed Python 3.14.7,
 and pnpm 12.4.2. Existing rustup installations update their stable

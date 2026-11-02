@@ -11,7 +11,7 @@ A plain rerun therefore does not turn a server into a workstation.
 ## Prerequisites
 
 Clone `git@github.com:HtFilia/dotfiles.git` using your existing SSH credentials.
-Use a regular account. Linux supports x86_64 Debian 12/13 and Ubuntu 24.04/26.04;
+Use a regular account. Linux supports x86_64 Debian 13;
 package installation needs sudo. macOS needs Homebrew and Command Line Tools.
 Finish the graphical CLT installer before rerunning bootstrap.
 
@@ -46,9 +46,7 @@ Mason runs:
 ./scripts/bootstrap.sh --profile server --setup-editor --yes
 ```
 
-Fonts live on the terminal client. WSL uses Windows-hosted terminal/fonts,
-VS Code with Remote WSL, and optional Docker Desktop integration. macOS's
-container runtime is Colima. Native Linux uses Docker's signed apt repository.
+Fonts live on the terminal client. macOS's container runtime is Colima. Native Linux uses Docker's signed apt repository.
 Docker daemon availability is separate from installed CLI/plugin checks.
 
 ## Repeatability and overrides

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Debian/Ubuntu server packages shared by installation and previews.
+# Debian server packages shared by installation and previews.
 # shellcheck disable=SC2034
 dotfiles_server_packages=(
   ca-certificates curl git openssh-client python3 zsh tmux ncurses-bin ncurses-term less man-db

@@ -5,8 +5,8 @@
 [![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A reproducible development and SSH administration environment for macOS,
-Debian/Ubuntu and WSL. Bash handles installation; Chezmoi manages user
+A reproducible development and SSH administration environment for macOS and
+Debian 13. Bash handles installation; Chezmoi manages user
 configuration. Workstations and servers share shell, Git, tmux and Neovim
 configuration, with explicit profile differences and host-local overrides.
 
@@ -37,9 +37,8 @@ restore.
 | Profile | Platform | Installed environment |
 |---|---|---|
 | Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
-| Workstation | Debian 12/13 or Ubuntu 24.04/26.04, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
-| Workstation | WSL on a supported Debian/Ubuntu release, x86_64 | Linux development tools; terminal, fonts, VS Code and Docker Desktop belong on Windows |
-| Server | Supported Debian/Ubuntu, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
+| Workstation | Debian 13, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
+| Server | Debian 13, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
 Linux profiles support x86_64 only. Linux Ghostty and VS Code installation are
 manual. Homebrew/apt versions follow their repositories; direct Linux downloads

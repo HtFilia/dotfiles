@@ -68,13 +68,12 @@ case "$(uname -s)" in
       fi
     else
       if command -v rustup >/dev/null 2>&1; then run rustup update stable; fi
-      args=(linux)
-      if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/sys/kernel/osrelease; then args=(wsl); fi
+      args=()
       (( skip_packages )) && args+=(--skip-packages)
       for option in ${options[@]+"${options[@]}"}; do
         [[ "$option" != --skip-docker ]] || args+=("$option")
       done
-      run "$SCRIPT_DIR/install-debian.sh" "${args[@]}"
+      run "$SCRIPT_DIR/install-debian.sh" ${args[@]+"${args[@]}"}
       # shellcheck source=scripts/runtime-versions.sh
       . "$SCRIPT_DIR/runtime-versions.sh"
       run uv python install --default "$PYTHON_VERSION"

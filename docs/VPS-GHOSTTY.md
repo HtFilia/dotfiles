@@ -5,7 +5,7 @@ fonts on the VPS does not change SSH rendering.
 
 ## Server
 
-As your regular SSH user on supported Debian/Ubuntu x86_64:
+As your regular SSH user on Debian 13 x86_64:
 
 ```sh
 git clone git@github.com:HtFilia/dotfiles.git ~/.dotfiles

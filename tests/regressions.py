@@ -164,10 +164,9 @@ class Contracts(unittest.TestCase):
         self.assertEqual(log.read_text(), "install-server.sh --skip-packages\n")
         log.unlink()
         (state / "profile").write_text("workstation\n")
-        env["WSL_DISTRO_NAME"] = "Debian"
         self.run_command("bash", str(scripts / "update-tools.sh"), "--skip-packages", "--skip-docker", env=env)
         calls = log.read_text()
-        self.assertIn("install-debian.sh wsl --skip-packages --skip-docker", calls)
+        self.assertIn("install-debian.sh --skip-packages --skip-docker", calls)
         self.assertNotIn("sudo", calls)
         log.unlink()
         env["TEST_OS"] = "Darwin"
@@ -503,21 +502,6 @@ second=$(cached_asset_path tool "$2")
         self.assertFalse((root / "style").exists())
         self.assertFalse((root / "ghostty-style.conf").exists())
         self.assertEqual((root / "tmux-style.conf").read_text(), "custom settings\n")
-
-    def test_windows_style_preserves_other_profiles_and_creates_backup(self):
-        config = {"profiles": {"list": [
-            {"name": "Debian", "source": "Microsoft.WSL", "font": {"face": "My Font"}},
-            {"name": "PowerShell", "colorScheme": "Existing"}]}, "defaultProfile": "unchanged"}
-        path = self.work / "settings.json"
-        path.write_text(json.dumps(config))
-        self.run_command("python3", str(ROOT / "scripts/setup-windows-terminal.py"), str(path), "--profile", "Debian")
-        result = json.loads(path.read_text())
-        self.assertEqual(result["profiles"]["list"][1], config["profiles"]["list"][1])
-        self.assertEqual(result["profiles"]["list"][0]["font"], {"face": "My Font"})
-        self.assertEqual(result["defaultProfile"], "unchanged")
-        backups = list(self.work.glob("settings.dotfiles-backup-*.json"))
-        self.assertEqual(len(backups), 1)
-        self.assertEqual(json.loads(backups[0].read_text()), config)
 
 
 if __name__ == "__main__":

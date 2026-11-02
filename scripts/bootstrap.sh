@@ -24,13 +24,7 @@ dotfiles_dir="$(cd "$SCRIPT_DIR/.." && pwd)"
 detect_os() {
   case "$(uname -s)" in
     Darwin) printf '%s\n' macos ;;
-    Linux)
-      if grep -qi microsoft /proc/version 2>/dev/null || grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
-        printf '%s\n' wsl
-      else
-        printf '%s\n' linux
-      fi
-      ;;
+    Linux) printf '%s\n' linux ;;
     *) fatal "Unsupported OS: $(uname -s)" ;;
   esac
 }
@@ -132,7 +126,6 @@ main() {
 
   local os
   os="$(detect_os)"
-  if [[ "$profile" == server && "$os" == wsl ]]; then fatal 'Server profile cannot run under WSL.'; fi
   if [[ "$system_baseline" == 1 ]]; then
     # shellcheck disable=SC1091
     . /etc/os-release
@@ -189,7 +182,7 @@ main() {
       [[ "$skip_docker" == "1" ]] && macos_args+=(--skip-docker)
       bash "$SCRIPT_DIR/install-macos.sh" "${macos_args[@]}"
       ;;
-    linux|wsl)
+    linux)
       if [[ "$profile" == server ]]; then
         server_args=()
         [[ "$setup_editor" == "1" ]] && server_args+=(--setup-editor)
@@ -197,21 +190,19 @@ main() {
         bash "$SCRIPT_DIR/install-server.sh" "${server_args[@]}"
         if (( system_baseline )); then "$SCRIPT_DIR/server-baseline.sh" --apply; fi
       else
-      debian_args=("$os")
+      debian_args=()
       [[ "$enable_docker_group" == "1" ]] && debian_args+=(--enable-docker-group)
       [[ "$skip_docker" == "1" ]] && debian_args+=(--skip-docker)
-      bash "$SCRIPT_DIR/install-debian.sh" "${debian_args[@]}"
+      bash "$SCRIPT_DIR/install-debian.sh" ${debian_args[@]+"${debian_args[@]}"}
       fi
       ;;
   esac
 
   if [[ "$skip_fonts" == "1" ]]; then
     warn "Skipped font installation."
-  elif [[ "$os" != "wsl" ]]; then
+  else
     log "Installing FiraCode Nerd Font..."
     bash "$SCRIPT_DIR/install-fonts.sh"
-  else
-    warn "On WSL, install FiraCode Nerd Font on the Windows host."
   fi
 
   if [[ "$install_shell_plugins" == "1" ]]; then

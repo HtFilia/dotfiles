@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Debian/Ubuntu SSH environment; user tools stay in ~/.local.
+# Debian 13 SSH environment; user tools stay in ~/.local.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,10 +41,7 @@ GO_ARCH="$(pinned_asset_go_arch)" || {
 }
 # shellcheck disable=SC1091
 . /etc/os-release
-case "${ID:-}:${ID_LIKE:-}" in
-  debian:*|ubuntu:*|*:debian*) ;;
-  *) printf 'Server installer requires Debian/Ubuntu.\n' >&2; exit 1 ;;
-esac
+[[ "${ID:-}" == debian ]] || { printf 'Server installer requires Debian.\n' >&2; exit 1; }
 admin=()
 if (( EUID != 0 )) && [[ "$SKIP_PACKAGES" == 0 ]]; then
   command -v sudo >/dev/null || { printf 'sudo is required for apt packages.\n' >&2; exit 1; }

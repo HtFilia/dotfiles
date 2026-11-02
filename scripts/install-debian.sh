@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-# Install packages on Debian/Ubuntu or WSL with pinned direct downloads.
+# Install Debian 13 workstation packages with pinned direct downloads.
 
 set -euo pipefail
 
-ENV_TYPE="linux"
-if [[ $# -gt 0 && "$1" != --* ]]; then
-  ENV_TYPE="$1"
-  shift
-fi
 ENABLE_DOCKER_GROUP=0
 SKIP_DOCKER=0
 SKIP_PACKAGES=0
@@ -23,7 +18,7 @@ fatal() { printf "\033[0;31m  x\033[0m %s\n" "$*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-Usage: $0 [linux|wsl] [--enable-docker-group] [--skip-docker] [--skip-packages]
+Usage: $0 [--enable-docker-group] [--skip-docker] [--skip-packages]
 
 Options:
   --enable-docker-group   add the current user to the root-equivalent docker group
@@ -42,7 +37,6 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-[[ "$ENV_TYPE" == linux || "$ENV_TYPE" == wsl ]] || fatal "Expected linux or wsl"
 [[ "$SKIP_PACKAGES" != 1 || "$ENABLE_DOCKER_GROUP" != 1 ]] || fatal "--enable-docker-group cannot be combined with --skip-packages"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/preflight.sh"
@@ -213,8 +207,6 @@ if [[ "$SKIP_DOCKER" == "1" ]]; then
   warn "Skipped Docker installation."
 elif [[ "$SKIP_PACKAGES" == "1" ]]; then
   warn "Skipped Docker package/repository changes (--skip-packages)."
-elif [[ "$ENV_TYPE" == "wsl" ]]; then
-  warn "WSL detected: install Docker Desktop and VS Code on Windows with WSL integration."
 else
   docker_packages_ready=1
   for package in docker-ce docker-ce-cli docker-compose-plugin docker-buildx-plugin; do
@@ -225,8 +217,8 @@ else
   else
     [[ "$SKIP_PACKAGES" == 0 ]] || fatal "Docker prerequisites missing; install them first or use --skip-docker."
     case "$OS_ID" in
-      debian|ubuntu) ;;
-      *) fatal "Docker apt repository is configured only for Debian/Ubuntu, detected $OS_ID" ;;
+      debian) ;;
+      *) fatal "Docker apt repository is configured only for Debian, detected $OS_ID" ;;
     esac
     log "Installing Docker from official apt repository..."
     sudo install -m 0755 -d /etc/apt/keyrings
@@ -242,7 +234,7 @@ fi
 if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_PACKAGES" == 1 ]]; then
   fatal "--enable-docker-group requires package changes; omit --skip-packages"
 fi
-if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 && "$ENV_TYPE" != wsl ]]; then
+if [[ "$ENABLE_DOCKER_GROUP" == 1 && "$SKIP_DOCKER" == 0 ]]; then
   getent group docker >/dev/null || fatal "Docker group is absent; install the engine first."
   sudo usermod -aG docker "$(id -un)"
   warn "Docker group grants root-equivalent access; log out/in."
@@ -261,4 +253,4 @@ fi
 
 warn "Claude Code is not installed automatically."
 warn "Ghostty has no official Debian package; install it manually from your trusted channel."
-success "Debian/WSL setup complete."
+success "Debian setup complete."

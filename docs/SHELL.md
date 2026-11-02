@@ -4,8 +4,7 @@
 unique PATH array. It runs no external commands and prints nothing, so
 noninteractive SSH commands can locate user-installed tools.
 
-`.zshrc` selects the platform using Zsh's built-in OS information and WSL's
-inherited environment. It reads `.zshrc.settings`, establishes package-manager
+`.zshrc` selects the platform using Zsh's built-in OS information. It reads `.zshrc.settings`, establishes package-manager
 paths, sets pager/history defaults, checks completion permissions with compinit,
 loads trusted plugins, and initializes available tool integrations.
 

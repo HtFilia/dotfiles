@@ -129,7 +129,7 @@ if [[ "$profile" == workstation ]]; then
   if available docker; then
     check 'Docker Compose plugin' docker compose version
     check 'Docker Buildx plugin' docker buildx version
-  else printf 'optional - Docker (--skip-docker or WSL host integration)\n'; fi
+  else printf 'optional - Docker (--skip-docker)\n'; fi
   if [[ "$(uname -s)" == Darwin ]]; then
     check 'VS Code settings' test -f "$HOME/Library/Application Support/Code/User/settings.json"
   else check 'VS Code settings' test -f "$HOME/.config/Code/User/settings.json"; fi

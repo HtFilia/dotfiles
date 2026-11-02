@@ -1,5 +1,4 @@
 {{ if eq (env "DOTFILES_PROFILE") "server" }}
-.config/dotfiles/windows-terminal.json
 .config/Code
 .config/Code/**
 .config/ghostty
@@ -8,7 +7,6 @@
 .config/fastfetch/**
 .config/tealdeer/pages
 .config/tealdeer/pages/**
-.config/dotfiles/windows-terminal.json
 Library
 Library/**
 {{ else if eq .chezmoi.os "darwin" }}

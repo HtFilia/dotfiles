@@ -4,10 +4,7 @@
 
 case "$OSTYPE" in
   darwin*) export DOTFILES_OS=macos ;;
-  linux*)
-    export DOTFILES_OS=linux
-    [[ -n "${WSL_DISTRO_NAME:-}" ]] && export DOTFILES_OS=wsl
-    ;;
+  linux*) export DOTFILES_OS=linux ;;
   *) export DOTFILES_OS=unknown ;;
 esac
 # Inputs are read before integrations; final overrides remain in .zshrc.local.
@@ -171,17 +168,6 @@ else
   alias aptshow='apt show' open='xdg-open'
   alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
   alias jcu='journalctl -u' jcb='journalctl -b'
-fi
-
-if [[ "$DOTFILES_OS" == "wsl" ]]; then
-  alias pbcopy='clip.exe'
-  alias pbpaste='powershell.exe -command "Get-Clipboard" | sed "s/\r//"'
-  alias explorer='explorer.exe'
-  winhome() {
-    local windows_home
-    windows_home=$(powershell.exe -NoProfile -Command '$env:USERPROFILE' | tr -d '\r') || return
-    builtin cd -- "$(wslpath "$windows_home")"
-  }
 fi
 
 mkcd() { mkdir -p "$1" && cd "$1" || return; }
