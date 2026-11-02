@@ -3,6 +3,13 @@
 {{- if ne .chezmoi.os "darwin" }}
 Library
 Library/**
+.docker
+.docker/**
+{{- end }}
+{{- if ne $osid "debian" }}
+.local/bin/bat
+.local/bin/fd
+.local/bin/nvim
 {{- end }}
 {{- if eq .chezmoi.os "darwin" }}
 .config/Code

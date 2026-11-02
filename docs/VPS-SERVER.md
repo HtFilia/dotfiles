@@ -1,7 +1,7 @@
-# Debian VPS bootstrap and ownership
+# Debian VPS
 
 Dotfiles owns the portable user shell, editor, Git, SSH client, tmux, tools,
-their installation scripts, and the optional Debian 13 base policy for APT,
+their packages, and the optional Debian 13 base policy for APT,
 journal retention and administrator journal access. The separate, private
 `homelab-infra` repository owns this host's SSH daemon, UFW, Fail2ban, WireGuard, Caddy,
 application services, health checks and backups. Neither repository contains
@@ -11,24 +11,16 @@ credentials or host keys.
 
 First create a regular sudo-capable account, authorize its SSH key, and confirm
 an independent provider-console login. Keep that SSH session open during host
-network changes. Clone with an already working GitHub key:
+network changes. Then, as that account, follow the
+[Debian install](../README.md#debian-13-work-workstation-and-vps) and answer
+`server` and `perso`. Afterwards run `chsh -s "$(command -v zsh)"` and
+`scripts/verify.sh` from `chezmoi cd`.
 
-```sh
-git clone https://github.com/HtFilia/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --dry-run
-./scripts/bootstrap.sh --profile server --editor-languages python,shell --system-baseline --configure-shell
-chezmoi init --apply --promptChoice profile=server,context=perso HtFilia
-./scripts/verify.sh
-```
-
-Review the preview, package and shell prompts before accepting them. The default
-server toolset includes Zsh/Starship, navigation/search, Git/delta/LazyGit,
-tmux, Neovim, local Atuin, ncdu, htop, tealdeer and Kitty terminfo. It does
-not install fonts or containers. Editor languages remain optional; this host
-selects Python and shell. To add selected editor languages later, pass their
-comma-separated list on bootstrap or run
-`./scripts/setup-editor.sh python shell` after installing prerequisites.
+The server toolset is Zsh/Starship, navigation and search tools, Git/delta/
+LazyGit, tmux, Neovim, Node, local Atuin, ncdu, htop, tealdeer, ShellCheck,
+gitleaks, actionlint and Kitty terminfo. It installs no fonts, desktop
+applications or containers. Editor languages stay optional; this host uses
+Python and shell: `"$(chezmoi source-path)/../scripts/setup-editor.sh" python shell`.
 
 `--system-baseline` is explicit and Debian 13 only. It backs up existing APT and
 journal settings under `/var/backups/dotfiles-system`, migrates the identical old
@@ -43,18 +35,17 @@ pull alone does not activate new configuration.
 ## Changes and recovery
 
 ```sh
-./scripts/update-tools.sh --dry-run
-chezmoi diff
-chezmoi update
-./scripts/verify.sh
+sudo apt update && sudo apt upgrade   # packages
+chezmoi diff                          # preview configuration changes
+chezmoi update                        # pull, apply, run changed package scripts
 ```
 
-Use `--skip-packages` for pinned user-tool updates without apt/sudo.
-`chezmoi diff` previews every change before `chezmoi update` applies it.
+Pinned binaries (chezmoi, Neovim, actionlint) change when their entry in
+`home/.chezmoiexternal.toml.tmpl` changes.
 
 Application and security provisioning follows `homelab-infra` documentation
-after user setup. The dotfiles bootstrap requires a working sudo account and
-GitHub SSH access. The administrator identity, authorized keys, service secrets,
+after user setup. The dotfiles install requires a working sudo account; it
+clones over HTTPS and needs no GitHub key. The administrator identity, authorized keys, service secrets,
 provider networking and backup destinations remain private inputs.
 Its current offsite backup is intentionally deferred. Local database dumps and
 local copies do not substitute for offsite recovery. Do not enable daily

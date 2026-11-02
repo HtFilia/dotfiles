@@ -1,0 +1,59 @@
+{{- $osid := includeTemplate "osid" . -}}
+# Binaries that the machine's package repositories lack or ship too old.
+# Each entry pins a release and the SHA256 of the downloaded archive. To
+# upgrade, change the version in the URL and the checksum together; see
+# docs/SUPPLY-CHAIN.md for how to obtain and check the new checksum.
+{{- if eq $osid "debian" }}
+
+# chezmoi is not packaged in Debian 13; it keeps its own binary up to date.
+[".local/bin/chezmoi"]
+    type = "archive-file"
+    url = "https://github.com/twpayne/chezmoi/releases/download/v2.73.3/chezmoi_2.73.3_linux_amd64.tar.gz"
+    path = "chezmoi"
+    executable = true
+    checksum.sha256 = "6e5827598cbfc02d132b04f95b5ea10efb5b79230e2a4a0e52df4af144a8ee9f"
+
+# Debian 13 ships Neovim 0.10.4; the pinned LazyVim requires 0.11.2 or later.
+# ~/.local/bin/nvim links to the binary in this directory.
+[".local/opt/nvim"]
+    type = "archive"
+    url = "https://github.com/neovim/neovim/releases/download/v0.12.6/nvim-linux-x86_64.tar.gz"
+    stripComponents = 1
+    exact = true
+    checksum.sha256 = "474430d53e6264f6d6dd18db42d6dc9df3a1b56ca9e88a325bbf860e1a811d87"
+{{-   if eq .profile "workstation" }}
+
+# uv is not packaged in Debian 13.
+[".local/bin/uv"]
+    type = "archive-file"
+    url = "https://github.com/astral-sh/uv/releases/download/0.13.6/uv-x86_64-unknown-linux-gnu.tar.gz"
+    path = "uv-x86_64-unknown-linux-gnu/uv"
+    executable = true
+    checksum.sha256 = "f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645"
+
+[".local/bin/uvx"]
+    type = "archive-file"
+    url = "https://github.com/astral-sh/uv/releases/download/0.13.6/uv-x86_64-unknown-linux-gnu.tar.gz"
+    path = "uv-x86_64-unknown-linux-gnu/uvx"
+    executable = true
+    checksum.sha256 = "f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645"
+
+# Debian's yq package is a different tool: a jq wrapper written in Python.
+[".local/bin/yq"]
+    type = "archive-file"
+    url = "https://github.com/mikefarah/yq/releases/download/v4.54.1/yq_linux_amd64.tar.gz"
+    path = "yq_linux_amd64"
+    executable = true
+    checksum.sha256 = "e68a456f90c577af3fe4960184b3a3cf5c461e0348407c10f107da3a5fec8972"
+{{-   end }}
+{{- end }}
+{{- if or (eq $osid "debian") (eq $osid "fedora") }}
+
+# actionlint is packaged in neither Fedora 44 nor Debian 13.
+[".local/bin/actionlint"]
+    type = "archive-file"
+    url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+    path = "actionlint"
+    executable = true
+    checksum.sha256 = "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+{{- end }}

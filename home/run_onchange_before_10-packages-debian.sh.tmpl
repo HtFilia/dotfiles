@@ -1,0 +1,36 @@
+{{- $osid := includeTemplate "osid" . -}}
+{{- if eq $osid "debian" -}}
+{{- $os := .packages.debian -}}
+#!/usr/bin/env bash
+# Install the Debian packages listed in .chezmoidata/packages.yaml that are
+# missing. Only the official Debian repositories are used: this script never
+# adds a source, a key or a backports suite.
+set -euo pipefail
+
+packages=(
+{{- range $list := list "common" .profile .context }}
+{{-   if hasKey $os $list }}
+{{-     range index $os $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+
+missing=()
+for package in "${packages[@]}"; do
+  # shellcheck disable=SC2016
+  status="$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)"
+  [[ "$status" == "install ok installed" ]] || missing+=("$package")
+done
+if (( ${#missing[@]} == 0 )); then
+  echo "Debian packages: nothing to install."
+  exit 0
+fi
+
+echo "Debian packages to install: ${missing[*]}"
+echo "The following steps run apt-get with sudo."
+sudo apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y
+{{- if eq .profile "server" }} --no-install-recommends{{ end }} "${missing[@]}"
+{{ end -}}

@@ -1,135 +1,83 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2016
-# Read-only acceptance checks for installed tools and managed leaf files.
+# shellcheck disable=SC2016  # single-quoted snippets are expanded by the shell that runs them
+# Read-only acceptance checks for this machine, driven by the answers chezmoi
+# recorded for it. Exits nonzero when a required tool or file is missing.
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/pinned-assets.sh
-. "$SCRIPT_DIR/pinned-assets.sh"
-# shellcheck source=scripts/pinned-plugins.sh
-. "$SCRIPT_DIR/pinned-plugins.sh"
-export PATH="${LOCAL_BIN:-$HOME/.local/bin}:$HOME/.cargo/bin:$HOME/go/bin:$PATH"
-profile=""
-if [[ $# -gt 0 ]]; then
-  case "$1" in
-    -h|--help) printf 'Usage: %s [--profile server|workstation]\nExits nonzero for missing required components or pin drift.\n' "$0"; exit 0 ;;
-    --profile) [[ $# == 2 ]] || exit 1; profile="$2" ;;
-    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
-  esac
-fi
-[[ -n "$profile" ]] || profile="$(chezmoi execute-template '{{ get . "profile" }}' 2>/dev/null || true)"
-profile="${profile:-workstation}"
-[[ "$profile" == workstation || "$profile" == server ]] || { printf 'Invalid profile: %s\n' "$profile" >&2; exit 1; }
+case "${1:-}" in
+  -h|--help) printf 'Usage: %s\nChecks the tools and files that chezmoi manages on this machine.\n' "$0"; exit 0 ;;
+  '') ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
+esac
+
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+for prefix in /opt/homebrew /usr/local; do
+  if [[ "$(uname -s)" == Darwin && -x "$prefix/bin/brew" ]]; then
+    PATH="$prefix/bin:$prefix/sbin:$PATH:$prefix/opt/rustup/bin"
+    break
+  fi
+done
+export PATH
+
+answers="$(chezmoi execute-template '{{ includeTemplate "osid" . }} {{ .profile }} {{ .context }} {{ .gaming }} {{ .systemBaseline }}' 2>/dev/null)" ||
+  { printf 'chezmoi has no answers for this machine; run chezmoi init first.\n' >&2; exit 1; }
+read -r osid profile context gaming baseline <<<"$answers"
+printf 'Machine: %s, %s, %s, gaming=%s, systemBaseline=%s\n' "$osid" "$profile" "$context" "$gaming" "$baseline"
+
 failures=0
 check() {
   local label="$1"
   shift
-  if "$@"; then printf 'ok - %s\n' "$label"; else printf 'FAIL - %s\n' "$label" >&2; failures=$((failures + 1)); fi
+  if "$@" >/dev/null 2>&1; then
+    printf 'ok - %s\n' "$label"
+  else
+    printf 'FAIL - %s\n' "$label"
+    failures=$((failures + 1))
+  fi
 }
-available() { command -v "$1" >/dev/null 2>&1; }
-plugin_matches() {
-  local plugin="$1" base="$2" directory expected actual
-  directory="$base/$(pinned_plugin_field "$plugin" dir)"
-  expected="$(pinned_plugin_field "$plugin" commit)"
-  actual="$(git -C "$directory" rev-parse HEAD 2>/dev/null)" || return 1
-  [[ "$actual" == "$expected" && -z "$(git -C "$directory" status --porcelain)" ]]
-}
-for tool in zsh starship tmux htop chezmoi eza delta lazygit just bat fd rg fzf zoxide direnv nvim git jq; do
+available() { command -v "$1"; }
+
+commands=(zsh git tmux nvim starship lazygit fzf rg fd bat eza zoxide atuin direnv delta jq just
+  htop tldr shellcheck shfmt gitleaks actionlint chezmoi node npm)
+if [[ "$profile" == workstation ]]; then
+  commands+=(kitty gh fastfetch hyperfine dust uv uvx yq rustup)
+  case "$osid" in
+    fedora) commands+=(podman podman-compose code) ;;
+    debian) commands+=(podman podman-compose) ;;
+    darwin) commands+=(docker colima code) ;;
+  esac
+  [[ "$context" == perso && "$osid" != debian ]] && commands+=(go)
+fi
+[[ "$gaming" == true ]] && commands+=(mangohud gamemoded)
+[[ "$profile" == server ]] && commands+=(ncdu ip ss dig ping ps)
+for tool in "${commands[@]}"; do
   check "$tool available" available "$tool"
 done
-for target in .zshenv .zshrc .tmux.conf .gitconfig .config/starship.toml .config/htop/htoprc .config/nvim/init.lua .config/nvim/lazy-lock.json; do
-  check "$target deployed" test -f "$HOME/$target"
-done
-check 'managed files match the chezmoi source state' chezmoi verify
-check 'Zsh syntax' zsh -n "$HOME/.zshrc"
-check 'Completion permissions' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
-check 'bat Gruvbox theme' bash -c 'bat --list-themes | rg -x gruvbox-dark >/dev/null'
-check 'Starship configuration' bash -c 'TERM=xterm-256color STARSHIP_LOG=error starship prompt >/dev/null'
-check 'tmux terminfo' bash -c 'infocmp -x tmux-256color >/dev/null 2>&1'
-# Terminfo output is useful on failure but verbose on success; hide via wrapper below.
-if [[ "$profile" == server ]]; then
-  check 'Kitty terminfo' bash -c 'infocmp -x xterm-kitty >/dev/null 2>&1'
-  for tool in atuin ncdu tldr htop gitleaks actionlint; do check "$tool available" available "$tool"; done
-  check 'tldr pages available' bash -c 'tldr tar >/dev/null 2>&1'
-  check 'system diagnostic commands' bash -c 'for tool in ip ss dig ping ps; do command -v "$tool" >/dev/null || exit 1; done'
-  if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
-    read -ra server_languages < "$HOME/.local/state/dotfiles/editor-languages"
-    for language in "${server_languages[@]}"; do
-      case "$language" in
-        go) check 'Go editor runtime pin' asset_version_matches go go-linux-amd64 version ;;
-        node|shell) check 'Node editor runtime pin' asset_version_matches node node-linux-x86_64 --version ;;
-      esac
-    done
-  fi
-  if [[ -f "$HOME/.local/state/dotfiles/system-baseline" ]]; then
-    for timer in apt-daily.timer apt-daily-upgrade.timer logrotate.timer; do
-      check "$timer enabled" systemctl is-enabled --quiet "$timer"
-      check "$timer active" systemctl is-active --quiet "$timer"
-    done
-    for policy in 20auto-upgrades 52dotfiles-unattended; do
-      check "$policy baseline policy" cmp -s "$SCRIPT_DIR/../system/debian/$policy" "/etc/apt/apt.conf.d/$policy"
-    done
-    check 'journal retention policy' cmp -s "$SCRIPT_DIR/../system/debian/20-dotfiles-retention.conf" /etc/systemd/journald.conf.d/20-dotfiles-retention.conf
-    check 'persistent journal directory' test -d /var/log/journal
-    check 'system journal group membership'  bash -c 'id -nG "$(id -un)" | tr " " "\n" | rg -qx systemd-journal'
-  fi
-fi
-if [[ "$(uname -s)" == Linux ]]; then
-  check 'distro tmux selected (no retired local build shadowing it)' bash -c '[[ "$(command -v tmux)" -ef /usr/bin/tmux ]]'
-  for pair in starship:starship-linux-x86_64 eza:eza-linux-x86_64 delta:delta-linux-x86_64 lazygit:lazygit-linux-x86_64 chezmoi:chezmoi-linux-amd64 just:just-linux-x86_64 nvim:neovim-linux-x86_64; do
-    check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
-  done
-  if [[ "$profile" == server ]]; then
-    check 'gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
-    check 'actionlint pin' asset_version_matches actionlint actionlint-linux-amd64
-  fi
-fi
-for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
-  directory="$HOME/.local/share/zsh/plugins/$plugin"
-  if [[ -d "$directory" ]]; then
-    check "$plugin pin and clean checkout" plugin_matches "$plugin" "$HOME/.local/share/zsh/plugins"
-  else printf 'optional - %s\n' "$plugin"; fi
-done
-if [[ -d "$HOME/.local/share/zsh/plugins/zsh-autosuggestions" && -d "$HOME/.local/share/zsh/plugins/zsh-syntax-highlighting" ]]; then
-  check 'Zsh plugins actually load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
-fi
-if available atuin && [[ -f "$HOME/.config/atuin/config.toml" ]]; then
-  check 'Atuin local editable history' python3 -c 'import pathlib,tomllib; p=pathlib.Path.home()/".config/atuin/config.toml"; c=tomllib.loads(p.read_text()); assert c.get("auto_sync") is False and c.get("update_check") is False and c.get("enter_accept") is False'
+
+check 'managed files match the source state' chezmoi verify
+check 'zsh syntax' zsh -n "$HOME/.zshrc"
+check 'zsh plugins load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
+check 'completion directories are safe' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
+check 'Starship configuration' env TERM=xterm-256color STARSHIP_LOG=error starship prompt
+check 'bat Gruvbox theme' bash -c 'bat --list-themes | grep -qx gruvbox-dark'
+check 'Neovim meets the LazyVim minimum (0.11.2)' nvim --headless -u NONE '+lua if vim.fn.has("nvim-0.11.2") == 0 then vim.cmd("cquit 1") end' +qa
+if [[ "$osid" != darwin ]]; then
+  check 'tmux terminfo' infocmp -x tmux-256color
 fi
 if [[ "$profile" == workstation ]]; then
-  for tool in uv uvx mise yazi ya yq sd dust duf hyperfine watchexec xh lazydocker gitleaks actionlint go node npm python3 rustc cargo shellcheck shfmt pnpm ouch zstd sponge ts vidir parallel ov hexyl dua broot czkawka_cli xcp vivid pastel tldr jc jless fastfetch; do
-    check "$tool available" available "$tool"
-  done
-  if [[ "$(uname -s)" == Linux ]]; then
-    for pair in uv:uv-linux-x86_64 uvx:uv-linux-x86_64 mise:mise-linux-x86_64 yazi:yazi-linux-x86_64 yq:yq-linux-amd64 sd:sd-linux-x86_64 dust:dust-linux-x86_64 duf:duf-linux-x86_64 hyperfine:hyperfine-linux-x86_64 watchexec:watchexec-linux-x86_64 xh:xh-linux-x86_64 lazydocker:lazydocker-linux-x86_64 actionlint:actionlint-linux-amd64 node:node-linux-x86_64; do
-      check "${pair%%:*} pin" asset_version_matches "${pair%%:*}" "${pair#*:}"
-    done
-    while IFS=$'\t' read -r tool key _member; do
-      [[ -n "$tool" && "$tool" != \#* ]] || continue
-      argument=--version
-      check "$tool extra pin" asset_version_matches "$tool" "$key" "$argument"
-    done < "$SCRIPT_DIR/extra-tools.tsv"
-    check 'pnpm executes' pnpm --version
-    check 'Go pin'  asset_version_matches go go-linux-amd64 version
-    check 'Gitleaks pin' asset_version_matches gitleaks gitleaks-linux-x64 version
+  check 'Rust toolchain installed' cargo --version
+  check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
+  if available code >/dev/null 2>&1; then
+    if [[ "$osid" == darwin ]]; then settings="$HOME/Library/Application Support/Code/User/settings.json"; else settings="$HOME/.config/Code/User/settings.json"; fi
+    check 'VS Code settings deployed' test -f "$settings"
   fi
-  if available tokei; then check "tokei version" asset_version_matches tokei tokei-cargo --version; else printf "optional - tokei (Rust >=1.85 build)\n"; fi
-  if available docker; then
-    check 'Docker Compose plugin' docker compose version
-    check 'Docker Buildx plugin' docker buildx version
-  else printf 'optional - Docker (--skip-docker)\n'; fi
-  if [[ "$(uname -s)" == Darwin ]]; then
-    check 'VS Code settings' test -f "$HOME/Library/Application Support/Code/User/settings.json"
-  else check 'VS Code settings' test -f "$HOME/.config/Code/User/settings.json"; fi
 fi
-# Explicit editor provisioning is checked only when its marker exists.
-if [[ -f "$HOME/.local/state/dotfiles/editor-languages" ]]; then
-  check 'editor tool manifest exists' test -s "$HOME/.local/state/dotfiles/editor-tools"
-  check 'selected editor parsers load' env DOTFILES_EDITOR_LANGUAGES="$(cat "$HOME/.local/state/dotfiles/editor-languages")" nvim --headless -u NONE "+lua dofile('$SCRIPT_DIR/verify-parsers.lua')"
-  while IFS= read -r tool; do
-    # Old setup markers may name a formatter no longer managed here.
-    [[ "$tool" != prettier ]] || continue
-    check "editor tool $tool" test -x "$HOME/.local/share/nvim/mason/bin/$tool"
-  done <"$HOME/.local/state/dotfiles/editor-tools"
+if [[ "$osid" == debian ]]; then
+  check 'fd and bat use the Debian binaries' bash -c '[[ "$(readlink ~/.local/bin/fd)" == /usr/bin/fdfind && "$(readlink ~/.local/bin/bat)" == /usr/bin/batcat ]]'
+  check 'nvim is the pinned release' bash -c '[[ "$(readlink ~/.local/bin/nvim)" == "$HOME/.local/opt/nvim/bin/nvim" ]]'
 fi
+if [[ "$profile" == server ]]; then
+  check 'Kitty terminfo' infocmp -x xterm-kitty
+fi
+
 printf '%s verification failure(s).\n' "$failures"
 (( failures == 0 ))

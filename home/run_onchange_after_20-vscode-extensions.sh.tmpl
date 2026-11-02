@@ -1,0 +1,31 @@
+{{- $osid := includeTemplate "osid" . -}}
+{{- /* The repository installs VS Code on Fedora and macOS; on Debian it only
+       configures a VS Code that is already installed. */ -}}
+{{- if and (eq .profile "workstation") (or (ne $osid "debian") (lookPath "code")) -}}
+#!/usr/bin/env bash
+# Install the VS Code extensions listed in .chezmoidata/packages.yaml that are
+# missing. No sudo.
+set -euo pipefail
+{{- if eq .chezmoi.os "darwin" }}
+PATH="{{ ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}/bin:$PATH"
+{{- end }}
+
+extensions=(
+{{- range $list := list "common" .context }}
+{{-   if hasKey $.vscode $list }}
+{{-     range index $.vscode $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+
+command -v code >/dev/null 2>&1 || { echo "VS Code CLI not found on PATH." >&2; exit 1; }
+installed="$(code --list-extensions | tr '[:upper:]' '[:lower:]')"
+for extension in "${extensions[@]}"; do
+  lower="$(printf '%s' "$extension" | tr '[:upper:]' '[:lower:]')"
+  if ! grep -qxF "$lower" <<<"$installed"; then
+    code --install-extension "$extension"
+  fi
+done
+{{ end -}}

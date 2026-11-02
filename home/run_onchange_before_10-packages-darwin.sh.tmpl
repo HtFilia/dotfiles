@@ -1,0 +1,30 @@
+{{- if eq .chezmoi.os "darwin" -}}
+{{- $os := .packages.darwin -}}
+{{- $prefix := ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") -}}
+#!/usr/bin/env bash
+# Install the Homebrew formulae and casks listed in .chezmoidata/packages.yaml
+# that are missing. Homebrew runs without sudo.
+set -euo pipefail
+
+brew={{ $prefix }}/bin/brew
+[[ -x "$brew" ]] || { echo "Install Homebrew first: https://brew.sh" >&2; exit 1; }
+brewfile='
+{{- range $list := list "common" .profile .context }}
+{{-   if hasKey $os $list }}
+{{-     $entry := index $os $list }}
+{{-     if hasKey $entry "brews" }}{{ range $entry.brews }}
+brew "{{ . }}"
+{{-     end }}{{ end }}
+{{-     if hasKey $entry "casks" }}{{ range $entry.casks }}
+cask "{{ . }}"
+{{-     end }}{{ end }}
+{{-   end }}
+{{- end }}
+'
+if "$brew" bundle check --no-upgrade --file=- <<<"$brewfile" >/dev/null 2>&1; then
+  echo "Homebrew packages: nothing to install."
+  exit 0
+fi
+echo "Installing missing Homebrew packages."
+"$brew" bundle install --no-upgrade --file=- <<<"$brewfile"
+{{ end -}}

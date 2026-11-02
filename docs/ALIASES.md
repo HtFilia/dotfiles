@@ -34,12 +34,11 @@ Git's internal aliases are documented in [Git](GIT.md).
 | `lt`, `ltt` | eza trees limited to two/three levels |
 | `..`, `...`, `....`, `-` | Parent directories; previous directory |
 | `mkd`, `mkcd DIRECTORY` | Create directories; create and enter |
-| `dotfiles` | Enter `$DOTFILES_DIR` or `~/dotfiles` |
+| `dotfiles` | Open a shell in the chezmoi source checkout (`chezmoi cd`) |
 | `fe`, `fcd` | Select and edit a file; select and enter a directory |
 | `frg PATTERN` | Structured ripgrep matches, fzf selection, open editor at line |
 | `fga` | Select unstaged/untracked files and stage them |
 | `fh [QUERY]` | Insert a selected history command for editing |
-| `yy [ARGS]` | Yazi; adopt its selected directory on exit |
 | `tm [NAME]` | Create or attach tmux session, defaulting to directory name |
 | `extract ARCHIVE` | Dispatch extraction to installed archive utilities |
 
@@ -59,7 +58,6 @@ extract dispatch does not automatically install rar/7z utilities.
 | `fkill [SIGNAL]` | Select processes; TERM by default, KILL only explicitly |
 | `psg QUERY` | Search running process descriptions |
 | `ai`, `air` | Claude; resume session, when installed |
-| `lzd` | LazyDocker |
 
 ## Containers
 
@@ -70,7 +68,14 @@ without volume removal. Volume cleanup is a separate explicit decision.
 
 ## Platform conveniences
 
-macOS: `showfiles`, `hidefiles`, `flushdns`, `brewup`.
-Linux: `aptup` updates indexes and interactively upgrades; `apti`, `apts`,
-`aptrm`, `aptshow`; `sc`, `scu`, `jcf`, `jcu`, `jcb` for systemd/journald;
-`open` uses xdg-open when available. `df`, `du`, and Linux `free` use human units.
+Package aliases follow the machine's package manager:
+
+| System | Upgrade | Install | Search | Remove | Show |
+|---|---|---|---|---|---|
+| Fedora | `dnfup` | `dnfi` | `dnfs` | `dnfrm` | `dnfinfo` |
+| Debian | `aptup` | `apti` | `apts` | `aptrm` | `aptshow` |
+| macOS | `brewup` | `brewi` | `brews` | `brewrm` | `brewinfo` |
+
+macOS also has `showfiles`, `hidefiles` and `flushdns`. Linux has `sc`, `scu`,
+`jcf`, `jcu`, `jcb` for systemd and journald, and `open` for xdg-open. `df`,
+`du` and Linux `free` use human units.

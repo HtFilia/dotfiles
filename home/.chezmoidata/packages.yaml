@@ -1,0 +1,203 @@
+# Packages installed by the run_onchange_before_10-packages-* scripts.
+#
+# On each machine the script for its operating system installs whatever is
+# missing from the "common" list, then from the lists named after the
+# machine's profile (workstation, server), its context (perso, travail) and,
+# when enabled, gaming. Lists that do not exist are skipped. Editing a list
+# changes the rendered script, so the next `chezmoi apply` runs it again.
+packages:
+  fedora:
+    # COPR repositories enabled before installing their packages.
+    copr:
+      - atim/starship
+      - atim/lazygit
+    common:
+      - zsh
+      - zsh-autosuggestions
+      - zsh-syntax-highlighting
+      - chezmoi
+      - git
+      - kitty
+      - fira-code-fonts
+      - tmux
+      - neovim
+      - starship
+      - lazygit
+      - fzf
+      - ripgrep
+      - fd-find
+      - bat
+      - eza
+      - zoxide
+      - atuin
+      - direnv
+      - git-delta
+      - jq
+      - just
+      - htop
+      - gh
+      - tealdeer
+      - fastfetch
+      - hyperfine
+      - du-dust
+      - yq
+      - uv
+      - rustup
+      - nodejs24
+      - nodejs24-bin
+      - nodejs24-npm-bin
+      - podman
+      - podman-compose
+      - ShellCheck
+      - shfmt
+      - gitleaks
+      - wl-clipboard
+      # From Microsoft's repository, which the Fedora script configures.
+      - code
+    perso:
+      - golang
+    gaming:
+      - gamemode
+      - mangohud
+
+  debian:
+    # Official Debian 13 repositories only.
+    common:
+      - zsh
+      - zsh-autosuggestions
+      - zsh-syntax-highlighting
+      - ca-certificates
+      - curl
+      - git
+      - tmux
+      - starship
+      - lazygit
+      - fzf
+      - ripgrep
+      - fd-find
+      - bat
+      - eza
+      - zoxide
+      - atuin
+      - direnv
+      - git-delta
+      - jq
+      - just
+      - htop
+      - tealdeer
+      - shellcheck
+      - shfmt
+      - gitleaks
+      - nodejs
+      - npm
+    workstation:
+      - kitty
+      - fonts-firacode
+      - gh
+      - fastfetch
+      - hyperfine
+      - du-dust
+      - rustup
+      - podman
+      - podman-compose
+      - wl-clipboard
+      - xclip
+    server:
+      - kitty-terminfo
+      - openssh-client
+      - python3
+      - python3-venv
+      - build-essential
+      - ncurses-bin
+      - ncurses-term
+      - less
+      - man-db
+      - bsdextrautils
+      - util-linux
+      - unzip
+      - xz-utils
+      - ncdu
+      - iproute2
+      - bind9-dnsutils
+      - iputils-ping
+      - procps
+
+  darwin:
+    common:
+      brews:
+        - zsh
+        - zsh-autosuggestions
+        - zsh-syntax-highlighting
+        - chezmoi
+        - git
+        - tmux
+        - neovim
+        - starship
+        - lazygit
+        - fzf
+        - ripgrep
+        - fd
+        - bat
+        - eza
+        - zoxide
+        - atuin
+        - direnv
+        - git-delta
+        - jq
+        - just
+        - htop
+        - gh
+        - tealdeer
+        - fastfetch
+        - hyperfine
+        - dust
+        - yq
+        - uv
+        - rustup
+        - node
+        - shellcheck
+        - shfmt
+        - gitleaks
+        - actionlint
+        - colima
+        - docker
+        - docker-compose
+        - docker-buildx
+      casks:
+        - kitty
+        - font-fira-code
+        - visual-studio-code
+    perso:
+      brews:
+        - go
+
+# VS Code extensions, installed where VS Code is: always on Fedora and macOS,
+# and on a Debian workstation once someone has installed `code`.
+vscode:
+  common:
+    - sainnhe.gruvbox-material
+    - PKief.material-icon-theme
+    - PKief.material-product-icons
+    - usernamehw.errorlens
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - christian-kohler.path-intellisense
+    - streetsidesoftware.code-spell-checker
+    - gruntfuggly.todo-tree
+    - aaron-bond.better-comments
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-python.debugpy
+    - charliermarsh.ruff
+    - rust-lang.rust-analyzer
+    - tamasfe.even-better-toml
+    - redhat.vscode-yaml
+    - bradlc.vscode-tailwindcss
+    - ms-azuretools.vscode-docker
+    - ms-vscode-remote.remote-ssh
+    - ms-vscode-remote.remote-containers
+    - mikestead.dotenv
+  # GitHub Copilot is built into VS Code and cannot be installed separately.
+  perso:
+    - anthropic.claude-code
+    - golang.go

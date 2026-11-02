@@ -15,17 +15,16 @@ BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, and Bash.
 
 ### Explicit provisioning
 
-Install runtimes first. `bootstrap.sh --setup-editor` installs the pinned Go and
-Node runtimes on both workstation and server profiles, plus the server's Python
-virtual-environment and compiler prerequisites. Selecting `python` requires
-`python3` with virtual environment support because the current Mason registry
-installs BasedPyright and Ruff in isolated Python environments:
+Language servers come from Mason and are installed only on request. Node and
+npm are installed on every machine, Go on the personal workstations, and
+`python3-venv` plus a C compiler on the VPS. Selecting `python` requires
+`python3` with virtual environment support, because Mason installs BasedPyright
+and Ruff in isolated Python environments; Treesitter parsers need a C compiler.
 
 ```sh
-sudo apt install python3 python3-venv  # Debian VPS
-./scripts/setup-editor.sh lua python go rust node shell
-# Select only languages you use:
-./scripts/setup-editor.sh python shell
+setup="$(chezmoi source-path)/../scripts/setup-editor.sh"
+"$setup" lua python go rust node shell
+"$setup" python shell    # only the languages you use
 ```
 
 The command restores locked plugins, refreshes Mason's registry, installs the
@@ -36,25 +35,25 @@ these are not covered by the Linux binary SHA256 manifest. Restart Neovim after
 setup. Rust formatting/checking additionally relies on rustfmt/Clippy in the
 selected Rust toolchain.
 
-Language tools live under Neovim's data directory. Selection markers under
-`~/.local/state/dotfiles` let verification check expected tool binaries. Installing
-more languages does not uninstall earlier tools. Project tools may take priority
+Language tools live under Neovim's data directory. Installing more languages
+does not uninstall earlier tools. Project tools may take priority
 according to the formatter/server configuration; inspect `:checkhealth`,
 `:Mason`, and `<leader>cl` when diagnosing a project.
 
-Without `--setup-editor`, server bootstrap keeps the SSH profile small and does
-not download language runtimes or parsers. Run the explicit setup command after
-installing any prerequisites yourself when you choose that mode.
-
 ## VS Code
 
-Linux uses `~/.config/Code/User`; macOS uses
-`~/Library/Application Support/Code/User`, pointing to the shared source User
-directory. Source settings are JSONC, allowing comments.
+`settings.json` and `keybindings.json` are rendered from
+`home/.chezmoitemplates/` into `~/.config/Code/User` on Linux and
+`~/Library/Application Support/Code/User` on macOS. The repository installs
+VS Code on Fedora and macOS; on the Debian work workstation it deploys the
+settings only once `code` is on PATH. A setting changed in VS Code's UI changes
+the deployed copy: `chezmoi diff` shows it, and you port it into the template
+or keep it in a VS Code profile.
 
-The extension manifest supplies themes, language tooling, formatting, remote
-connections, and optional assistant interfaces. Extensions update through
-VS Code. Assistant functionality may require accounts; repository-level telemetry
+The extensions listed under `vscode` in `packages.yaml` are installed when the
+list changes. The AI extension (Claude Code) is listed for the `perso`
+context only; GitHub Copilot ships with VS Code and is not installed
+separately. Extensions update through VS Code; repository-level telemetry
 settings do not govern every extension's service behavior.
 
 Python uses Ruff formatting and Pylance basic checking. Go uses goimports, Rust

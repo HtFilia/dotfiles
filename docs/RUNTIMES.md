@@ -1,60 +1,43 @@
 # Runtimes and project environments
 
-Machine defaults come from Homebrew on macOS and apt/verified direct downloads
-on Linux. Project-specific requirements belong in version-controlled project
-files. This separation avoids installing every project's versions globally.
+Each machine gets one default version of a runtime from its package manager.
+Projects that need a specific version declare it in version-controlled files.
 
-| Runtime | Machine source | Project control |
-|---|---|---|
-| Python | Homebrew/apt; uv available | `pyproject.toml`, `uv.lock`, `.python-version` |
-| Node | Homebrew Node/current stable pinned Linux Node | mise version and package-manager lockfile |
-| Go | Homebrew/pinned Linux Go | `go.mod`, optional mise version |
-| Rust | Homebrew rustup/apt compiler | `rust-toolchain.toml`, Cargo.lock |
-
-mise is available on workstations and activated in Zsh. It does not silently
-replace machine defaults without configuration. Example project `mise.toml`:
-
-```toml
-[tools]
-node = "26.9.0"
-```
-
-Trust project configuration only after reviewing it. Use explicit versions for
-shared projects; let their CI install those versions too.
+| Runtime | Fedora | Debian 13 | macOS | Project control |
+|---|---|---|---|---|
+| Python | system `python3`, uv | `python3`; uv on the work workstation | uv | `pyproject.toml`, `uv.lock`, `.python-version` |
+| Node | `nodejs24` | `nodejs` 20 and `npm` | `node` | lockfile, `engines`, `packageManager` |
+| Go | `golang` | not installed | `go` | `go.mod`, including its `toolchain` line |
+| Rust | rustup, stable toolchain | rustup, stable toolchain (work workstation) | rustup, stable toolchain | `rust-toolchain.toml`, `Cargo.lock` |
 
 ## Python
 
-`uv init`, `uv add`, `uv sync`, and `uv run` cover normal project work. `uv run`
-uses project dependencies without manual activation. `uvx` invokes isolated CLI
-tools; it is a distinct executable supplied alongside uv. Global Python tools
-can be installed with `uv tool install` when that is useful.
+`uv init`, `uv add`, `uv sync` and `uv run` cover project work; `uv run` uses
+the project's environment without activation. uv also installs Python
+versions, so a project can use a version the system does not ship:
 
 ```sh
-uv python install 3.14
 uv python pin 3.14
 uv add --dev pytest ruff
 uv run pytest
 ```
 
-Keep `.python-version` and lockfiles tracked when they describe project intent.
-`activate` is a convenience for an existing virtual environment, not a version
-manager. direnv loads approved per-project environments and releases them when
-you leave; read `.envrc` before approving it.
+`uvx` runs a command-line tool in a throwaway environment, and `uv tool
+install` keeps one. `activate` enters an existing `.venv` or `venv`. direnv
+loads an approved `.envrc` when you enter a project; read it before
+`direnv allow`.
 
-## Node, Go and Rust
+## Rust
 
-pnpm is supplied by Homebrew or explicitly installed at the version in
-`scripts/runtime-versions.sh` on Linux. Linux Node/npm/npx launchers are repaired
-on each installation, even if another Node on PATH reports the same version.
-The shell uses stable `~/.local/bin` launchers instead of versioned PATH entries.
-Respect each project's package-manager version. Node installation does not select
-an unrequested package manager for every project.
+On the first `chezmoi apply` of a workstation, a run-once script asks rustup
+for the stable toolchain, with rustfmt and Clippy. `rustup update` upgrades
+it; a project's `rust-toolchain.toml` selects another version when you build
+there.
 
-Go binaries installed by `go install` use GOPATH/GOBIN, which remain overrideable.
-Linux rustfmt and Clippy come from distro packages; rustup toolchains need their
-corresponding components. `rustup override set` stores a local override;
-version-controlled `rust-toolchain.toml` is the portable project declaration.
+## Node and Go
 
-Linux tokei uses a versioned, locked Cargo build only with Rust >=1.85; otherwise
-it is skipped as optional. watchexec is already installed for file watching:
-`watchexec -e rs -- cargo test` avoids another Cargo watcher dependency.
+Node comes with npm everywhere. Respect each project's package manager and
+lockfile; use `npx` or `corepack` rather than global installs. Go reads the
+`toolchain` line of `go.mod` and downloads that version when it is newer than
+the installed one. Binaries from `go install` land in `$GOBIN` (default
+`~/go/bin`), which is on PATH.

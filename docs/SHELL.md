@@ -4,13 +4,22 @@
 unique PATH array. It runs no external commands and prints nothing, so
 noninteractive SSH commands can locate user-installed tools.
 
-`.zshrc` selects the platform using Zsh's built-in OS information. It reads `.zshrc.settings`, establishes package-manager
-paths, sets pager/history defaults, checks completion permissions with compinit,
-loads trusted plugins, and initializes available tool integrations.
+`.zshrc` is a chezmoi template rendered for each machine. It reads
+`.zshrc.settings`, sets PATH (with Homebrew's prefix on macOS), pager, locale
+and history, checks completion permissions with compinit, loads the plugins,
+starts the integrations of installed tools, defines aliases and helpers, reads
+`.zshrc.local` and finally loads syntax highlighting. Every integration is
+guarded with `command -v`, so a machine that lacks a tool still gets a working
+shell. uv completion is cached and regenerated when its executable changes.
 
-Homebrew's prefix is selected from its standard installed locations without
-running brew on every startup. Homebrew runtime paths are explicit.
-uv completion is cached and regenerated when its executable changes.
+## Plugins
+
+zsh-autosuggestions and zsh-syntax-highlighting come from packages: under
+`/usr/share` on Fedora and Debian, under Homebrew's `share` directory on macOS.
+`.zshrc` sources a plugin only if the file and every parent directory belong
+to root or to you and are not writable by group or others. If Homebrew's
+directories are group-writable, `chmod -R go-w "$(brew --prefix)/share"`
+fixes both the plugins and compinit's warning.
 
 ## Customize
 
@@ -37,7 +46,6 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 - zoxide provides `z`/`zi`; interactive `cd` aliases to `z`.
 - fzf supplies file/directory/history widgets; atuin takes Ctrl-r when installed.
 - direnv loads approved `.envrc` files; inspect them before `direnv allow`.
-- mise selects project runtime versions when configured and trusted.
 
 History is shared between shells, includes timestamps, and ignores commands
 beginning with a space. Do not place secrets directly in command arguments;
@@ -45,12 +53,6 @@ atuin and other integrations have their own history policies.
 The managed Atuin configuration disables synchronization and update checks.
 Ctrl-r returns the selected command to the prompt so you can edit it before
 execution. History remains in Atuin's user data directory on each machine.
-Pinned shell plugins load only through user-owned, non-writable-by-others
-directory chains; bootstrap repairs those specific ancestors when installing.
-
-Plugin entrypoints and their directory chains must be owned by the user and not
-group/world writable. A pin records checkout intent; it does not replace trusting
-upstream code or reviewing plugin updates.
 
 ## Performance
 

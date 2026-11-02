@@ -1,37 +1,35 @@
 #!/usr/bin/env zsh
-# ~/.zshrc - managed by chezmoi
+# ~/.zshrc - managed by chezmoi. Machine-specific additions belong in
+# ~/.zshrc.settings (read first) and ~/.zshrc.local (read last).
 # shellcheck disable=all
+{{- $osid := includeTemplate "osid" . }}
+{{- $brew := "" }}
+{{- if eq .chezmoi.os "darwin" }}
+{{-   $brew = ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}
+{{- end }}
+{{- $share := "/usr/share" }}
+{{- if $brew }}{{ $share = printf "%s/share" $brew }}{{ end }}
 
-case "$OSTYPE" in
-  darwin*) export DOTFILES_OS=macos ;;
-  linux*) export DOTFILES_OS=linux ;;
-  *) export DOTFILES_OS=unknown ;;
-esac
-# Inputs are read before integrations; final overrides remain in .zshrc.local.
+# Inputs read before the integrations below, such as command-override flags.
 [[ -f "$HOME/.zshrc.settings" ]] && source "$HOME/.zshrc.settings"
-typeset -U path PATH
-path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/go/bin" $path)
-for _prefix in /opt/homebrew /usr/local; do
-  if [[ -x "$_prefix/bin/brew" ]]; then
-    export HOMEBREW_PREFIX="$_prefix"
-    path=("$_prefix/bin" "$_prefix/sbin" $path)
-    fpath=("$_prefix/share/zsh/site-functions" $fpath)
-    [[ -d "$_prefix/opt/node/bin" ]] && path=("$_prefix/opt/node/bin" $path)
-    [[ -d "$_prefix/opt/python@3.14/libexec/bin" ]] && path=("$_prefix/opt/python@3.14/libexec/bin" $path)
-    break
-  fi
-done
-unset _prefix
+
+typeset -U path PATH fpath
+path=("$HOME/.local/bin" "$HOME/.cargo/bin" $path)
+{{- if $brew }}
+export HOMEBREW_PREFIX={{ $brew }}
+path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt/rustup/bin")
+fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+{{- end }}
 export PATH
 export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"
 export LESS="-R --mouse --wheel-lines=3"
-if [[ "$DOTFILES_OS" == macos ]]; then
-  export LANG="${LANG:-en_US.UTF-8}"
-else
-  export LANG="${LANG:-C.UTF-8}"
-fi
+{{- if eq .chezmoi.os "darwin" }}
+export LANG="${LANG:-en_US.UTF-8}"
+{{- else }}
+export LANG="${LANG:-C.UTF-8}"
+{{- end }}
 command -v bat &>/dev/null && command -v col &>/dev/null && export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Kitty and tmux advertise true color; SSH need not forward COLORTERM.
 [[ "$TERM" == xterm-kitty || "$TERM" == tmux-256color ]] && export COLORTERM=truecolor
@@ -59,32 +57,30 @@ zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
-_dotfiles_file_mode() {
-  case "$DOTFILES_OS" in
-    macos) stat -f '%Lp' "$1" ;;
-    *) stat -c '%a' "$1" ;;
-  esac
-}
-
+# Source a file only if it and every parent directory belong to root or to
+# this user and are not writable by group or others. Distribution plugins
+# under /usr/share belong to root; Homebrew's belong to the user.
+zmodload -F zsh/stat b:zstat
 _dotfiles_safe_source() {
-  local file="$1" base="$2" mode
-  [[ -f "$file" && "$file" == "$base"/* ]] || return 1
-  local target="${file:A}" directory
-  [[ "$target" == "${base:A}"/* ]] || return 1
-  directory="$target"
-  while [[ "$directory" != "$HOME" && "$directory" != / ]]; do
-    [[ -O "$directory" && ! -L "$directory" ]] || return 1
-    mode="$(_dotfiles_file_mode "$directory" 2>/dev/null)" || return 1
-    [[ -n "$mode" && "$mode" != *[^0-7]* ]] && (( (8#$mode & 8#022) == 0 )) || return 1
+  local file="$1" directory
+  local -a owner mode
+  [[ -f "$file" ]] || return 1
+  directory="${file:A}"
+  while true; do
+    zstat -A owner +uid -- "$directory" 2>/dev/null || return 1
+    zstat -o -A mode +mode -- "$directory" 2>/dev/null || return 1
+    [[ "$owner" == 0 || "$owner" == "$UID" ]] || return 1
+    (( (8#$mode & 8#022) == 0 )) || return 1
+    [[ "$directory" == / ]] && break
     directory="${directory:h}"
   done
   source "$file"
 }
 
-ZSH_PLUGIN_DIR="$HOME/.local/share/zsh/plugins"
-_dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh" "$ZSH_PLUGIN_DIR"
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374"
+if _dotfiles_safe_source {{ $share }}/zsh-autosuggestions/zsh-autosuggestions.zsh; then
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374"
+fi
 
 export STARSHIP_CONFIG="$HOME/.config/starship.toml"
 command -v starship &>/dev/null && eval "$(starship init zsh)"
@@ -93,27 +89,16 @@ if command -v zoxide &>/dev/null; then
   alias cd='z'
 fi
 if command -v fzf &>/dev/null; then
-  _fzf_init="$(fzf --zsh 2>/dev/null)"
-  if [[ -n "$_fzf_init" ]]; then
-    eval "$_fzf_init"
-  else
-    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
-    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
-  fi
-  unset _fzf_init
-  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded"
-  export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=bg:#1d2021,bg+:#282828,fg:#d4be98,fg+:#d4be98,hl:#d8a657,hl+:#d8a657,info:#7daea3,prompt:#a9b665,pointer:#d3869b,marker:#e78a4e,spinner:#89b482,header:#928374,border:#3c3836"
+  eval "$(fzf --zsh)"
+  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded --color=bg:#142727,bg+:#1b3533,fg:#e5f0ea,hl:#75d1c2,hl+:#e5bc70,prompt:#75d1c2,pointer:#e5bc70,border:#294742"
   if command -v fd &>/dev/null; then
-  export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
-  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-  export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
   fi
 fi
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=bg:#142727,bg+:#1b3533,fg:#e5f0ea,hl:#75d1c2,hl+:#e5bc70,prompt:#75d1c2,pointer:#e5bc70,border:#294742"
-command -v vivid &>/dev/null && export LS_COLORS="$(vivid generate molokai)"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
-command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 if command -v eza &>/dev/null; then
   alias ls='eza --icons --group-directories-first'
@@ -143,31 +128,40 @@ alias grs='git restore' grss='git restore --staged' grt='git rev-parse --show-to
 if command -v docker &>/dev/null; then
   alias d='docker'
   alias dc='docker compose'
-  alias dps='docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
-  alias dpsa='docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"'
+  alias dps={{ `'docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'` }}
+  alias dpsa={{ `'docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"'` }}
   alias di='docker images' dex='docker exec -it' dlog='docker logs -f'
   alias dprune='docker system prune'
 fi
 
 alias ..='cd ..' ...='cd ../..' ....='cd ../../..' -- -='cd -'
 alias mkd='mkdir -p' df='df -h' du='du -h'
-[[ "$DOTFILES_OS" == macos ]] || alias free='free -h'
 alias reload='exec zsh' zshconfig='$EDITOR ~/.zshrc'
 alias nvimconfig='$EDITOR ~/.config/nvim'
 alias dotfiles='chezmoi cd'
 
-if [[ "$DOTFILES_OS" == "macos" ]]; then
-  alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
-  alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
-  alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
-  alias brewup='brew update && brew upgrade && brew cleanup'
-else
-  alias aptup='sudo apt update && sudo apt upgrade'
-  alias apti='sudo apt install' apts='apt search' aptrm='sudo apt remove'
-  alias aptshow='apt show' open='xdg-open'
-  alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
-  alias jcu='journalctl -u' jcb='journalctl -b'
-fi
+# Package manager shortcuts for this operating system.
+{{- if eq $osid "fedora" }}
+alias dnfup='sudo dnf upgrade' dnfi='sudo dnf install' dnfs='dnf search'
+alias dnfrm='sudo dnf remove' dnfinfo='dnf info'
+{{- else if eq $osid "debian" }}
+alias aptup='sudo apt update && sudo apt upgrade'
+alias apti='sudo apt install' apts='apt search' aptrm='sudo apt remove'
+alias aptshow='apt show'
+{{- else if eq $osid "darwin" }}
+alias brewup='brew update && brew upgrade && brew cleanup'
+alias brewi='brew install' brews='brew search' brewrm='brew uninstall'
+alias brewinfo='brew info'
+{{- end }}
+{{- if eq .chezmoi.os "darwin" }}
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
+alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
+{{- else }}
+alias free='free -h' open='xdg-open'
+alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
+alias jcu='journalctl -u' jcb='journalctl -b'
+{{- end }}
 
 mkcd() { mkdir -p "$1" && cd "$1" || return; }
 extract() {
@@ -251,25 +245,14 @@ if command -v uv &>/dev/null; then
   alias uvr='uv run' uvs='uv sync' uva='uv add' uvp='uv pip'
   alias pyi='uv pip install' pyls='uv pip list'
 fi
-yy() {
-  command -v yazi >/dev/null || { print -u2 'yazi is not installed'; return 127; }
-  local tmp cwd
-  tmp=$(mktemp) || return
-  yazi "$@" --cwd-file="$tmp"
-  [[ ! -s "$tmp" ]] || { cwd=$(cat "$tmp"); builtin cd -- "$cwd"; }
-  rm -f "$tmp"
-}
 tm() { tmux new-session -A -s "${1:-${PWD:t}}"; }
-command -v lazydocker &>/dev/null && alias lzd='lazydocker'
-[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 export GOPATH="${GOPATH:-$HOME/go}"
 export GOBIN="${GOBIN:-$GOPATH/bin}"
 [[ -d "$GOBIN" ]] && path+=("$GOBIN")
 command -v claude &>/dev/null && alias ai='claude' air='claude --resume'
-[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
-# Syntax highlighting must be loaded after widgets from fzf/atuin/local config.
-_dotfiles_safe_source "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$ZSH_PLUGIN_DIR" || true
-
-# Explicit commands: no animation, network fetch or dashboard at shell startup.
 command -v tldr &>/dev/null && alias helpme='tldr'
-command -v jless &>/dev/null && alias jsonview='jless'
+
+# Final aliases, environment overrides and widgets for this machine.
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+# Syntax highlighting must be loaded after widgets from fzf, atuin and local config.
+_dotfiles_safe_source {{ $share }}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh || true

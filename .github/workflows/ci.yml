@@ -8,48 +8,13 @@ permissions:
   contents: read
 
 jobs:
-  debian-server:
-    name: Debian 13 server smoke
+  linux:
+    name: Install (${{ matrix.scenario }})
     runs-on: ubuntu-latest
-    container: debian:trixie
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Install checkout and test prerequisites
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl git python3 zsh ripgrep util-linux passwd sudo
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install server package manifest
-        run: |
-          . scripts/server-packages.sh
-          apt-get install -y --no-install-recommends "${dotfiles_server_packages[@]}"
-      - name: Install pinned Chezmoi
-        run: |
-          . scripts/pinned-assets.sh
-          archive="$(cached_asset_path chezmoi-linux-amd64 /tmp/dotfiles-assets)"
-          stage="$(mktemp -d)"
-          extract_pinned_archive "$archive" "$stage"
-          install -m 755 "$stage/chezmoi" /usr/local/bin/chezmoi
-      - name: Exercise isolated server deployment
-        run: |
-          useradd -m -s /bin/bash dotfiles-ci
-          # shellcheck disable=SC2016
-          runuser -u dotfiles-ci -- bash -c 'cd "$1" && bash tests/script-contracts.sh' _ "$GITHUB_WORKSPACE"
-          # shellcheck disable=SC2016
-          runuser -u dotfiles-ci -- bash -c 'cd "$1" && mkdir -p ~/.local/share && ln -s "$1" ~/.local/share/chezmoi && scripts/install-server.sh --skip-packages && chezmoi init --apply --promptChoice profile=server,context=perso --promptBool systemBaseline=false && scripts/verify.sh && scripts/install-server.sh --skip-packages && chezmoi apply && scripts/verify.sh' _ "$GITHUB_WORKSPACE"
-
-  scripts:
-    name: Checks (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+        scenario: [fedora-perso, debian-travail, debian-server, debian-server-baseline]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,46 +22,32 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Install Linux check tools
-        if: runner.os == 'Linux'
+      # chezmoi clones this checkout; give the tested commit a branch name.
+      - name: Name the tested commit
+        run: git switch -c ci-test
+
+      - name: Install from scratch in a Podman container
+        run: tests/container.sh "${{ matrix.scenario }}"
+
+  macos:
+    name: Install (macOS)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Name the tested commit
+        run: git switch -c ci-test
+
+      - name: Install with the README commands
         run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck zsh python3 ripgrep
-          . scripts/pinned-assets.sh
-          mkdir -p "$HOME/.local/bin"
-          for specification in chezmoi:chezmoi-linux-amd64 actionlint:actionlint-linux-amd64 gitleaks:gitleaks-linux-x64; do
-            tool="${specification%%:*}"
-            key="${specification#*:}"
-            archive="$(cached_asset_path "$key" "$RUNNER_TEMP/assets")"
-            stage="$(mktemp -d)"
-            extract_pinned_archive "$archive" "$stage"
-            install -m 755 "$stage/$tool" "$HOME/.local/bin/$tool"
-            rm -rf "$stage"
-          done
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          commands="$(tests/readme-install.sh darwin "file://$GITHUB_WORKSPACE" \
+            --promptChoice profile=workstation,context=perso)"
+          printf '%s\n' "$commands"
+          bash -euo pipefail -c "$commands"
 
-      - name: Install macOS check tools
-        if: runner.os == 'macOS'
-        run: brew install shellcheck chezmoi actionlint gitleaks python ripgrep
-
-      - name: Syntax and ShellCheck
-        run: |
-          for file in scripts/*.sh tests/*.sh; do bash -n "$file"; done
-          for file in home/dot_zsh*; do zsh -n "$file"; done
-          shellcheck scripts/*.sh tests/*.sh
-
-      - name: Behavioral regressions
-        run: bash tests/script-contracts.sh
-
-      - name: Workflow lint
-        run: actionlint
-
-      - name: Secret scan
-        run: |
-          gitleaks version
-          gitleaks git --redact --no-banner --verbose
-
-      - name: Asset inventory consistency
-        run: |
-          scripts/asset-manifest.sh > "$RUNNER_TEMP/assets.md"
-          diff -u docs/ASSET-MANIFEST.md "$RUNNER_TEMP/assets.md"
+      - name: Check the machine
+        run: bash "$(chezmoi source-path)/../tests/machine.sh"

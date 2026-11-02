@@ -1,0 +1,59 @@
+{{- $osid := includeTemplate "osid" . -}}
+{{- if eq $osid "fedora" -}}
+{{- $os := .packages.fedora -}}
+#!/usr/bin/env bash
+# Install the Fedora packages listed in .chezmoidata/packages.yaml that are
+# missing. Sources: Fedora, the COPRs listed there and, for VS Code,
+# Microsoft's repository, whose signing key is checked against a pinned SHA256.
+set -euo pipefail
+
+coprs=(
+{{- range $os.copr }}
+  {{ . }}
+{{- end }}
+)
+packages=(
+{{- range $list := list "common" .profile .context (ternary "gaming" "" .gaming) }}
+{{-   if hasKey $os $list }}
+{{-     range index $os $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+microsoft_signing_url=https://packages.microsoft.com/keys/microsoft.asc
+microsoft_signing_sha256=2fa9c05d591a1582a9aba276272478c262e95ad00acf60eaee1644d93941e3c6
+
+missing=()
+for package in "${packages[@]}"; do
+  rpm -q --quiet "$package" || missing+=("$package")
+done
+if (( ${#missing[@]} == 0 )); then
+  echo "Fedora packages: nothing to install."
+  exit 0
+fi
+
+echo "Fedora packages to install: ${missing[*]}"
+echo "The following steps run dnf, rpm and tee with sudo."
+if ! dnf copr --help >/dev/null 2>&1; then
+  sudo dnf install -y dnf5-plugins
+fi
+for copr in "${coprs[@]}"; do
+  if [[ ! -f "/etc/yum.repos.d/_copr:copr.fedorainfracloud.org:${copr/\//:}.repo" ]]; then
+    sudo dnf copr enable -y "$copr"
+  fi
+done
+if [[ " ${missing[*]} " == *" code "* && ! -f /etc/yum.repos.d/vscode.repo ]]; then
+  key="$(mktemp)"
+  trap 'rm -f "$key"' EXIT
+  curl --proto '=https' --tlsv1.2 -fsSL "$microsoft_signing_url" -o "$key"
+  echo "$microsoft_signing_sha256  $key" | sha256sum --check --quiet
+  sudo install -m 0644 "$key" /etc/pki/rpm-gpg/RPM-GPG-KEY-microsoft
+  sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-microsoft
+  printf '%s\n' '[code]' 'name=Visual Studio Code' \
+    'baseurl=https://packages.microsoft.com/yumrepos/vscode' 'enabled=1' 'gpgcheck=1' \
+    'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-microsoft' |
+    sudo tee /etc/yum.repos.d/vscode.repo >/dev/null
+fi
+sudo dnf install -y "${missing[@]}"
+{{ end -}}

@@ -48,17 +48,6 @@ local function provision()
   for _, parser in ipairs(parsers) do
     assert(vim.tbl_contains(installed, parser), "Parser missing: " .. parser)
   end
-  local state = (vim.env.XDG_STATE_HOME or (vim.env.HOME .. "/.local/state")) .. "/dotfiles"
-  vim.fn.mkdir(state, "p")
-  vim.fn.writefile({ vim.env.DOTFILES_EDITOR_LANGUAGES }, state .. "/editor-languages")
-  local binaries = {
-    lua = { "lua-language-server", "stylua" }, python = { "basedpyright-langserver", "ruff" },
-    go = { "gopls", "goimports" }, rust = { "rust-analyzer" },
-    node = { "typescript-language-server" }, shell = { "bash-language-server", "shfmt", "shellcheck" },
-  }
-  local tools = {}
-  for language in vim.env.DOTFILES_EDITOR_LANGUAGES:gmatch("%S+") do vim.list_extend(tools, binaries[language]) end
-  vim.fn.writefile(tools, state .. "/editor-tools")
   print("Editor tools and parsers installed. Restart Neovim to enable servers.")
 end
 local ok, err = pcall(provision)

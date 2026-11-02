@@ -44,3 +44,52 @@ Library/Application Support/com.mitchellh.ghostty/config.ghostty
 .local/bin/tmux
 .local/bin/dotfiles-update
 .local/bin/UPDATE
+{{- if eq (includeTemplate "osid" .) "debian" }}
+
+# Binaries and launchers that the former Debian installers placed in
+# ~/.local/bin. apt now provides these tools or they were retired, and the
+# old copies would shadow the packaged versions on PATH.
+.local/bin/starship
+.local/bin/eza
+.local/bin/delta
+.local/bin/lazygit
+.local/bin/just
+.local/bin/gitleaks
+.local/bin/fzf
+.local/bin/rg
+.local/bin/zoxide
+.local/bin/atuin
+.local/bin/direnv
+.local/bin/jq
+.local/bin/tldr
+.local/bin/fastfetch
+.local/bin/hyperfine
+.local/bin/dust
+.local/bin/mise
+.local/bin/yazi
+.local/bin/ya
+.local/bin/sd
+.local/bin/duf
+.local/bin/watchexec
+.local/bin/xh
+.local/bin/lazydocker
+.local/bin/ouch
+.local/bin/ov
+.local/bin/hexyl
+.local/bin/dua
+.local/bin/broot
+.local/bin/czkawka_cli
+.local/bin/xcp
+.local/bin/vivid
+.local/bin/pastel
+.local/bin/jc
+.local/bin/jless
+.local/bin/node
+.local/bin/npm
+.local/bin/npx
+.local/bin/corepack
+.local/bin/pnpm
+.local/bin/pnpx
+.local/bin/go
+.local/bin/gofmt
+{{- end }}
