@@ -15,6 +15,10 @@ Library/**
 .config/Code
 .config/Code/**
 {{- end }}
+{{- if not .gaming }}
+.config/MangoHud
+.config/MangoHud/**
+{{- end }}
 {{- if eq .profile "server" }}
 .config/Code
 .config/Code/**

@@ -50,7 +50,10 @@ if [[ "$profile" == workstation ]]; then
     [[ "$osid" == fedora ]] && commands+=(gdb)
   fi
 fi
-[[ "$gaming" == true ]] && commands+=(mangohud gamemoded)
+if [[ "$gaming" == true ]]; then
+  commands+=(mangohud gamemoded)
+  check 'MangoHud configuration deployed' test -f "$HOME/.config/MangoHud/MangoHud.conf"
+fi
 [[ "$profile" == server ]] && commands+=(ncdu ip ss dig ping ps)
 for tool in "${commands[@]}"; do
   check "$tool available" available "$tool"

@@ -76,6 +76,11 @@ chezmoi init --apply HtFilia
 Afterwards, make zsh your login shell with `chsh -s "$(command -v zsh)"` and
 put your Git identity in `~/.gitconfig.local` ([Git](docs/GIT.md)).
 
+With `gaming = true`, Fedora also gets GameMode, MangoHud and its overlay
+config. Steam comes from RPM Fusion's nonfree repository, which the repository
+does not add: enable RPM Fusion as its documentation describes, then run
+`sudo dnf install steam`.
+
 ## Daily use
 
 | Command | Effect |
