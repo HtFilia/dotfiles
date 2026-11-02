@@ -78,6 +78,17 @@ fi
 if [[ "$profile" == server ]]; then
   check 'Kitty terminfo' infocmp -x xterm-kitty
 fi
+if [[ "$baseline" == true ]]; then
+  for timer in apt-daily.timer apt-daily-upgrade.timer logrotate.timer; do
+    check "$timer enabled and active" bash -c 'systemctl is-enabled --quiet "$1" && systemctl is-active --quiet "$1"' _ "$timer"
+  done
+  policies="$(chezmoi source-path)/.system/debian"
+  check 'APT periodic policy' cmp -s "$policies/20auto-upgrades" /etc/apt/apt.conf.d/20auto-upgrades
+  check 'unattended-upgrades policy' cmp -s "$policies/52dotfiles-unattended" /etc/apt/apt.conf.d/52dotfiles-unattended
+  check 'journal retention policy' cmp -s "$policies/20-dotfiles-retention.conf" /etc/systemd/journald.conf.d/20-dotfiles-retention.conf
+  check 'persistent journal' test -d /var/log/journal
+  check 'systemd-journal group membership' bash -c 'id -nG "$(id -un)" | tr " " "\n" | grep -qx systemd-journal'
+fi
 
 printf '%s verification failure(s).\n' "$failures"
 (( failures == 0 ))

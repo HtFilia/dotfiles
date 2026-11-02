@@ -22,11 +22,8 @@ gitleaks, actionlint and Kitty terminfo. It installs no fonts, desktop
 applications or containers. Editor languages stay optional; this host uses
 Python and shell: `"$(chezmoi source-path)/../scripts/setup-editor.sh" python shell`.
 
-`--system-baseline` is explicit and Debian 13 only. It backs up existing APT and
-journal settings under `/var/backups/dotfiles-system`, migrates the identical old
-homelab journal drop-in, and adds the administrator to `systemd-journal`. Sign
-in again before checking journal access. If existing settings differ, it stops
-for review. It does not manage SSH, networking, the firewall or application services.
+Answer `systemBaseline` with `true` to apply the system baseline described
+below. It does not manage SSH, networking, the firewall or application services.
 
 chezmoi keeps local identities and SSH hosts in `.gitconfig.local` and
 `.ssh/config.local` untouched. Server files are independent copies, so a Git
@@ -52,36 +49,34 @@ local copies do not substitute for offsite recovery. Do not enable daily
 Proton Drive backups until a backup, repository check and isolated restore have
 all passed. Review service/backup health manually at least weekly.
 
-## Baseline scope and rollback
+## System baseline
 
-The optional baseline installs `unattended-upgrades` and `logrotate` when absent,
-enables their native timers plus daily APT refresh, restricts unattended upgrades
-to Debian origins, and disables automatic reboot. Caddy and other third-party
-updates stay manual. Journal policy is stored in `system/debian/`, separately
-from the Chezmoi home tree.
+With `systemBaseline = true`, `run_onchange_after_30-debian-baseline.sh`
+installs `unattended-upgrades` and `logrotate` when absent, enables their
+timers and the daily APT refresh, restricts unattended upgrades to Debian
+origins without automatic reboot, keeps a persistent journal limited to 500 MB,
+1 GB free and 30 days, and adds the administrator to `systemd-journal`. Sign
+in again before reading system logs. Caddy and other third-party software
+update manually.
 
-An administrator running from a root console can use
-`./scripts/server-baseline.sh --user ACCOUNT --dry-run` followed by `--apply`.
-User configuration and tool installers should still run as that account.
+The policy files live in `home/.system/debian/`, which chezmoi reads but never
+deploys into `$HOME`. Editing one changes the script, so the next
+`chezmoi apply` installs it again; `scripts/verify.sh` compares the installed
+files with the repository. Files replaced by the script are copied first to
+`/var/backups/dotfiles-system/baseline.*`. Setting `systemBaseline = false`
+stops further changes; it does not undo the baseline.
 
-For rollback, select the backup path printed by the baseline. Restore each
-saved configuration to its original `/etc/apt/apt.conf.d/` or
-`/etc/systemd/journald.conf.d/` location. Remove a new managed file only when it
-was absent from that backup (the managed files are `20auto-upgrades`,
-`52dotfiles-unattended`, and `20-dotfiles-retention.conf`). Restore the legacy
-`20-homelab-retention.conf` if saved. Check `apt-config dump`, then restart
-`systemd-journald` and flush the journal. Use `timers-before` to restore only
-timer states changed by the baseline. If `systemd-journal` was absent from
-`groups-before`, remove only that supplementary group with
-`sudo gpasswd -d ACCOUNT systemd-journal`; never replace all account groups.
-Delete the user's `~/.local/state/dotfiles/system-baseline` marker after rollback.
-Installed Debian dependencies need not be removed for configuration rollback.
+To roll back, restore the files saved in that backup directory to
+`/etc/apt/apt.conf.d/` or `/etc/systemd/journald.conf.d/`, delete a managed
+file that the backup does not contain (`20auto-upgrades`,
+`52dotfiles-unattended`, `20-dotfiles-retention.conf`), check `apt-config dump`,
+restart `systemd-journald` and flush the journal. Remove only the
+supplementary group with `sudo gpasswd -d ACCOUNT systemd-journal` if the
+baseline added it. Installed packages can stay.
 
-Pinned binaries and Neovim plugins are versioned in the repository. Debian
-package patch versions follow the configured Debian mirrors. Explicit Mason
-editor provisioning uses its current registry, so language-tool versions are
-not fully locked; rerunning setup ensures presence without upgrading installed
-Mason tools. Offsite backups remain a separate, deferred project.
+Debian package versions follow the Debian mirrors. Mason language tools follow
+Mason's registry, so they are not fully pinned. Offsite backups remain a
+separate, deferred project.
 
 ## Email notification setup
 
