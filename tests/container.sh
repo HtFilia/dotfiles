@@ -72,8 +72,25 @@ if (( worktree )); then
 else
   install="$("$root/tests/readme-install.sh" "$os" file:///src "${answers[@]}")"
 fi
+# Debian machines may only use the official repositories: record the APT
+# sources and keys before the install and compare afterwards.
+apt_sources() {
+  podman exec "$name" sh -c 'find /etc/apt/sources.list /etc/apt/sources.list.d /etc/apt/trusted.gpg \
+    /etc/apt/trusted.gpg.d /etc/apt/keyrings -type f 2>/dev/null | sort | xargs -r sha256sum'
+}
+[[ "$os" == debian ]] && apt_before="$(apt_sources)"
+
 printf '== Install: %s\n%s\n' "$scenario" "$install"
 as_tester bash -euo pipefail -c "$install"
+
+if [[ "$os" == debian ]]; then
+  apt_after="$(apt_sources)"
+  if [[ "$apt_after" != "$apt_before" ]]; then
+    printf 'APT sources or keys changed:\n%s\n' "$(diff <(echo "$apt_before") <(echo "$apt_after"))"
+    exit 1
+  fi
+  echo 'ok - the install added no APT source, key or backports suite'
+fi
 # The checks come from chezmoi's own clone, as on a real machine.
 # shellcheck disable=SC2016
 as_tester bash -c 'exec bash "$(chezmoi source-path)/../tests/machine.sh"'

@@ -12,7 +12,7 @@ esac
 PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 for prefix in /opt/homebrew /usr/local; do
   if [[ "$(uname -s)" == Darwin && -x "$prefix/bin/brew" ]]; then
-    PATH="$prefix/bin:$prefix/sbin:$PATH:$prefix/opt/rustup/bin"
+    PATH="$prefix/bin:$prefix/sbin:$PATH:$prefix/opt/rustup/bin:$prefix/opt/llvm/bin"
     break
   fi
 done
