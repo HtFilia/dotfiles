@@ -54,6 +54,10 @@ for tool in "${commands[@]}"; do
 done
 
 check 'managed files match the source state' chezmoi verify
+# ssh -G prints the IdentityFile as written in the config, tilde included.
+# shellcheck disable=SC2088
+if [[ "$context" == travail ]]; then key='~/.ssh/github_work'; else key='~/.ssh/github'; fi
+check 'SSH uses the GitHub key of this context' bash -c 'ssh -G github.com 2>/dev/null | grep -qx "identityfile $1"' _ "$key"
 check 'zsh syntax' zsh -n "$HOME/.zshrc"
 check 'zsh plugins load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
 check 'completion directories are safe' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'

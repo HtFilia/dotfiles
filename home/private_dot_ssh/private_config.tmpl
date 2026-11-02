@@ -1,13 +1,19 @@
-# Host-specific identities and aliases are loaded for every destination.
+# ~/.ssh/config - managed by chezmoi.
+# Hosts and identities for this machine come first, so their values win.
 Include ~/.ssh/config.local
 
-# GitHub uses the dedicated key in ~/.ssh directly; no agent setup is needed.
+# GitHub uses this context's key. Protect it with a passphrase: the first
+# connection adds it to the session's SSH agent, which answers afterwards.
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/github
+    IdentityFile {{ if eq .context "travail" }}~/.ssh/github_work{{ else }}~/.ssh/github{{ end }}
     IdentitiesOnly yes
-    IdentityAgent none
-    AddKeysToAgent no
+    AddKeysToAgent yes
+{{- if eq .chezmoi.os "darwin" }}
+    # Apple's OpenSSH only; other builds skip the option.
+    IgnoreUnknown UseKeychain
+    UseKeychain yes
+{{- end }}
     PreferredAuthentications publickey
     PasswordAuthentication no

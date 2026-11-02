@@ -1,50 +1,52 @@
 # SSH hosts and identities
 
-The managed private `~/.ssh/config` defines GitHub explicitly and includes
-`~/.ssh/config.local` for machine-specific hosts. GitHub uses `~/.ssh/github`
-with `IdentitiesOnly yes` and `IdentityAgent none`, so Git can authenticate
-without first adding that key to an SSH agent. Existing key files are not
-managed.
-The local include is evaluated for every destination and precedes GitHub
-defaults, so local host aliases and intentional GitHub overrides work.
+The managed, private `~/.ssh/config` starts with `Include ~/.ssh/config.local`,
+so hosts and identities for one machine come first and win, then defines
+GitHub. chezmoi never touches `config.local` or any key.
 
-Example, adapted to your own key and host:
+## GitHub key
 
-```sshconfig
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/github
-  IdentitiesOnly yes
-  IdentityAgent none
-  AddKeysToAgent no
+The key depends on the machine's context:
 
-Host dev-vps
-  HostName your-server.example
-  User your-user
-  IdentityFile ~/.ssh/id_ed25519_vps
-  IdentitiesOnly yes
-  ServerAliveInterval 30
-  ServerAliveCountMax 3
-```
+| Context | Key |
+|---|---|
+| `perso` | `~/.ssh/github` |
+| `travail` | `~/.ssh/github_work` |
+
+Protect the key with a passphrase. `AddKeysToAgent yes` adds it to the session
+agent on first use, so the passphrase is asked once per session:
+
+- Fedora KDE starts an agent and sets `SSH_AUTH_SOCK` for the session.
+- Debian starts `ssh-agent` for graphical sessions through systemd.
+- macOS keeps the passphrase in the login keychain (`UseKeychain yes`).
 
 ```sh
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/config.local
-ssh -T git@github.com
-git remote -v
+ssh-keygen -t ed25519 -f ~/.ssh/github -C "github $(hostname)"
+ssh -T git@github.com    # authenticates; GitHub offers no shell
 ```
 
-GitHub's authentication test reports successful authentication but does not offer
-an interactive shell. Git rewrites GitHub HTTPS and git
-protocol URLs to `git@github.com:` through the managed Git config, so new and
-existing GitHub remotes use SSH automatically.
+## Other hosts and accounts
 
-Host verification remains OpenSSH's default. Verify fingerprints through a
-trusted channel for new or changed servers. Agent forwarding is not globally
-enabled. Key generation, agents, passphrases, hardware keys, and server-daemon
-policy remain choices of your existing account/OS setup.
+Put servers in `~/.ssh/config.local`:
 
-The server profile installs Debian's `kitty-terminfo`, so sessions opened from
-Kitty keep correct terminal capabilities. Fonts belong on the client; see
-[Kitty and tmux](TERMINALS.md).
+```sshconfig
+Host dev-vps
+    HostName your-server.example
+    User your-user
+    IdentityFile ~/.ssh/id_ed25519_vps
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
+```
+
+A second GitHub account on the same machine uses a host alias there; see
+[local overrides](LOCAL-OVERRIDES.md#ssh-a-second-github-account).
+
+```sh
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/config.local
+```
+
+Host key verification keeps OpenSSH's defaults: check fingerprints of new or
+changed servers through a trusted channel. Agent forwarding is not enabled.
+Sessions opened from Kitty need the `xterm-kitty` terminfo entry on the server;
+see [Kitty and tmux](TERMINALS.md#remote-hosts).
