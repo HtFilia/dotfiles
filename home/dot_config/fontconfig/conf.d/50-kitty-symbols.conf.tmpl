@@ -1,0 +1,8 @@
+{{- $osid := includeTemplate "osid" . -}}
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<!-- Make the Nerd Font symbols bundled with Kitty available to every
+     application, so VS Code can fall back to "Symbols Nerd Font Mono". -->
+<fontconfig>
+  <dir>{{ if eq $osid "fedora" }}/usr/lib64/kitty/fonts{{ else }}/usr/lib/kitty/fonts{{ end }}</dir>
+</fontconfig>

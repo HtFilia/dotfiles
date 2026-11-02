@@ -171,6 +171,8 @@ packages:
       casks:
         - kitty
         - font-fira-code
+        # Nerd Font symbols for VS Code; Kitty bundles its own copy.
+        - font-symbols-only-nerd-font
         - visual-studio-code
     perso:
       brews:

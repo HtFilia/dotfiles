@@ -9,7 +9,10 @@ tmux owns sessions, panes and processes that must survive a disconnect.
 `~/.config/kitty/kitty.conf` sets Fira Code 14 with stylistic set 1, the
 Operator palette, a 97 % opaque background blurred on macOS and KDE Plasma,
 100 000 lines of scrollback, copy on select and shell integration. Kitty draws
-Nerd Font symbols from its bundled font, so no patched font is installed.
+Nerd Font symbols from its bundled font, so no patched font is installed. On
+Linux a fontconfig file makes that bundled font available to other
+applications; macOS installs the same symbols font with Homebrew. VS Code uses
+it after Fira Code, so Starship and eza icons render in its terminal too.
 
 Splits use the `splits` layout: `Ctrl-Shift-d` splits right, `Ctrl-Shift-e`
 splits down and `Ctrl-Alt-arrows` move between splits. New tabs keep the

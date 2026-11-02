@@ -2,7 +2,8 @@
   // ==========================================================================
   // EDITOR
   // ==========================================================================
-  "editor.fontFamily": "'FiraCode Nerd Font', 'Fira Code', 'Cascadia Code', monospace",
+  // Symbols Nerd Font Mono supplies the icons used by Starship and eza.
+  "editor.fontFamily": "'Fira Code', 'Symbols Nerd Font Mono', monospace",
   "editor.fontSize": 14,
   "editor.fontLigatures": true,
   "editor.lineHeight": 1.6,
@@ -55,7 +56,7 @@
   // ==========================================================================
   // TERMINAL
   // ==========================================================================
-  "terminal.integrated.fontFamily": "'FiraCode Nerd Font'",
+  "terminal.integrated.fontFamily": "'Fira Code', 'Symbols Nerd Font Mono', monospace",
   "terminal.integrated.fontSize": 13,
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.defaultProfile.linux": "zsh",

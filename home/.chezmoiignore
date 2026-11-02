@@ -14,6 +14,8 @@ Library/**
 {{- if eq .chezmoi.os "darwin" }}
 .config/Code
 .config/Code/**
+.config/fontconfig
+.config/fontconfig/**
 {{- end }}
 {{- if not .gaming }}
 .config/MangoHud
@@ -26,6 +28,8 @@ Library/**
 .config/kitty/**
 .config/fastfetch
 .config/fastfetch/**
+.config/fontconfig
+.config/fontconfig/**
 {{- end }}
 {{- /* The repository never installs VS Code on Debian; deploy its settings
        only where someone installed it. */}}

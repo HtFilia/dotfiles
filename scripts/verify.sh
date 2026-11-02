@@ -75,6 +75,13 @@ if [[ "$osid" != darwin ]]; then
 fi
 if [[ "$profile" == workstation ]]; then
   check 'Rust toolchain installed' cargo --version
+  if [[ "$osid" == darwin ]]; then
+    check 'Nerd Font symbols installed' brew list --cask font-symbols-only-nerd-font
+  elif available fc-list >/dev/null; then
+    check 'Nerd Font symbols available to other applications' bash -c 'fc-list : family | grep -q "Symbols Nerd Font Mono"'
+  else
+    check 'Nerd Font symbols declared to fontconfig' bash -c 'dir="$(sed -n "s:.*<dir>\(.*\)</dir>.*:\1:p" ~/.config/fontconfig/conf.d/50-kitty-symbols.conf)" && test -f "$dir/SymbolsNerdFontMono-Regular.ttf"'
+  fi
   check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
   if available code >/dev/null 2>&1; then
     if [[ "$osid" == darwin ]]; then settings="$HOME/Library/Application Support/Code/User/settings.json"; else settings="$HOME/.config/Code/User/settings.json"; fi
