@@ -1,7 +1,7 @@
 # Operator terminal appearance
 
-Operator is the single native theme for Starship, tmux and Ghostty. Apply the
-dotfiles, restart Zsh, and reload Ghostty and tmux configuration. No style-selection command or generated override is needed.
+Operator is the single native theme for Starship, tmux and Kitty. Apply the
+dotfiles, restart Zsh, and reload Kitty and tmux configuration. No style-selection command or generated override is needed.
 Editors and Git syntax highlighting retain Gruvbox.
 
 Fonts belong on the terminal client; SSH servers do not need fonts. Left Option

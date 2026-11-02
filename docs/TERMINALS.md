@@ -1,22 +1,29 @@
-# Ghostty and tmux
+# Kitty and tmux
 
-Ghostty owns local fonts, rendering, tabs and splits. tmux owns sessions, panes,
-working directories and persistent processes on the machine where it runs.
-Use Ghostty splits for local presentation and tmux for remote/session persistence
-according to your workflow; neither needs to duplicate every layout.
+Kitty is the terminal on the three workstations; tmux runs sessions on every
+machine, including the VPS. Kitty owns fonts, rendering, tabs and local splits.
+tmux owns sessions, panes and processes that must survive a disconnect.
 
-## Ghostty
+## Kitty
 
-The managed configuration uses FiraCode Nerd Font Mono, Operator colors, a 64 MiB
-scrollback limit, and process-aware close confirmation. Transparency/blur are
-personal presentation settings; lower scrollback or disable blur if memory/GPU
-use matters on your machine. Copy-on-select writes to the clipboard.
+`~/.config/kitty/kitty.conf` sets Fira Code 14 with stylistic set 1, the
+Operator palette, a 97 % opaque background blurred on macOS and KDE Plasma,
+100 000 lines of scrollback, copy on select and shell integration. Kitty draws
+Nerd Font symbols from its bundled font, so no patched font is installed.
 
-Shell integration provides cursor/title/path information and interactive SSH
-terminal capabilities. Left Option acts as Alt on macOS; right Option remains
-available for accented characters. Validate supported options with
-`ghostty +validate-config`. The standalone Mac helper installs Ghostty/fonts and
-backs up both link metadata and readable contents of existing configurations.
+Splits use the `splits` layout: `Ctrl-Shift-d` splits right, `Ctrl-Shift-e`
+splits down and `Ctrl-Alt-arrows` move between splits. New tabs keep the
+current directory. Left Option acts as Alt on macOS; right Option still types
+accented characters. The full list is in [keybindings](KEYBINDINGS.md).
+
+Machine-specific settings, such as a font size for one screen, go in
+`~/.config/kitty/kitty.d/*.conf`, which Kitty loads last.
+
+## Remote hosts
+
+Programs on a remote host need the `xterm-kitty` terminfo entry. The VPS
+installs Debian's `kitty-terminfo` package. For another host, install that
+package there or connect once with `kitten ssh HOST`, which copies the entry.
 
 ## tmux
 
@@ -24,14 +31,11 @@ Prefix is Ctrl-a; Ctrl-a Ctrl-a passes the prefix through. New panes/windows use
 the current pane's directory. Indices start at one, windows renumber, mouse and
 focus events are enabled, and copy mode uses vi bindings.
 
-The advertised terminal is `tmux-256color`; Ghostty features provide true color,
-extended keys and clipboard capabilities. `set-clipboard external` supports
-OSC 52 copying to the terminal client without X11 utilities on a remote server.
-Client clipboard permissions still apply.
+The advertised terminal is `tmux-256color`; the `xterm-kitty` terminal features
+provide true color, extended keys, styled underlines, hyperlinks and clipboard
+access. `set-clipboard external` lets OSC 52 copy reach Kitty from a remote
+server without X11 utilities.
 
 Local bindings belong in `~/.tmux.conf.local`. No plugin manager, reboot
 restoration plugins, or automatic attachment are part of the base.
 `tm [NAME]` creates or attaches a session when you want one.
-
-[Keybindings](KEYBINDINGS.md) lists the managed shortcuts;
-[VPS setup](VPS-GHOSTTY.md) covers the client/server boundary.

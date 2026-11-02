@@ -33,14 +33,6 @@ an intentional update; their releases are not covered by the direct-asset manife
 VS Code extensions update through VS Code and may access external services.
 Do not confuse a plugin lock with a complete operating-system/environment lock.
 
-## Vendored terminfo
-
-`assets/terminfo/xterm-ghostty.terminfo` contains Ghostty v1.3.1 capabilities from
-commit `332b2aefc6e72d363aa93ab6ecfc86eeeeb5ed28`, upstream
-`src/terminfo/ghostty.zig`, with its upstream license. Server installation compiles
-it locally with `tic` and needs no terminfo downloader. Its SHA256 is
-`325413188d4aa06cbe8ab3a714cdd7264f506094db5ed50e14316f3a95601b78`.
-
 ## Update procedure
 
 Obtain metadata from the publisher, review the version/URL/hash changes together,

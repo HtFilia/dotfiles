@@ -72,18 +72,19 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Move pane/split up | `Ctrl-k` |
 | Move pane/split right | `Ctrl-l` |
 
-## Ghostty
+## Kitty
 
 | Action | Keys |
 |---|---|
-| New tab | `Ctrl-Shift-t` |
+| New tab in the current directory | `Ctrl-Shift-t` |
 | Close split or tab | `Ctrl-Shift-w` |
 | Next / Previous tab | `Ctrl-Tab` / `Ctrl-Shift-Tab` |
 | Split right | `Ctrl-Shift-d` |
 | Split down | `Ctrl-Shift-e` |
 | Navigate splits | `Ctrl-Alt-arrows` |
-| Clear screen | `Ctrl-Shift-k` |
-| Zoom +/- / reset | `Ctrl-+` / `Ctrl--` / `Ctrl-0` |
+| Zoom a split (cycle to the stack layout) | `Ctrl-Shift-l` |
+| Clear screen and scrollback | `Ctrl-Shift-k` |
+| Font size + / - / reset | `Ctrl-+` / `Ctrl--` / `Ctrl-0` |
 
 ## Shell (Zsh)
 

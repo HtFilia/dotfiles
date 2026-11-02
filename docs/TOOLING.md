@@ -11,7 +11,7 @@ repeating every version pin.
 | Zsh, Starship | Interactive shell, completions, informative prompt |
 | fzf, fd, ripgrep, zoxide | Select files/history, find names, search content, learn directories |
 | eza, bat, delta | Listings, readable file content and Git diffs |
-| tmux, Ghostty | Persistent terminal sessions; local terminal rendering |
+| tmux, Kitty | Persistent terminal sessions; local terminal rendering |
 | LazyGit, gh | Interactive Git operations; GitHub workflows |
 | Yazi | Interactive file navigation with `yy` returning the selected directory |
 | jq, yq, sd | Structured JSON/YAML processing; simple text substitutions |
@@ -30,7 +30,7 @@ pager, gh versus Git, and a GUI editor versus a remote terminal editor. Remove
 packages from your personal manifest when you do not use that mode; no extra
 abstraction is needed to justify keeping everything installed.
 
-Ghostty, tmux, Starship and fzf use Operator. Editors retain Gruvbox Material,
+Kitty, tmux, Starship and fzf use Operator. Editors retain Gruvbox Material,
 with built-in `gruvbox-dark` syntax themes for bat/delta.
 Palette values remain local to their native configuration files so each is easy
 to read and adjust.

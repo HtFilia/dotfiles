@@ -4,7 +4,7 @@
 dotfiles_server_packages=(
   ca-certificates curl git openssh-client python3 zsh tmux ncurses-bin ncurses-term less man-db
   bsdextrautils util-linux unzip xz-utils fzf zoxide direnv ripgrep fd-find bat jq
-  atuin ncdu tealdeer htop shellcheck shfmt
+  atuin ncdu tealdeer htop shellcheck shfmt kitty-terminfo
   iproute2 bind9-dnsutils iputils-ping procps
 )
 

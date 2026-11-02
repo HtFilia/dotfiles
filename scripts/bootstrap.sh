@@ -265,7 +265,6 @@ ${GREEN}${BOLD}Done.${RESET}
 Next steps:
   1. Restart your terminal or run: exec zsh
   2. Run: ./scripts/verify.sh --profile $profile
-  3. For a Mac connecting over SSH, see docs/VPS-GHOSTTY.md
 EOF
 }
 

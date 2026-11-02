@@ -60,7 +60,7 @@ if [[ "$profile" == server ]]; then
         _ "$source_root/home" "$HOME" "$(cat "$HOME/.local/state/dotfiles/materialize" 2>/dev/null || printf file)"
     fi
   fi
-  check 'Ghostty terminfo' bash -c 'infocmp -x xterm-ghostty >/dev/null 2>&1'
+  check 'Kitty terminfo' bash -c 'infocmp -x xterm-kitty >/dev/null 2>&1'
   for tool in atuin ncdu tldr htop gitleaks actionlint; do check "$tool available" available "$tool"; done
   check 'tldr pages available' bash -c 'tldr tar >/dev/null 2>&1'
   check 'system diagnostic commands' bash -c 'for tool in ip ss dig ping ps; do command -v "$tool" >/dev/null || exit 1; done'

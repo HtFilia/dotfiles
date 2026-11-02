@@ -55,8 +55,6 @@ if [[ "$SKIP_PACKAGES" == 0 ]]; then
 "${admin[@]}" apt-get update
 "${admin[@]}" apt-get install -y --no-install-recommends "${dotfiles_server_packages[@]}" "${editor_packages[@]}"
 fi
-mkdir -p "$HOME/.terminfo"
-tic -x -o "$HOME/.terminfo" "$SCRIPT_DIR/../assets/terminfo/xterm-ghostty.terminfo"
 
 LOCAL_BIN="${LOCAL_BIN:-$HOME/.local/bin}"
 DOWNLOAD_DIR="${DOTFILES_DOWNLOAD_DIR:-$HOME/.cache/dotfiles/downloads}"

@@ -36,12 +36,11 @@ restore.
 
 | Profile | Platform | Installed environment |
 |---|---|---|
-| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Ghostty, language runtimes, quality tools, Docker CLI and Colima |
-| Workstation | Debian 13, x86_64 | Shell/CLI tools, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
-| Server | Debian 13, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Ghostty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
+| Workstation | macOS with Homebrew and Xcode Command Line Tools | Shell/CLI tools, Neovim, VS Code, Kitty, language runtimes, quality tools, Docker CLI and Colima |
+| Workstation | Debian 13, x86_64 | Shell/CLI tools, Kitty, Neovim, language runtimes, quality tools, optional Docker Engine and fonts |
+| Server | Debian 13, x86_64 | Shell, CLI navigation, Git/delta/lazygit, tmux, Neovim, Kitty terminfo; no GUI, fonts or containers; optional language runtimes for selected editor tools |
 
-Linux profiles support x86_64 only. Linux Ghostty and VS Code installation are
-manual. Homebrew/apt versions follow their repositories; direct Linux downloads
+Linux profiles support x86_64 only. Linux VS Code installation is manual. Homebrew/apt versions follow their repositories; direct Linux downloads
 and plugin checkouts are pinned. See [supply chain](docs/SUPPLY-CHAIN.md).
 
 ## Install
@@ -135,7 +134,6 @@ Existing identity files are preserved.
 | `scripts/` | Installation, deployment, snapshots, updates, editor setup, verification |
 | `system/debian/` | Opt-in Debian 13 APT and journald baseline |
 | `scripts/pinned-assets.sh`, `scripts/pinned-plugins.sh` | Authoritative download and plugin pins |
-| `assets/terminfo/` | Vendored Ghostty terminfo and upstream license |
 | `tests/` | Offline behavioral regressions using temporary homes |
 | `.github/workflows/ci.yml` | Linux/macOS checks, Debian 13 install/verify smoke test, actionlint and secret scan |
 
@@ -145,12 +143,11 @@ Existing identity files are preserved.
 - [Aliases and helper functions](docs/ALIASES.md)
 - [Git behavior](docs/GIT.md)
 - [SSH hosts and identities](docs/SSH.md)
-- [Ghostty and tmux](docs/TERMINALS.md)
+- [Kitty and tmux](docs/TERMINALS.md)
 - [Neovim and VS Code](docs/EDITORS.md)
 - [Runtimes and project environments](docs/RUNTIMES.md)
 - [Tools and their roles](docs/TOOLING.md)
 - [Keybindings](docs/KEYBINDINGS.md)
-- [Mac Ghostty connecting to a VPS](docs/VPS-GHOSTTY.md)
 - [Debian VPS bootstrap and ownership](docs/VPS-SERVER.md)
 - [Verification and maintenance](docs/VERIFICATION.md)
 
@@ -167,7 +164,7 @@ just security     # redacted Git-history secret scan, when installed
 Checks do not install packages or alter active dotfiles. Full package
 installation and language-tool downloads are separate from offline tests.
 
-MIT licensed; vendored terminfo retains its upstream license.
+MIT licensed.
 
 ## Tool updates
 

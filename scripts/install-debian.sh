@@ -156,7 +156,7 @@ sudo apt install -y \
   build-essential curl wget git zsh tmux unzip xz-utils ca-certificates gnupg lsb-release \
   pkg-config libssl-dev python3 python3-pip python3-venv tree htop fontconfig \
   xclip rustc cargo rustfmt rust-clippy shellcheck shfmt zstd moreutils parallel ffmpeg 7zip \
-  ncurses-term ncurses-bin less bsdextrautils
+  ncurses-term ncurses-bin less bsdextrautils kitty fonts-firacode
 success "apt packages installed"
 fi
 
@@ -252,5 +252,4 @@ if ! command -v gh >/dev/null 2>&1; then
 fi
 
 warn "Claude Code is not installed automatically."
-warn "Ghostty has no official Debian package; install it manually from your trusted channel."
 success "Debian setup complete."

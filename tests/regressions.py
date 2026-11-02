@@ -93,9 +93,9 @@ class Contracts(unittest.TestCase):
             self.assertEqual(archive.extractfile(".local/bin/tmux").read(), payload)
 
     def test_profile_retirement_backs_up_and_restores(self):
-        target = self.home / ".config/ghostty/config.ghostty"
+        target = self.home / ".config/dotfiles/style"
         target.parent.mkdir(parents=True)
-        original = (ROOT / "home/dot_config/ghostty/config.ghostty").read_bytes()
+        original = b"operator\n"
         target.write_bytes(original)
         self.apply("--profile", "server", "--dry-run")
         self.assertEqual(target.read_bytes(), original)
@@ -121,7 +121,7 @@ class Contracts(unittest.TestCase):
         self.assertEqual(target.read_text(), "custom config\n")
         target.unlink()
         unknown = self.work / "unknown"
-        shutil.copy2(ROOT / "home/dot_config/ghostty/config.ghostty", unknown)
+        unknown.write_text("unknown link target\n")
         target.symlink_to(unknown)
         result = self.run_command(str(ROOT / "scripts/apply-dotfiles.sh"), "--profile", "server", success=False)
         self.assertEqual(result.returncode, 2)
@@ -486,7 +486,7 @@ second=$(cached_asset_path tool "$2")
 
     def test_operator_is_native_without_style_initialization(self):
         self.apply("--profile", "workstation")
-        self.assertIn("142727", (self.home / ".config/ghostty/config.ghostty").read_text())
+        self.assertIn("142727", (self.home / ".config/kitty/kitty.conf").read_text())
         self.assertIn("142727", (self.home / ".tmux.conf").read_text())
         self.assertNotIn("DOTFILES_STYLE", (self.home / ".zshrc").read_text())
         self.assertFalse((self.home / ".config/dotfiles/style").exists())

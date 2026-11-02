@@ -19,7 +19,6 @@
   {
     "target": ".config/ghostty/config.ghostty",
     "source": "dot_config/ghostty/config.ghostty",
-    "profile": "server",
     "sha256": [
       "fcbedb73fe7f6525252141c08f75b9c28c15d33f13969ea11dd51ef80326bd70",
       "16e36106a607e07ddeee31bbad8617fea99f15018c644852b33c269bb5c27eb3"

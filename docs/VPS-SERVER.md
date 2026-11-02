@@ -23,7 +23,7 @@ cd ~/dotfiles
 
 Review the preview, package and shell prompts before accepting them. The default
 server toolset includes Zsh/Starship, navigation/search, Git/delta/LazyGit,
-tmux, Neovim, local Atuin, ncdu, htop, tealdeer and Ghostty terminfo. It does
+tmux, Neovim, local Atuin, ncdu, htop, tealdeer and Kitty terminfo. It does
 not install fonts or containers. Editor languages remain optional; this host
 selects Python and shell. To add selected editor languages later, pass their
 comma-separated list on bootstrap or run

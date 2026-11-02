@@ -65,10 +65,10 @@ checkout and uses that checkout directly.
 `install-server.sh --skip-packages` assumes an administrator has already
 installed its declared apt dependencies. With `--setup-editor`, that includes
 the prerequisites for the selected languages. Pinned Node is required for
-Python and shell Mason tools; pinned Go is required only for Go tooling. It still compiles terminfo
-and installs user-owned binaries. Apply afterward with `--profile server`.
+Python and shell Mason tools; pinned Go is required only for Go tooling. It still
+installs user-owned binaries. Apply afterward with `--profile server`.
 
-Linux VS Code/Ghostty and assistant CLIs require separate installation. The
+Linux VS Code and assistant CLIs require separate installation. The
 workstation installer supplies atuin; fonts are optional and belong on the client.
 The server profile installs Atuin, ncdu, tealdeer and htop from Debian packages.
 Atuin history stays local and Ctrl-r returns selections for editing. `tldr`

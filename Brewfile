@@ -52,7 +52,8 @@ brew "docker"
 brew "docker-compose"
 brew "docker-buildx"
 
-cask "ghostty"
+cask "kitty"
+cask "font-fira-code"
 cask "visual-studio-code"
 cask "font-fira-code-nerd-font"
 

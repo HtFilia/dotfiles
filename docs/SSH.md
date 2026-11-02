@@ -46,6 +46,6 @@ trusted channel for new or changed servers. Agent forwarding is not globally
 enabled. Key generation, agents, passphrases, hardware keys, and server-daemon
 policy remain choices of your existing account/OS setup.
 
-Ghostty's integration and the server profile's vendored terminfo provide correct
-terminal capabilities without weakening SSH settings. Fonts belong on the client;
-see [VPS and Ghostty](VPS-GHOSTTY.md).
+The server profile installs Debian's `kitty-terminfo`, so sessions opened from
+Kitty keep correct terminal capabilities. Fonts belong on the client; see
+[Kitty and tmux](TERMINALS.md).
