@@ -90,8 +90,9 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 
 | Action | Keys |
 |---|---|
-| Fuzzy file search | `Ctrl-t` (fzf) |
-| Fuzzy cd into dir | `Alt-c` (fzf) |
+| Fuzzy file search, with bat preview | `Ctrl-t` (fzf) |
+| Fuzzy cd into dir, with tree preview | `Alt-c` (fzf) |
+| Hide or show the fzf preview | `Ctrl-/` |
 | History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
 | Move forward one word | `Alt-f` |

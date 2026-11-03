@@ -99,19 +99,37 @@ if command -v fzf &>/dev/null; then
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
   fi
+  # Ctrl-t previews files, Alt-c previews directories; Ctrl-/ hides the preview.
+  command -v bat &>/dev/null &&
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 -- {}' --bind 'ctrl-/:toggle-preview'"
+  command -v eza &>/dev/null &&
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons=always -- {}' --bind 'ctrl-/:toggle-preview'"
 fi
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 
+# Modern replacements that accept the original command's everyday arguments.
+# `command NAME` or `\NAME` runs the original. Icons appear only on a terminal,
+# so piped output stays plain.
 if command -v eza &>/dev/null; then
-  alias ls='eza --icons --group-directories-first'
-  alias ll='eza -l --icons --group-directories-first --git'
-  alias la='eza -la --icons --group-directories-first --git'
-  alias lt='eza --tree --icons --level=2'
-  alias ltt='eza --tree --icons --level=3'
+  _eza='eza --icons=auto --group-directories-first'
+  _eza_long="$_eza --long --header --git --smart-group --time-style=long-iso"
+  alias ls="$_eza" ll="$_eza_long" la="$_eza_long --all"
+  alias tree="$_eza --tree" lt="$_eza --tree --level=2" ltt="$_eza --tree --level=3"
+  unset _eza _eza_long
 fi
+# Highlighted like bat, but without line numbers or a pager, so output copies
+# and redirects exactly like cat.
+command -v bat &>/dev/null && alias cat='bat --paging=never --style=plain'
+command -v nvim &>/dev/null && alias vi='nvim' vim='nvim'
+command -v htop &>/dev/null && alias top='htop'
+# Hidden files too, as in the fzf widgets; .gitignore still applies.
+command -v fd &>/dev/null && alias fd='fd --hidden --exclude .git'
+alias grep='grep --color=auto'
+# grep, find and less take different arguments from rg, fd and bat, so these
+# replacements are opt-in.
 if [[ "${DOTFILES_ENABLE_COMMAND_OVERRIDES:-0}" == "1" ]]; then
-  command -v bat &>/dev/null && alias cat='bat --paging=never' less='bat'
+  command -v bat &>/dev/null && alias less='bat'
   command -v rg &>/dev/null && alias grep='rg'
   command -v fd &>/dev/null && alias find='fd'
   alias mkdir='mkdir -p'
@@ -161,7 +179,7 @@ alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall 
 alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
 alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
 {{- else }}
-alias free='free -h' open='xdg-open'
+alias free='free -h' open='xdg-open' ip='ip -color=auto' diff='diff --color=auto'
 alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
 alias jcu='journalctl -u' jcb='journalctl -b'
 {{- end }}

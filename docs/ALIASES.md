@@ -31,7 +31,9 @@ Git's internal aliases are documented in [Git](GIT.md).
 | Command | Purpose |
 |---|---|
 | `ls`, `ll`, `la` | eza basic, detailed, detailed including hidden files |
-| `lt`, `ltt` | eza trees limited to two/three levels |
+| `tree`, `lt`, `ltt` | eza tree; trees limited to two/three levels |
+| `cat FILE` | bat with syntax highlighting, no line numbers, no pager |
+| `fd PATTERN` | fd including hidden files, skipping `.git` |
 | `..`, `...`, `....`, `-` | Parent directories; previous directory |
 | `mkd`, `mkcd DIRECTORY` | Create directories; create and enter |
 | `dotfiles` | Open a shell in the chezmoi source checkout (`chezmoi cd`) |
@@ -41,6 +43,15 @@ Git's internal aliases are documented in [Git](GIT.md).
 | `fh [QUERY]` | Insert a selected history command for editing |
 | `tm [NAME]` | Create or attach tmux session, defaulting to directory name |
 | `extract ARCHIVE` | Dispatch extraction to installed archive utilities |
+
+eza lists directories first and shows icons only on a terminal; `ll` and `la`
+add a header, Git status, ISO dates and the group only when it differs from
+the owner. Piped or redirected, `cat` writes the file unchanged. ripgrep's
+managed configuration searches hidden files except `.git`, uses smart case and
+shortens lines longer than 200 columns. `grep`, `diff` and, on Linux, `ip`
+colour their output. `command NAME` or `\NAME` runs the original command; the
+[shell guide](SHELL.md#customize) lists the opt-in replacements for `grep`,
+`find` and `less`.
 
 File selectors use NUL delimiters; `frg` uses JSON to preserve spaces and colons.
 `fe`/`frg` expect `$EDITOR` to name an executable, not a shell command with flags.
@@ -58,6 +69,7 @@ extract dispatch does not automatically install rar/7z utilities.
 | `fkill [SIGNAL]` | Select processes; TERM by default, KILL only explicitly |
 | `psg QUERY` | Search running process descriptions |
 | `ai`, `air` | Claude; resume session, when installed |
+| `vi`, `vim`, `top` | Neovim; htop |
 
 ## Containers
 

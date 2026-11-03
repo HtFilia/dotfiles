@@ -30,9 +30,12 @@ Use `~/.zshrc.settings` for inputs needed during setup:
 export DOTFILES_ENABLE_COMMAND_OVERRIDES=1
 ```
 
-That flag enables interactive `cat`/`less` → bat, `grep` → rg, `find` → fd, and
-`mkdir` → `mkdir -p`. Their argument semantics differ from the original commands;
-leave it unset if that causes friction. Shell scripts do not inherit aliases.
+Replacements that accept the original command's everyday arguments are always
+on: `ls`/`tree` → eza, `cat` → bat, `vi`/`vim` → Neovim and `top` → htop; see
+[aliases](ALIASES.md). The flag adds those whose arguments differ: `less` →
+bat, `grep` → rg, `find` → fd, and `mkdir` → `mkdir -p`. Leave it unset if
+that causes friction. `command NAME` or `\NAME` runs the original command, and
+shell scripts do not inherit aliases.
 
 Point `STARSHIP_CONFIG`, `RIPGREP_CONFIG_PATH` or `ATUIN_CONFIG_DIR` at a
 local copy there to replace a managed configuration on one machine. Use

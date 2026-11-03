@@ -1,1 +1,7 @@
 --smart-case
+# Search hidden files too, except Git internals; .gitignore still applies.
+--hidden
+--glob=!.git
+# Truncate long lines, such as minified files, instead of flooding the screen.
+--max-columns=200
+--max-columns-preview
