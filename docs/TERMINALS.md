@@ -9,7 +9,9 @@ tmux owns sessions, panes and processes that must survive a disconnect.
 `~/.config/kitty/kitty.conf` sets Fira Code 12 with stylistic set 1, the
 Melange palette, a 97 % opaque background blurred on macOS and KDE Plasma,
 100 000 lines of scrollback, copy on select and shell integration. Kitty draws
-Nerd Font symbols from its bundled font, so no patched font is installed. On
+Nerd Font symbols from its bundled font, so no patched font is installed;
+`symbol_map` pins the icon codepoints to it, so that no other installed font
+covering them (Jomolhari on Fedora) draws an icon instead. On
 Linux a fontconfig file makes that bundled font available to other
 applications; macOS installs the same symbols font with Homebrew. VS Code uses
 it after Fira Code, so Starship and eza icons render in its terminal too.

@@ -5,6 +5,12 @@
 # Font
 font_family      family="Fira Code" features=+ss01
 font_size        12.0
+# Nerd Font icons (Private Use Areas, Material Design included) always come
+# from the Symbols Nerd Font Mono that Kitty bundles. Without this, fontconfig
+# fallback picks the first installed font that covers a codepoint: on Fedora,
+# the Tibetan font Jomolhari takes U+F086F, eza's icon for private keys, and
+# the proportional Symbols Nerd Font takes the other icons.
+symbol_map       U+E000-U+F8FF,U+F0001-U+F1AF0 Symbols Nerd Font Mono
 
 # Melange dark palette (github.com/savq/melange-nvim): pastel earth tones on
 # warm cocoa, text at 11.8:1 against the background.
