@@ -16,6 +16,8 @@ Library/**
 .config/Code/**
 .config/fontconfig
 .config/fontconfig/**
+.local/share/color-schemes
+.local/share/color-schemes/**
 {{- end }}
 {{- if not .gaming }}
 .config/MangoHud
@@ -30,6 +32,8 @@ Library/**
 .config/fastfetch/**
 .config/fontconfig
 .config/fontconfig/**
+.local/share/color-schemes
+.local/share/color-schemes/**
 {{- end }}
 {{- /* The repository never installs VS Code on Debian; deploy its settings
        only where someone installed it. */}}

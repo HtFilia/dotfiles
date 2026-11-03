@@ -1,0 +1,23 @@
+{{- if and (eq .chezmoi.os "linux") (eq .profile "workstation") -}}
+#!/usr/bin/env bash
+# Apply the Melange Dark colour scheme to Plasma, and again whenever the scheme
+# changes. Outside a Plasma session (another desktop, SSH, a container) it only
+# prints how to apply it later. No sudo.
+# MelangeDark.colors: {{ include "dot_local/share/color-schemes/MelangeDark.colors" | sha256sum }}
+set -euo pipefail
+scheme=MelangeDark
+
+if ! command -v plasma-apply-colorscheme >/dev/null 2>&1 ||
+  [[ "${XDG_CURRENT_DESKTOP:-}" != *KDE* || -z "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]]; then
+  echo "No Plasma session: choose Melange Dark in System Settings > Colours & Themes > Colours."
+  exit 0
+fi
+
+# Plasma ignores a request for the scheme already in use, even when its file
+# has changed, so switch away first to reload it.
+current="$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null || true)"
+if [[ "$current" == "$scheme" ]]; then
+  plasma-apply-colorscheme BreezeDark >/dev/null
+fi
+plasma-apply-colorscheme "$scheme"
+{{ end -}}

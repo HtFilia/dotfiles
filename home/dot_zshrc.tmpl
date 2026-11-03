@@ -82,7 +82,7 @@ _dotfiles_safe_source() {
 
 if _dotfiles_safe_source {{ $share }}/zsh-autosuggestions/zsh-autosuggestions.zsh; then
   ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#928374"
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#867462"
 fi
 
 export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"
@@ -93,7 +93,7 @@ if command -v zoxide &>/dev/null; then
 fi
 if command -v fzf &>/dev/null; then
   eval "$(fzf --zsh)"
-  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded --color=bg:#142727,bg+:#1b3533,fg:#e5f0ea,hl:#75d1c2,hl+:#e5bc70,prompt:#75d1c2,pointer:#e5bc70,border:#294742"
+  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded --color=bg:#292522,bg+:#403a36,fg:#ece1d7,fg+:#ece1d7,hl:#e49b5d,hl+:#ebc06d,info:#867462,prompt:#85b695,pointer:#e49b5d,marker:#85b695,spinner:#e49b5d,header:#89b3b6,border:#403a36"
   if command -v fd &>/dev/null; then
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"

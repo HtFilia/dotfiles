@@ -5,7 +5,7 @@
 [![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Shell, Git, SSH, tmux, Kitty, Neovim and VS Code configuration for four
+Shell, Git, SSH, tmux, Kitty, Plasma colours, Neovim and VS Code configuration for four
 machines, managed with [chezmoi](https://www.chezmoi.io/). chezmoi deploys the
 files, installs packages with each platform's package manager and downloads
 the few pinned binaries a platform lacks.

@@ -1,35 +1,35 @@
-# Operator: a compact control-room prompt for active work.
+# A compact two-line prompt in the Melange palette, matching Kitty and tmux.
 add_newline = true
 command_timeout = 500
-format = "[┌─](bold #75d1c2)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #75d1c2)$character"
+format = "[┌─](bold #867462)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #867462)$character"
 right_format = "$python$nodejs$rust$golang$cmd_duration"
 
 [username]
 show_always = false
 format = "[$user]($style)@"
-style_user = "#94aaa5"
+style_user = "#c1a78e"
 
 [hostname]
 ssh_only = true
 format = "[$hostname]($style) "
-style = "#9db9d6"
+style = "#a3a9ce"
 
 [directory]
 format = "[ $path]($style)[$read_only]($read_only_style) "
-style = "bold #75d1c2"
-read_only = " "
-read_only_style = "#e5bc70"
+style = "bold #e49b5d"
+read_only = " "
+read_only_style = "#ebc06d"
 truncation_length = 3
 truncate_to_repo = true
 truncation_symbol = "…/"
 
 [git_branch]
 format = "[│ $branch]($style) "
-style = "#9db9d6"
+style = "#89b3b6"
 
 [git_status]
 format = "([$all_status$ahead_behind]($style) )"
-style = "#e5bc70"
+style = "#ebc06d"
 conflicted = "=${count}"
 ahead = "⇡${count}"
 behind = "⇣${count}"
@@ -43,25 +43,25 @@ deleted = "✘${count}"
 [cmd_duration]
 min_time = 2_000
 format = "[· $duration]($style) "
-style = "#8ca69f"
+style = "#c1a78e"
 
 [python]
 format = "[py $version]($style) "
-style = "#e5bc70"
+style = "#ebc06d"
 
 [nodejs]
 format = "[node $version]($style) "
-style = "#75d1c2"
+style = "#85b695"
 
 [rust]
 format = "[rs $version]($style) "
-style = "#e98a8a"
+style = "#d47766"
 
 [golang]
 format = "[go $version]($style) "
-style = "#9db9d6"
+style = "#89b3b6"
 
 [character]
-success_symbol = "[❯](bold #e5bc70)"
-error_symbol = "[✗](bold #e98a8a)"
-vimcmd_symbol = "[❮](bold #75d1c2)"
+success_symbol = "[❯](bold #85b695)"
+error_symbol = "[✗](bold #d47766)"
+vimcmd_symbol = "[❮](bold #a3a9ce)"

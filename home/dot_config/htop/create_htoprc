@@ -1,5 +1,5 @@
 # Native htop settings; delay is measured in tenths of a second.
-# Black Night uses the terminal palette and works with Operator's dark background.
+# Black Night uses the terminal palette and works with the dark Melange background.
 color_scheme=5
 delay=5
 hide_kernel_threads=1

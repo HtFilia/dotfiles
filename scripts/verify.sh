@@ -83,6 +83,9 @@ if [[ "$profile" == workstation ]]; then
     check 'Nerd Font symbols declared to fontconfig' bash -c 'dir="$(sed -n "s:.*<dir>\(.*\)</dir>.*:\1:p" ~/.config/fontconfig/conf.d/50-kitty-symbols.conf)" && test -f "$dir/SymbolsNerdFontMono-Regular.ttf"'
   fi
   check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
+  if [[ "$osid" != darwin ]]; then
+    check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
+  fi
   if available code >/dev/null 2>&1; then
     if [[ "$osid" == darwin ]]; then settings="$HOME/Library/Application Support/Code/User/settings.json"; else settings="$HOME/.config/Code/User/settings.json"; fi
     check 'VS Code settings deployed' test -f "$settings"
