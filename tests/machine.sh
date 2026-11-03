@@ -32,9 +32,9 @@ else
   echo 'chezmoi update succeeded and left nothing to apply.'
 
   step 'chezmoi re-add copies a changed file back into the source'
-  printf -- '--hidden\n' >>"$HOME/.config/ripgrep/config"
+  printf -- '--sort=path\n' >>"$HOME/.config/ripgrep/config"
   chezmoi re-add "$HOME/.config/ripgrep/config"
-  grep -qx -- '--hidden' "$source_dir/dot_config/ripgrep/config" || { echo 're-add did not update the source'; exit 1; }
+  grep -qx -- '--sort=path' "$source_dir/dot_config/ripgrep/config" || { echo 're-add did not update the source'; exit 1; }
   git -C "$source_dir" checkout -- dot_config/ripgrep/config
   chezmoi apply --no-tty
   [[ -z "$(chezmoi diff --no-pager)" ]] || { echo 'restoring after re-add left differences'; exit 1; }

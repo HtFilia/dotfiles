@@ -22,7 +22,7 @@ repository() {
 repository
 for name in 'space name.txt' '-leading.txt' 'colon:name.txt'; do printf 'needle\n' >"$work/repo/$name"; done
 (cd "$work/repo" && zsh -fc "$(zsh_function fga)"$'\nfzf() { cat; }\nfga')
-staged="$(git -C "$work/repo" diff --cached --name-only | sort | tr '\n' '|')"
+staged="$(git -C "$work/repo" diff --cached --name-only | LC_ALL=C sort | tr '\n' '|')"
 check 'fga stages names with spaces, dashes and colons' "staged $staged" \
   test "$staged" = '-leading.txt|colon:name.txt|space name.txt|'
 
