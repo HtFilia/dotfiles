@@ -24,6 +24,9 @@ path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt
 fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
 {{- end }}
 export PATH
+# Programs started from here (tmux, editors, Claude Code) open zsh too, even
+# when the desktop session still has the SHELL it had before `chsh`.
+[[ "${SHELL:t}" == zsh ]] || export SHELL="${commands[zsh]:-$SHELL}"
 export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"

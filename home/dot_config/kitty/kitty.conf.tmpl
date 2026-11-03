@@ -51,6 +51,11 @@ scrollback_lines      100000
 mouse_hide_wait       -1
 copy_on_select        clipboard
 shell_integration     enabled
+{{- if eq .chezmoi.os "linux" }}
+# Open zsh even when the desktop session started before `chsh`: it keeps
+# SHELL=/bin/bash until the next login, and Kitty would start bash.
+shell                 zsh
+{{- end }}
 # Keep the right Option key available for accented characters on macOS.
 macos_option_as_alt   left
 

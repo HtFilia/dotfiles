@@ -19,6 +19,10 @@ splits down and `Ctrl-Alt-arrows` move between splits. New tabs keep the
 current directory. Left Option acts as Alt on macOS; right Option still types
 accented characters. The full list is in [keybindings](KEYBINDINGS.md).
 
+On Linux, Kitty always starts zsh. A desktop session started before `chsh`
+keeps `SHELL=/bin/bash` until the next login, and Kitty would otherwise open
+bash, without the zsh prompt, aliases or helpers.
+
 Machine-specific settings, such as a font size for one screen, go in
 `~/.config/kitty/kitty.d/*.conf`, which Kitty loads last.
 

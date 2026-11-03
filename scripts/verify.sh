@@ -84,6 +84,7 @@ if [[ "$profile" == workstation ]]; then
   fi
   check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
   if [[ "$osid" != darwin ]]; then
+    check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
     check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
   fi
   if available code >/dev/null 2>&1; then

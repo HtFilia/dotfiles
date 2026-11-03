@@ -53,6 +53,10 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 - fzf supplies file/directory/history widgets; atuin takes Ctrl-r when installed.
 - direnv loads approved `.envrc` files; inspect them before `direnv allow`.
 
+`.zshrc` also sets `SHELL` to zsh when the desktop session still has the shell
+from before `chsh`, so tmux, editors and other programs started from it open
+zsh too.
+
 History is shared between shells, includes timestamps, and ignores commands
 beginning with a space. Do not place secrets directly in command arguments;
 atuin and other integrations have their own history policies.
