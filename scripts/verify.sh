@@ -66,6 +66,9 @@ if [[ "$context" == travail ]]; then key='~/.ssh/github_work'; else key='~/.ssh/
 check 'SSH uses the GitHub key of this context' bash -c 'ssh -G github.com 2>/dev/null | grep -qx "identityfile $1"' _ "$key"
 check 'zsh syntax' zsh -n "$HOME/.zshrc"
 check 'zsh plugins load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
+check 'interactive zsh replaces ls and cat' env -u CLAUDECODE zsh -ic '(( ${+aliases[ls]} && ${+aliases[cat]} ))'
+check 'Claude Code shells keep the standard ls, cat and cd' env CLAUDECODE=1 zsh -ic '(( ! ${+aliases[ls]} && ! ${+aliases[cat]} && ! ${+aliases[cd]} ))'
+check 'Claude Code tools reference deployed' test -f "$HOME/.claude/dotfiles-tools.md"
 check 'completion directories are safe' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
 check 'Starship configuration' env TERM=xterm-256color STARSHIP_LOG=error starship prompt
 check 'bat Gruvbox theme' bash -c 'bat --list-themes | grep -qx gruvbox-dark'

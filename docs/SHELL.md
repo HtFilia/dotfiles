@@ -57,6 +57,22 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 from before `chsh`, so tmux, editors and other programs started from it open
 zsh too.
 
+## Claude Code
+
+chezmoi writes `~/.claude/dotfiles-tools.md` for each machine: the tools that
+are installed, how they are configured, and the aliases of the interactive
+shell. It creates `~/.claude/CLAUDE.md` once, importing that file, and never
+overwrites it; personal instructions for Claude go there.
+
+Claude Code copies the aliases of the shell it starts from into the shell that
+runs its commands, and sets `CLAUDECODE=1`. With that variable set, `.zshrc`
+leaves out the aliases that replace standard commands (`ls`, `cat`, `cd`,
+`fd`, `grep` and the opt-in ones), so Claude's commands behave as documented
+upstream. A `cd` aliased to zoxide jumps to the most-used matching directory
+when the path does not exist, and the next command would run there.
+
+## History
+
 History is shared between shells, includes timestamps, and ignores commands
 beginning with a space. Do not place secrets directly in command arguments;
 atuin and other integrations have their own history policies.

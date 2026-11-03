@@ -92,7 +92,11 @@ export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh)"
-  alias cd='z'
+  # Claude Code copies this shell's aliases into the shell that runs its
+  # commands and sets CLAUDECODE there. A cd that jumps to the most-used
+  # matching directory when the path does not exist would run its next
+  # command in the wrong place.
+  [[ -n "${CLAUDECODE:-}" ]] || alias cd='z'
 fi
 if command -v fzf &>/dev/null; then
   eval "$(fzf --zsh)"
@@ -113,29 +117,32 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 
 # Modern replacements that accept the original command's everyday arguments.
 # `command NAME` or `\NAME` runs the original. Icons appear only on a terminal,
-# so piped output stays plain.
-if command -v eza &>/dev/null; then
-  _eza='eza --icons=auto --group-directories-first'
-  _eza_long="$_eza --long --header --git --smart-group --time-style=long-iso"
-  alias ls="$_eza" ll="$_eza_long" la="$_eza_long --all"
-  alias tree="$_eza --tree" lt="$_eza --tree --level=2" ltt="$_eza --tree --level=3"
-  unset _eza _eza_long
-fi
-# Highlighted like bat, but without line numbers or a pager, so output copies
-# and redirects exactly like cat.
-command -v bat &>/dev/null && alias cat='bat --paging=never --style=plain'
-command -v nvim &>/dev/null && alias vi='nvim' vim='nvim'
-command -v htop &>/dev/null && alias top='htop'
-# Hidden files too, as in the fzf widgets; .gitignore still applies.
-command -v fd &>/dev/null && alias fd='fd --hidden --exclude .git'
-alias grep='grep --color=auto'
-# grep, find and less take different arguments from rg, fd and bat, so these
-# replacements are opt-in.
-if [[ "${DOTFILES_ENABLE_COMMAND_OVERRIDES:-0}" == "1" ]]; then
-  command -v bat &>/dev/null && alias less='bat'
-  command -v rg &>/dev/null && alias grep='rg'
-  command -v fd &>/dev/null && alias find='fd'
-  alias mkdir='mkdir -p'
+# so piped output stays plain. Claude Code's shells keep the standard commands
+# (see the cd alias above and ~/.claude/dotfiles-tools.md).
+if [[ -z "${CLAUDECODE:-}" ]]; then
+  if command -v eza &>/dev/null; then
+    _eza='eza --icons=auto --group-directories-first'
+    _eza_long="$_eza --long --header --git --smart-group --time-style=long-iso"
+    alias ls="$_eza" ll="$_eza_long" la="$_eza_long --all"
+    alias tree="$_eza --tree" lt="$_eza --tree --level=2" ltt="$_eza --tree --level=3"
+    unset _eza _eza_long
+  fi
+  # Highlighted like bat, but without line numbers or a pager, so output
+  # copies and redirects exactly like cat.
+  command -v bat &>/dev/null && alias cat='bat --paging=never --style=plain'
+  command -v nvim &>/dev/null && alias vi='nvim' vim='nvim'
+  command -v htop &>/dev/null && alias top='htop'
+  # Hidden files too, as in the fzf widgets; .gitignore still applies.
+  command -v fd &>/dev/null && alias fd='fd --hidden --exclude .git'
+  alias grep='grep --color=auto'
+  # grep, find and less take different arguments from rg, fd and bat, so
+  # these replacements are opt-in.
+  if [[ "${DOTFILES_ENABLE_COMMAND_OVERRIDES:-0}" == "1" ]]; then
+    command -v bat &>/dev/null && alias less='bat'
+    command -v rg &>/dev/null && alias grep='rg'
+    command -v fd &>/dev/null && alias find='fd'
+    alias mkdir='mkdir -p'
+  fi
 fi
 command -v lazygit &>/dev/null && alias lg='lazygit'
 

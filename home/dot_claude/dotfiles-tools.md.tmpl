@@ -1,0 +1,172 @@
+{{- $osid := includeTemplate "osid" . -}}
+{{- $fedora := eq $osid "fedora" -}}
+{{- $debian := eq $osid "debian" -}}
+{{- $darwin := eq $osid "darwin" -}}
+{{- $linux := eq .chezmoi.os "linux" -}}
+{{- $workstation := eq .profile "workstation" -}}
+{{- /* gh, dust, hyperfine, yq, uv and rustup: everywhere but the Debian server. */ -}}
+{{- $dev := or (not $debian) $workstation -}}
+{{- $native := and (eq .context "perso") (not $debian) -}}
+{{- $vscode := and $workstation (or (not $debian) (lookPath "code")) -}}
+# Tools on this machine
+
+chezmoi writes this file on every apply, for {{ if $fedora }}Fedora{{ else if $debian }}Debian 13{{ else }}macOS{{ end }}, profile
+`{{ .profile }}`, context `{{ .context }}`{{ if .gaming }}, gaming{{ end }}. Its source is
+`~/.local/share/chezmoi/home/dot_claude/dotfiles-tools.md.tmpl`; change that,
+not this file.
+
+## Shell
+
+- The user's interactive shell is zsh with the managed `~/.zshrc`.
+- Claude Code sets `CLAUDECODE=1`, and `~/.zshrc` then skips the aliases that
+  replace standard commands. In the Bash tool, `ls`, `cat`, `cd`, `grep`, `fd`
+  and `find` behave as their own documentation says. Call the modern tools
+  below by their own names.
+- In the user's own terminal those aliases are active (table at the end):
+  pasted `ls` or `ll` output comes from eza, `cat` output from bat.
+- nvim, lazygit, htop, fzf, tmux and atuin are interactive; do not start them
+  from the Bash tool.
+- Ask before running `sudo`.
+
+## Search, files and data
+
+| Need | Command | Notes |
+|---|---|---|
+| Search file contents | `rg` | Respects `.gitignore`. Interactive zsh exports `RIPGREP_CONFIG_PATH` for `~/.config/ripgrep/config` (smart case, hidden files except `.git`, lines over 200 columns shortened), and a Claude Code started from it inherits that. Add `--max-columns=0` or `--no-config` when whole lines matter. |
+| Find files | `fd` | {{ if $debian }}Debian's `fdfind`, linked as `~/.local/bin/fd`. {{ end }}Respects `.gitignore`; `-H` adds hidden files, `-I` ignored ones. |
+| Show a file with highlighting | `bat` | {{ if $debian }}Debian's `batcat`, linked as `~/.local/bin/bat`. {{ end }}Plain output when piped; `-pp` forces it. |
+| List directories | `eza` | `eza -la --git`, `eza --tree --level=2`. Sort with `-s modified`; `-t` means `--time` here. |
+| JSON | `jq` | |
+{{- if $dev }}
+| YAML, TOML, XML | `yq` | mikefarah yq v4{{ if $debian }}, pinned release in `~/.local/bin`{{ end }}. |
+| Disk usage by directory | `dust` | |
+| Benchmark commands | `hyperfine` | |
+| GitHub | `gh` | |
+{{- end }}
+{{- if and $debian (not $workstation) }}
+| Disk usage by directory | `ncdu` | Interactive; use `du -sh` from the Bash tool. |
+| Network | `ip`, `ss`, `dig`, `ping` | |
+{{- end }}
+| Short command examples | `tldr` | tealdeer |
+| Project tasks | `just` | |
+| Shell scripts | `shellcheck`, `shfmt` | |
+| Secrets in a repository | `gitleaks` | |
+| GitHub Actions workflows | `actionlint` | |
+{{- if and $linux $workstation }}
+| Clipboard | `wl-copy`, `wl-paste` | Wayland{{ if $debian }}; `xclip` for X11{{ end }}. |
+{{- else if $darwin }}
+| Clipboard | `pbcopy`, `pbpaste` | |
+{{- end }}
+
+## Git
+
+- delta is the pager; output is plain when it is not a terminal.
+- Pull rebases with autostash, push creates the upstream branch, new
+  repositories start on `main`.
+- Remotes are fetched over HTTPS and pushed over SSH (`url.pushInsteadOf`),
+  with the key that `~/.ssh/config` selects.
+- `git lg` draws the graph, `git cleanup [BASE]` deletes branches merged into
+  BASE (default `main`). The identity lives in `~/.gitconfig.local`.
+
+## Languages and builds
+{{ if $dev }}
+- Python: `uv` and `uvx`{{ if $debian }} (pinned releases in `~/.local/bin`){{ end }}. Use `uv run`, `uv add`
+  and `uv venv`; do not `pip install` into the system Python.
+- Rust: rustup's stable toolchain in `~/.cargo` (`cargo`, `rustc`).
+{{- else }}
+- Python: the system `python3` with `venv`; uv is not installed here.
+{{- end }}
+- Node.js: `node` and `npm`{{ if $fedora }} (Node 24){{ end }}.
+{{- if $native }}
+- Go: `go`, with binaries in `~/go/bin`.
+{{-   if $fedora }}
+- C and C++: gcc and g++, clangd, clang-format and clang-tidy, cmake, ninja,
+  gdb.
+{{-   else }}
+- C and C++: Apple clang and lldb from the Command Line Tools; Homebrew's llvm
+  (keg-only, last on PATH) for clangd; cmake, ninja.
+{{-   end }}
+{{- end }}
+{{- if and $debian (not $workstation) }}
+- C and C++: build-essential (gcc, g++, make).
+{{- end }}
+{{- if and $workstation $linux }}
+- Containers: `podman` and `podman-compose`, rootless; there is no Docker.
+  Use fully qualified image names such as `docker.io/library/debian:13`.
+{{- else if $darwin }}
+- Containers: the `docker` CLI with Compose and Buildx, served by Colima;
+  run `colima start` first.
+{{- end }}
+
+## Editors and terminal
+
+- Neovim with LazyVim is `$EDITOR`{{ if $debian }} (pinned release in `~/.local/opt/nvim`){{ end }}.
+{{- if $vscode }}
+- VS Code: `code`.
+{{- end }}
+{{- if $workstation }}
+- Kitty is the terminal; tmux runs sessions (prefix `Ctrl-a`).
+{{- else }}
+- tmux runs sessions (prefix `Ctrl-a`); the user connects from Kitty.
+{{- end }}
+{{- if $fedora }}
+- Desktop: KDE Plasma on Wayland with the Melange Dark colour scheme, which
+  matches the Kitty, tmux and Starship colours.
+{{- end }}
+{{- if .gaming }}
+- Gaming: GameMode and MangoHud (`~/.config/MangoHud/MangoHud.conf`).
+{{- end }}
+
+## Packages and dotfiles
+{{ if $fedora }}
+- dnf installs packages, with COPR for Starship and LazyGit and Microsoft's
+  repository for VS Code.
+{{- else if $debian }}
+- apt installs packages from the official Debian 13 repositories only. Pinned
+  GitHub releases add what Debian lacks: chezmoi, nvim{{ if $workstation }}, uv, uvx, yq{{ end }} and
+  actionlint.
+{{- else }}
+- Homebrew installs packages and casks.
+{{- end }}
+- To add a tool for good, add it to
+  `~/.local/share/chezmoi/home/.chezmoidata/packages.yaml` and run
+  `chezmoi apply`; the package script installs only what is missing{{ if not $darwin }} and uses
+  sudo{{ end }}.
+- chezmoi manages the dotfiles. Edit the sources in
+  `~/.local/share/chezmoi/home` (`.tmpl` files are templates), check with
+  `chezmoi diff`, deploy with `chezmoi apply`. `scripts/verify.sh` in that
+  checkout checks the machine.
+- Settings for this machine only go in the local files, which chezmoi leaves
+  alone: `~/.zshrc.settings`, `~/.zshrc.local`, `~/.zshenv.local`,
+  `~/.gitconfig.local`, `~/.ssh/config.local`, `~/.tmux.conf.local` and
+  `~/.config/kitty/kitty.d/*.conf`.
+
+## Aliases in the user's terminal
+
+| Typed | Runs |
+|---|---|
+| `ls`, `ll`, `la` | eza with icons and directories first; `ll` and `la` add a header, Git status and ISO dates |
+| `tree`, `lt`, `ltt` | `eza --tree`, at any depth, two or three levels |
+| `cat` | `bat --paging=never --style=plain` |
+| `cd` | zoxide's `z` |
+| `vi`, `vim` | `nvim` |
+| `top` | `htop` |
+| `fd` | `fd --hidden --exclude .git` |
+| `grep`{{ if $linux }}, `diff`, `ip`{{ end }} | the same command with colour |
+| `df`, `du`{{ if $linux }}, `free`{{ end }} | human-readable sizes |
+| `g`, `gs`, `gd`, `gl`, `gco`, … | Git shortcuts |
+| `lg`, `ai`, `air` | LazyGit; Claude; Claude resuming a session |
+{{- if $fedora }}
+| `dnfup`, `dnfi`, `dnfs`, `dnfrm`, `dnfinfo` | dnf upgrade, install, search, remove, info |
+{{- else if $debian }}
+| `aptup`, `apti`, `apts`, `aptrm`, `aptshow` | apt upgrade, install, search, remove, show |
+{{- else }}
+| `brewup`, `brewi`, `brews`, `brewrm`, `brewinfo` | brew upgrade, install, search, uninstall, info |
+| `d`, `dc`, `dps`, `dex`, `dlog` | Docker and Compose shortcuts |
+{{- end }}
+
+`DOTFILES_ENABLE_COMMAND_OVERRIDES=1` in `~/.zshrc.settings` also maps `less`
+to bat, `grep` to rg, `find` to fd and `mkdir` to `mkdir -p`. Shell helpers:
+`fe`, `fcd`, `frg`, `fga`, `fh`, `fkill`, `groot`, `gclone`, `gwip`, `gunwip`,
+`mkcd`, `extract`, `serve`, `psg`, `activate`, `tm`. All of them are described
+in `~/.local/share/chezmoi/docs/ALIASES.md`.
