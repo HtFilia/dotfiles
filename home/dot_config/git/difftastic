@@ -1,0 +1,16 @@
+# Syntax-aware diffs with difftastic, beside delta (the pager for plain git
+# diff). Included from ~/.gitconfig; git skips the include where this file
+# is not deployed.
+[difftool "difftastic"]
+    cmd = difft "$LOCAL" "$REMOTE"
+
+[difftool]
+    prompt = false
+
+[pager]
+    difftool = true
+
+[alias]
+    dft = difftool --tool=difftastic
+    dlg = -c diff.external=difft log -p --ext-diff
+    dshow = -c diff.external=difft show --ext-diff

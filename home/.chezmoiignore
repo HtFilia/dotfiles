@@ -26,6 +26,7 @@ Library/**
 .config/navi/**
 .local/share/navi
 .local/share/navi/**
+.config/git/difftastic
 {{- end }}
 {{- if not .gaming }}
 .config/MangoHud

@@ -91,4 +91,5 @@
     aliases = config --get-regexp alias
 
 [include]
+    path = ~/.config/git/difftastic
     path = ~/.gitconfig.local
