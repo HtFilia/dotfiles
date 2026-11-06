@@ -85,6 +85,8 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Zoom a split (cycle to the stack layout) | `Ctrl-Shift-l` |
 | Clear screen and scrollback | `Ctrl-Shift-k` |
 | Font size + / - / reset | `Ctrl-+` / `Ctrl--` / `Ctrl-0` |
+| Open a URL on screen (Fedora) | `Ctrl-Shift-p`, then `u` |
+| Pick a path / line / word / hash on screen | `Ctrl-Shift-p`, then `f` / `l` / `w` / `h` |
 
 ## Shell (Zsh)
 
@@ -96,6 +98,9 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
 | Move forward one word | `Alt-f` |
+| Completion in fzf, with preview (Fedora) | `Tab` (fzf-tab) |
+| Previous / next completion group | `<` / `>` |
+| Cheat sheets (Fedora) | `Ctrl-g` (navi) |
 
 ### Custom functions
 

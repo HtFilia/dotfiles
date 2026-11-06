@@ -8,7 +8,7 @@ Nothing is piped from `curl` into a shell.
 
 | Machine | Sources |
 |---|---|
-| Fedora | Fedora repositories; COPR `atim/starship` and `atim/lazygit`; Microsoft's VS Code repository |
+| Fedora | Fedora repositories (including navi, difftastic and procs); COPR `atim/starship` and `atim/lazygit`; Microsoft's VS Code repository |
 | Debian 13 | Official Debian repositories only: no added source, key or backports suite |
 | macOS | Homebrew |
 
@@ -26,6 +26,9 @@ lists package names; versions follow the repositories.
 | uv, uvx | 0.13.6 | Debian workstation | Not packaged in Debian 13 |
 | yq | 4.54.1 | Debian workstation | Debian's `yq` is a different tool |
 | actionlint | 1.7.12 | Fedora, Debian | Packaged in neither |
+| yazi, ya (and their zsh completions) | 26.9.1 | Fedora | Not packaged in Fedora 44 |
+| gping | 1.21.0 | Fedora | Not packaged in Fedora 44 |
+| fzf-tab (zsh plugin) | 1.3.0 | Fedora | Packaged nowhere; the tag's source archive |
 
 Each entry in [`.chezmoiexternal.toml.tmpl`](../home/.chezmoiexternal.toml.tmpl)
 has the release URL and the archive's SHA256; chezmoi refuses an archive whose
@@ -36,10 +39,13 @@ To upgrade one:
 1. Download the new archive into an empty directory and run `sha256sum` on it.
 2. Compare the result with the project's published checksums: chezmoi's
    `checksums.txt`, uv's `.sha256` file, yq's `checksums` file, actionlint's
-   `checksums.txt`. Neovim publishes the digest in its GitHub release metadata.
+   `checksums.txt`. Neovim, yazi and gping publish the digest in their GitHub
+   release metadata (`gh release view TAG --json assets`). fzf-tab's source
+   archive has no published digest: check the tag's commit on GitHub.
 3. Change the version in the URL and the checksum together. For chezmoi, also
    update the version and hash in the README's Debian install.
-4. Run `tests/container.sh debian-travail` and `tests/container.sh debian-server`.
+4. Run `tests/container.sh debian-travail` and `tests/container.sh debian-server`,
+   or `tests/container.sh fedora-perso` for a Fedora-only binary.
 
 ## Downloads managed elsewhere
 

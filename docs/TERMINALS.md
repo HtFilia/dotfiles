@@ -34,6 +34,17 @@ Programs on a remote host need the `xterm-kitty` terminfo entry. The VPS
 installs Debian's `kitty-terminfo` package. For another host, install that
 package there or connect once with `kitten ssh HOST`, which copies the entry.
 
+## Kittens (Fedora)
+
+On Fedora, zsh inside Kitty (not inside tmux) has three aliases: `s HOST`
+runs `kitten ssh`, `icat FILE` shows an image in the terminal and `kd A B`
+runs Kitty's side-by-side diff. `~/.config/kitty/ssh.conf` gives windows
+connected with `kitten ssh` a red-tinted background
+(`ssh-remote.conf`) until they disconnect, so a remote shell is obvious.
+`Ctrl-Shift-p` then `u` labels the URLs on screen to open one; `f`, `l`, `w`
+and `h` after the same prefix pick a path, line, word or hash, as in Kitty's
+defaults. `Ctrl-Shift-e`, the default for URLs, opens a split here.
+
 ## tmux
 
 Prefix is Ctrl-a; Ctrl-a Ctrl-a passes the prefix through. New panes/windows use

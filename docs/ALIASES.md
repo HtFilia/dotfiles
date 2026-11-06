@@ -43,6 +43,7 @@ Git's internal aliases are documented in [Git](GIT.md).
 | `fh [QUERY]` | Insert a selected history command for editing |
 | `tm [NAME]` | Create or attach tmux session, defaulting to directory name |
 | `extract ARCHIVE` | Dispatch extraction to installed archive utilities |
+| `y [DIR]` | Fedora: yazi, leaving the shell in its last directory on `q` |
 
 eza lists directories first and shows icons only on a terminal; `ll` and `la`
 add a header, Git status, ISO dates and the group only when it differs from
@@ -70,6 +71,7 @@ extract dispatch does not automatically install rar/7z utilities.
 | `psg QUERY` | Search running process descriptions |
 | `ai`, `air` | Claude; resume session, when installed |
 | `vi`, `vim`, `top` | Neovim; htop |
+| `s HOST`, `icat FILE`, `kd A B` | Fedora, inside Kitty: `kitten ssh`, `kitten icat`, `kitten diff` |
 
 ## Containers
 

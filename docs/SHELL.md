@@ -53,6 +53,34 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 - fzf supplies file/directory/history widgets; atuin takes Ctrl-r when installed.
 - direnv loads approved `.envrc` files; inspect them before `direnv allow`.
 
+## Fedora extras
+
+Fedora machines add these on top; other machines do not get them.
+
+- **fzf-tab** turns Tab completion into an fzf list with previews: eza for
+  directories, bat for files, `git diff` for `git add`, `systemctl status`
+  for units. `<` and `>` switch completion groups; both are on the key left of
+  W on AZERTY. It loads after compinit and before autosuggestions and syntax
+  highlighting, which wrap its widget. Typing `**` then Tab still runs fzf's
+  own path completion.
+- **navi** opens cheat sheets on `Ctrl+G`, or completes the command already
+  typed. The managed sheets live in `~/.local/share/navi/cheats/dotfiles`; add
+  your own `.cheat` files next to that directory.
+- **yazi**: `y [DIR]` opens it; quitting with `q` leaves the shell in yazi's
+  last directory, `Q` quits without moving. Previews use Kitty's graphics,
+  `poppler-utils` for PDFs and `ffmpegthumbnailer` for videos.
+- **fastfetch** prints the machine summary once in each new Kitty window,
+  not in tmux, SSH sessions, Claude Code, or shells started from that window
+  (`DOTFILES_FASTFETCH_SHOWN` marks them).
+- **Starship** adds, on the right: background jobs, the last exit status,
+  direnv, the tmux session, the load average and, on gaming machines, GPU
+  memory in use. The GPU reading comes from
+  `~/.local/share/dotfiles/starship-vram`, which prints the last
+  `nvidia-smi` result and refreshes it in the background at most every 10 s,
+  since `nvidia-smi` takes about 50 ms.
+- `procs`, `gping` and `difft` (see [Git](GIT.md)) have no alias; `ps` and
+  `ping` stay the standard ones.
+
 `.zshrc` also sets `SHELL` to zsh when the desktop session still has the shell
 from before `chsh`, so tmux, editors and other programs started from it open
 zsh too.

@@ -41,7 +41,7 @@ commands=(zsh git tmux nvim starship lazygit fzf rg fd bat eza zoxide atuin dire
 if [[ "$profile" == workstation ]]; then
   commands+=(kitty gh fastfetch hyperfine dust uv uvx yq rustup)
   case "$osid" in
-    fedora) commands+=(podman podman-compose code) ;;
+    fedora) commands+=(podman podman-compose code yazi ya navi difft gping procs) ;;
     debian) commands+=(podman podman-compose) ;;
     darwin) commands+=(docker colima code) ;;
   esac
@@ -66,6 +66,11 @@ if [[ "$context" == travail ]]; then key='~/.ssh/github_work'; else key='~/.ssh/
 check 'SSH uses the GitHub key of this context' bash -c 'ssh -G github.com 2>/dev/null | grep -qx "identityfile $1"' _ "$key"
 check 'zsh syntax' zsh -n "$HOME/.zshrc"
 check 'zsh plugins load' zsh -ic '(( ${+functions[_zsh_autosuggest_start]} && ${+functions[_zsh_highlight]} ))'
+if [[ "$osid" == fedora ]]; then
+  check 'fzf-tab handles completion' env -u CLAUDECODE zsh -ic '[[ $fzf_default_completion == fzf-tab-complete ]]'
+  check 'navi widget on Ctrl+G' env -u CLAUDECODE zsh -ic '[[ "$(bindkey "^G")" == *_navi_widget ]]'
+  check 'git difftastic aliases' git config alias.dft
+fi
 check 'interactive zsh replaces ls and cat' env -u CLAUDECODE zsh -ic '(( ${+aliases[ls]} && ${+aliases[cat]} ))'
 check 'Claude Code shells keep the standard ls, cat and cd' env CLAUDECODE=1 zsh -ic '(( ! ${+aliases[ls]} && ! ${+aliases[cat]} && ! ${+aliases[cd]} ))'
 check 'Claude Code tools reference deployed' test -f "$HOME/.claude/dotfiles-tools.md"

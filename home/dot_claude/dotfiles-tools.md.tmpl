@@ -24,8 +24,8 @@ not this file.
   below by their own names.
 - In the user's own terminal those aliases are active (table at the end):
   pasted `ls` or `ll` output comes from eza, `cat` output from bat.
-- nvim, lazygit, htop, fzf, tmux and atuin are interactive; do not start them
-  from the Bash tool.
+- nvim, lazygit, htop, fzf, tmux and atuin{{ if $fedora }}, yazi, navi and gping{{ end }} are interactive; do
+  not start them from the Bash tool.
 - Ask before running `sudo`.
 
 ## Search, files and data
@@ -57,6 +57,10 @@ not this file.
 {{- else if $darwin }}
 | Clipboard | `pbcopy`, `pbpaste` | |
 {{- end }}
+{{- if $fedora }}
+| Processes | `procs` | `procs NAME`, `procs --tree`, `procs --sortd mem`. `ps` stays the standard one. |
+| Syntax-aware diff | `difft A B` | Also `git dft` (difftool), `git dlg` (log), `git dshow`. |
+{{- end }}
 
 ## Git
 
@@ -67,6 +71,10 @@ not this file.
   with the key that `~/.ssh/config` selects.
 - `git lg` draws the graph, `git cleanup [BASE]` deletes branches merged into
   BASE (default `main`). The identity lives in `~/.gitconfig.local`.
+{{- if $fedora }}
+- difftastic: `git dft`, `git dlg` and `git dshow` show diffs by syntax
+  (`~/.config/git/difftastic`); plain `git diff` still goes through delta.
+{{- end }}
 
 ## Languages and builds
 {{ if $dev }}
@@ -120,7 +128,8 @@ not this file.
 ## Packages and dotfiles
 {{ if $fedora }}
 - dnf installs packages, with COPR for Starship and LazyGit and Microsoft's
-  repository for VS Code.
+  repository for VS Code. Pinned GitHub releases add yazi and ya, gping
+  (`~/.local/bin`) and fzf-tab (`~/.local/share/zsh/plugins`).
 {{- else if $debian }}
 - apt installs packages from the official Debian 13 repositories only. Pinned
   GitHub releases add what Debian lacks: chezmoi, nvim{{ if $workstation }}, uv, uvx, yq{{ end }} and
@@ -156,6 +165,12 @@ not this file.
 | `df`, `du`{{ if $linux }}, `free`{{ end }} | human-readable sizes |
 | `g`, `gs`, `gd`, `gl`, `gco`, … | Git shortcuts |
 | `lg`, `ai`, `air` | LazyGit; Claude; Claude resuming a session |
+{{- if $fedora }}
+| `y` | yazi; quitting with `q` moves the shell to yazi's last directory |
+| `s`, `icat`, `kd` | Inside Kitty only: `kitten ssh`, `kitten icat`, `kitten diff` |
+| `Ctrl+G` | navi cheat sheets (`~/.local/share/navi/cheats/dotfiles`) |
+| `Tab` | fzf-tab: completion in fzf with previews; `<` and `>` switch groups |
+{{- end }}
 {{- if $fedora }}
 | `dnfup`, `dnfi`, `dnfs`, `dnfrm`, `dnfinfo` | dnf upgrade, install, search, remove, info |
 {{- else if $debian }}

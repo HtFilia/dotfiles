@@ -57,3 +57,11 @@ git -c delta.side-by-side=true diff
 ```
 
 `git mergetool` opens quoted local/remote/merged paths in Neovim diff mode.
+
+## difftastic (Fedora)
+
+`~/.config/git/difftastic`, included before `~/.gitconfig.local`, adds
+syntax-aware diffs that compare code structure rather than lines:
+`git dft [REV]` runs it as a difftool, `git dlg` shows the log with its
+diffs and `git dshow REV` one commit. Plain `git diff` still pages through
+delta. Git skips the include on machines where the file is not deployed.
