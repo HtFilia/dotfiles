@@ -79,6 +79,11 @@ map ctrl+equal       change_font_size all +1.0
 map ctrl+minus       change_font_size all -1.0
 map ctrl+0           change_font_size all 0
 map ctrl+shift+k     clear_terminal reset active
+{{- if eq (includeTemplate "osid" .) "fedora" }}
+# URL hints next to Kitty's other Ctrl+Shift+P hints (f path, l line, h hash,
+# w word); Ctrl+Shift+E, their default, opens a split here.
+map ctrl+shift+p>u   open_url_with_hints
+{{- end }}
 
 # Machine-specific settings, such as a font size for one screen.
 globinclude kitty.d/*.conf

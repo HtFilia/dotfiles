@@ -171,6 +171,13 @@ if [[ -z "${CLAUDECODE:-}" ]]; then
   fi
 fi
 command -v lazygit &>/dev/null && alias lg='lazygit'
+{{- if eq $osid "fedora" }}
+# Kitty's kittens, inside Kitty only: tmux does not pass their graphics and
+# remote-control sequences through.
+if [[ -n "${KITTY_WINDOW_ID:-}" && -z "${TMUX:-}" ]] && command -v kitten &>/dev/null; then
+  alias s='kitten ssh' icat='kitten icat' kd='kitten diff'
+fi
+{{- end }}
 
 alias g='git' gs='git status -sb' ga='git add' gaa='git add --all'
 alias gc='git commit' gcm='git commit -m' gca='git commit --amend'

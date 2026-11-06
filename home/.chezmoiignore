@@ -27,6 +27,8 @@ Library/**
 .local/share/navi
 .local/share/navi/**
 .config/git/difftastic
+.config/kitty/ssh.conf
+.config/kitty/ssh-remote.conf
 {{- end }}
 {{- if or (ne $osid "fedora") (not .gaming) }}
 .local/share/dotfiles/starship-vram
