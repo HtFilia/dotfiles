@@ -1,37 +1,89 @@
 {{- if eq (includeTemplate "osid" .) "fedora" -}}
+// The rail: no logo, the same ╭─ ├─ ╰─ lines and clay grey as the Starship
+// prompt, so the summary reads as the first prompt's header. Only live state
+// (temperatures, GPU memory, memory, disk) besides one line of system facts.
+// About 50 columns wide; narrower windows get ~/.local/share/dotfiles/fetch-strip.
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "fedora",
-    "color": { "1": "#e49b5d", "2": "#ece1d7" },
-    "padding": { "top": 1, "left": 2, "right": 3 }
+    "type": "none"
   },
   "display": {
-    "separator": "  \u25b8  ",
-    "color": { "keys": "#e49b5d", "title": "#85b695", "separator": "#867462" }
+    "separator": " ",
+    "color": {
+      "keys": "#e49b5d"
+    },
+    "size": {
+      "ndigits": 1
+    },
+    "temp": {
+      "ndigits": 0
+    },
+    "bar": {
+      "char": {
+        "elapsed": "■",
+        "total": "·"
+      },
+      "width": 10,
+      "border": {
+        "left": "",
+        "right": ""
+      }
+    },
+    "percent": {
+      "type": 3,
+      "ndigits": 0,
+      "width": 3,
+      "color": {
+        "green": "#85b695",
+        "yellow": "#ebc06d",
+        "red": "#d47766"
+      }
+    }
   },
   "modules": [
-    "break",
-    { "type": "title", "color": { "user": "#85b695", "at": "#867462", "host": "#89b3b6" } },
-    { "type": "separator", "string": "\u2500" },
-    { "type": "os", "key": "\uf30a OS      " },
-    { "type": "board", "key": "\uf2db Board   " },
-    { "type": "kernel", "key": "\uf013 Kernel  " },
-    { "type": "uptime", "key": "\uf017 Uptime  " },
-    { "type": "packages", "key": "\uf487 Packages" },
-    { "type": "shell", "key": "\uf489 Shell   " },
-    { "type": "de", "key": "\uf108 DE      " },
-    { "type": "wm", "key": "\uf2d2 WM      " },
-    { "type": "terminal", "key": "\ue795 Terminal" },
-    { "type": "display", "key": "\uf26c Display " },
-    { "type": "cpu", "key": "\uf4bc CPU     " },
-    { "type": "gpu", "key": "\udb82\udcae GPU     " },
-    { "type": "memory", "key": "\uefc5 Memory  " },
-    { "type": "swap", "key": "\uf0ec Swap    " },
-    { "type": "disk", "key": "\uf0a0 Disk    ", "folders": "/" },
-    { "type": "localip", "key": "\uf0ac Local IP", "showIpv6": false },
-    "break",
-    { "type": "colors", "symbol": "circle" }
+    {
+      "type": "title",
+      "key": "{#38;2;134;116;98}╭─",
+      "format": "{#1;38;2;133;182;149}{user-name}{#0;38;2;134;116;98}@{#38;2;137;179;182}{host-name}"
+    },
+    {
+      "type": "custom",
+      "format": "{#38;2;134;116;98}│"
+    },
+    {
+      "type": "command",
+      "key": "{#38;2;134;116;98}├─{#38;2;228;155;93} sys ",
+      "text": ". /etc/os-release; printf '%s %s \\033[38;2;134;116;98m·\\033[0m linux %s' \"$NAME\" \"$VERSION_ID\" \"$(uname -r | cut -d- -f1)\""
+    },
+    {
+      "type": "uptime",
+      "key": "{#38;2;134;116;98}├─{#38;2;228;155;93} up  ",
+      "format": "{?days}{days}d {?}{hours}h {minutes}m"
+    },
+    {
+      "type": "cpu",
+      "key": "{#38;2;134;116;98}├─{#38;2;228;155;93} cpu ",
+      "temp": true,
+      "format": "{name} {#38;2;134;116;98}·{#0} {cores-logical}t {#38;2;134;116;98}·{#0} {temperature}"
+    },
+    {
+      "type": "gpu",
+      "key": "{#38;2;134;116;98}├─{#38;2;228;155;93} gpu ",
+      "temp": true,
+      "driverSpecific": true,
+      "format": "{dedicated-percentage-bar} {dedicated-percentage-num}  {dedicated-used} / {dedicated-total} {#38;2;134;116;98}·{#0} {temperature}"
+    },
+    {
+      "type": "memory",
+      "key": "{#38;2;134;116;98}├─{#38;2;228;155;93} mem ",
+      "format": "{percentage-bar} {percentage}  {used} / {total}"
+    },
+    {
+      "type": "disk",
+      "key": "{#38;2;134;116;98}╰─{#38;2;228;155;93} dsk ",
+      "folders": "/",
+      "format": "{size-percentage-bar} {size-percentage}  {size-used} / {size-total}"
+    }
   ]
 }
 {{- else -}}

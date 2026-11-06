@@ -69,9 +69,14 @@ Fedora machines add these on top; other machines do not get them.
 - **yazi**: `y [DIR]` opens it; quitting with `q` leaves the shell in yazi's
   last directory, `Q` quits without moving. Previews use Kitty's graphics,
   `poppler-utils` for PDFs and `ffmpegthumbnailer` for videos.
-- **fastfetch** prints the machine summary once in each new Kitty window,
+- **fastfetch** prints a machine summary once in each new Kitty window,
   not in tmux, SSH sessions, Claude Code, or shells started from that window
-  (`DOTFILES_FASTFETCH_SHOWN` marks them).
+  (`DOTFILES_FASTFETCH_SHOWN` marks them). The layout has no logo and uses
+  the prompt's `╭─ ├─ ╰─` connectors: one line of system facts, then live
+  state (CPU and GPU temperature, GPU memory, memory and disk with bars
+  that turn amber then red). It is about 50 columns wide; a window narrower
+  than 60 columns gets two lines from `~/.local/share/dotfiles/fetch-strip`
+  instead, which reads `/proc` and the cached GPU reading.
 - **Starship** adds, on the right: background jobs, the last exit status,
   direnv, the tmux session, the load average and, on gaming machines, GPU
   memory in use. The GPU reading comes from

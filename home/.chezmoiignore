@@ -29,6 +29,7 @@ Library/**
 .config/git/difftastic
 .config/kitty/ssh.conf
 .config/kitty/ssh-remote.conf
+.local/share/dotfiles/fetch-strip
 {{- end }}
 {{- if or (ne $osid "fedora") (not .gaming) }}
 .local/share/dotfiles/starship-vram
