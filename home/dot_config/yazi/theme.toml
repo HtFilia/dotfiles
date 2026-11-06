@@ -1,0 +1,65 @@
+# Melange dark accents over yazi's default theme, matching Kitty and tmux.
+# The rest of the default theme uses the terminal's ANSI colours, which Kitty
+# already maps to Melange.
+
+[mgr]
+cwd            = { fg = "#e49b5d", bold = true }
+find_keyword   = { fg = "#ebc06d", bold = true, underline = true }
+find_position  = { fg = "#cf9bc2", bold = true }
+border_symbol  = "│"
+border_style   = { fg = "#403a36" }
+
+[tabs]
+active   = { fg = "#292522", bg = "#e49b5d", bold = true }
+inactive = { fg = "#867462", bg = "#211d1b" }
+
+[mode]
+normal_main = { fg = "#292522", bg = "#e49b5d", bold = true }
+normal_alt  = { fg = "#e49b5d", bg = "#34302c" }
+select_main = { fg = "#292522", bg = "#85b695", bold = true }
+select_alt  = { fg = "#85b695", bg = "#34302c" }
+unset_main  = { fg = "#292522", bg = "#d47766", bold = true }
+unset_alt   = { fg = "#d47766", bg = "#34302c" }
+
+[indicator]
+parent  = { fg = "#ece1d7", bg = "#403a36" }
+current = { fg = "#ece1d7", bg = "#403a36", bold = true }
+preview = { underline = true }
+
+[status]
+perm_sep   = { fg = "#867462" }
+perm_type  = { fg = "#85b695" }
+perm_read  = { fg = "#ebc06d" }
+perm_write = { fg = "#d47766" }
+perm_exec  = { fg = "#89b3b6" }
+progress_normal = { fg = "#85b695", bg = "#34302c" }
+progress_error  = { fg = "#ebc06d", bg = "#d47766" }
+
+[which]
+border = { fg = "#e49b5d" }
+cand   = { fg = "#89b3b6" }
+rest   = { fg = "#867462" }
+desc   = { fg = "#cf9bc2" }
+
+[input]
+border = { fg = "#e49b5d" }
+
+[confirm]
+border = { fg = "#e49b5d" }
+title  = { fg = "#e49b5d" }
+
+[pick]
+border = { fg = "#e49b5d" }
+active = { fg = "#cf9bc2", bold = true }
+
+[cmp]
+border = { fg = "#e49b5d" }
+
+[tasks]
+border  = { fg = "#e49b5d" }
+hovered = { fg = "#cf9bc2", bold = true }
+
+[help]
+border  = { fg = "#e49b5d" }
+chord   = { fg = "#89b3b6" }
+hovered = { fg = "#ece1d7", bg = "#403a36", bold = true }

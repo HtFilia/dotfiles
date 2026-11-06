@@ -19,6 +19,10 @@ Library/**
 .local/share/color-schemes
 .local/share/color-schemes/**
 {{- end }}
+{{- if ne $osid "fedora" }}
+.config/yazi
+.config/yazi/**
+{{- end }}
 {{- if not .gaming }}
 .config/MangoHud
 .config/MangoHud/**

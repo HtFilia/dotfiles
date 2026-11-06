@@ -52,6 +52,10 @@ packages:
       - shfmt
       - gitleaks
       - wl-clipboard
+      # yazi itself is pinned in .chezmoiexternal; these give it PDF and
+      # video previews.
+      - poppler-utils
+      - ffmpegthumbnailer
       # From Microsoft's repository, which the Fedora script configures.
       - code
     perso:

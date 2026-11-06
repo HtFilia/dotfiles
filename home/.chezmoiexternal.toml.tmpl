@@ -57,3 +57,32 @@
     executable = true
     checksum.sha256 = "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
 {{- end }}
+{{- if eq $osid "fedora" }}
+
+# yazi, its ya helper and their zsh completions; Fedora 44 does not package it.
+[".local/bin/yazi"]
+    type = "archive-file"
+    url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+    path = "yazi-x86_64-unknown-linux-musl/yazi"
+    executable = true
+    checksum.sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+
+[".local/bin/ya"]
+    type = "archive-file"
+    url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+    path = "yazi-x86_64-unknown-linux-musl/ya"
+    executable = true
+    checksum.sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+
+[".local/share/zsh/site-functions/_yazi"]
+    type = "archive-file"
+    url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+    path = "yazi-x86_64-unknown-linux-musl/completions/_yazi"
+    checksum.sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+
+[".local/share/zsh/site-functions/_ya"]
+    type = "archive-file"
+    url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+    path = "yazi-x86_64-unknown-linux-musl/completions/_ya"
+    checksum.sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+{{- end }}

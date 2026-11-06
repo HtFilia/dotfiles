@@ -23,6 +23,10 @@ export HOMEBREW_PREFIX={{ $brew }}
 path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt/rustup/bin" "$HOMEBREW_PREFIX/opt/llvm/bin")
 fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
 {{- end }}
+{{- if eq $osid "fedora" }}
+# Completions for the pinned binaries of .chezmoiexternal (yazi, ya).
+fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
+{{- end }}
 export PATH
 # Programs started from here (tmux, editors, Claude Code) open zsh too, even
 # when the desktop session still has the SHELL it had before `chsh`.
@@ -277,6 +281,20 @@ if command -v uv &>/dev/null; then
   alias pyi='uv pip install' pyls='uv pip list'
 fi
 tm() { tmux new-session -A -s "${1:-${PWD:t}}"; }
+{{- if eq $osid "fedora" }}
+# yazi in the current directory: quitting with q moves the shell to the
+# directory yazi showed last, Q quits without moving.
+if command -v yazi &>/dev/null; then
+  y() {
+    local tmp cwd
+    tmp="$(mktemp -t yazi-cwd.XXXXXX)" || return
+    yazi "$@" --cwd-file="$tmp"
+    IFS= read -r -d '' cwd <"$tmp"
+    [[ -n "$cwd" && "$cwd" != "$PWD" ]] && builtin cd -- "$cwd"
+    rm -f -- "$tmp"
+  }
+fi
+{{- end }}
 export GOPATH="${GOPATH:-$HOME/go}"
 export GOBIN="${GOBIN:-$GOPATH/bin}"
 [[ -d "$GOBIN" ]] && path+=("$GOBIN")
