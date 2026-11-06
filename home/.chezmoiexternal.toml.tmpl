@@ -86,6 +86,14 @@
     path = "yazi-x86_64-unknown-linux-musl/completions/_ya"
     checksum.sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
 
+# gping, ping drawn as a graph; Fedora 44 does not package it.
+[".local/bin/gping"]
+    type = "archive-file"
+    url = "https://github.com/orf/gping/releases/download/gping-v1.21.0/gping-Linux-musl-x86_64.tar.gz"
+    path = "gping"
+    executable = true
+    checksum.sha256 = "cea59e22f6faf941f054cf0925433a2e3e4e6c42dc5c778b0265279a5056aeec"
+
 # fzf-tab, a zsh plugin that no repository packages.
 [".local/share/zsh/plugins/fzf-tab"]
     type = "archive"
