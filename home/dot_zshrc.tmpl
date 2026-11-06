@@ -87,6 +87,24 @@ _dotfiles_safe_source() {
   source "$file"
 }
 
+{{- if eq $osid "fedora" }}
+# fzf-tab replaces the completion menu with fzf. It must come after compinit
+# and before the plugins that wrap widgets (autosuggestions, highlighting).
+if _dotfiles_safe_source "$HOME/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"; then
+  zstyle ':completion:*' menu no
+  zstyle ':completion:*:descriptions' format '[%d]'
+  zstyle ':completion:*:git-checkout:*' sort false
+  zstyle ':fzf-tab:*' use-fzf-default-opts yes
+  # < and > sit unshifted and shifted left of W on an AZERTY keyboard.
+  zstyle ':fzf-tab:*' switch-group '<' '>'
+  zstyle ':fzf-tab:complete:(cd|pushd|z|ls|eza|y|yazi):*' fzf-preview 'eza -1 --color=always --icons=always --group-directories-first -- $realpath'
+  zstyle ':fzf-tab:complete:(nvim|vim|vi|bat|cat|less|code):*' fzf-preview '[[ -d $realpath ]] && eza -1 --color=always --icons=always -- $realpath || bat --color=always --style=numbers --line-range=:200 -- $realpath'
+  zstyle ':fzf-tab:complete:(kill|fkill):argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
+  zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status -- $word'
+  zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview 'git diff --color=always -- $word'
+fi
+{{- end }}
+
 if _dotfiles_safe_source {{ $share }}/zsh-autosuggestions/zsh-autosuggestions.zsh; then
   ZSH_AUTOSUGGEST_STRATEGY=(history completion)
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#867462"
