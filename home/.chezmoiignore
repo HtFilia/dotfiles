@@ -28,6 +28,9 @@ Library/**
 .local/share/navi/**
 .config/git/difftastic
 {{- end }}
+{{- if or (ne $osid "fedora") (not .gaming) }}
+.local/share/dotfiles/starship-vram
+{{- end }}
 {{- if not .gaming }}
 .config/MangoHud
 .config/MangoHud/**

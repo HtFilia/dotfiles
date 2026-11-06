@@ -1,0 +1,17 @@
+#!/bin/sh
+# Prints the GPU memory in use for Starship's prompt. nvidia-smi takes about
+# 50 ms, too slow for every prompt, so this prints the last reading and
+# refreshes it in the background at most every 10 seconds.
+command -v nvidia-smi >/dev/null 2>&1 || exit 0
+cache="${XDG_RUNTIME_DIR:-/tmp}/starship-vram-$(id -u)"
+now=$(date +%s)
+last=$(stat -c %Y "$cache.stamp" 2>/dev/null || echo 0)
+if [ $((now - last)) -ge 10 ]; then
+  : >"$cache.stamp"
+  (
+    nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits >"$cache.new" &&
+      mv -f "$cache.new" "$cache"
+  ) </dev/null >/dev/null 2>&1 &
+fi
+[ -s "$cache" ] && awk -F', *' 'NR == 1 { printf "%.1f/%.0fG\n", $1 / 1024, $2 / 1024 }' "$cache"
+exit 0

@@ -1,8 +1,13 @@
+{{- $osid := includeTemplate "osid" . -}}
 # A compact two-line prompt in the Melange palette, matching Kitty and tmux.
 add_newline = true
 command_timeout = 500
 format = "[┌─](bold #867462)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #867462)$character"
+{{- if eq $osid "fedora" }}
+right_format = "$jobs$status$direnv$python$nodejs$rust$golang$cmd_duration${custom.tmux}${custom.load}{{ if .gaming }}${custom.vram}{{ end }}"
+{{- else }}
 right_format = "$python$nodejs$rust$golang$cmd_duration"
+{{- end }}
 
 [username]
 show_always = false
@@ -65,3 +70,52 @@ style = "#89b3b6"
 success_symbol = "[❯](bold #85b695)"
 error_symbol = "[✗](bold #d47766)"
 vimcmd_symbol = "[❮](bold #a3a9ce)"
+{{- if eq $osid "fedora" }}
+
+[jobs]
+symbol = "\uf013 "
+format = "[$symbol$number]($style) "
+style = "#cf9bc2"
+
+[status]
+disabled = false
+format = "[$symbol$status]($style) "
+symbol = "\u2718 "
+style = "#d47766"
+
+[direnv]
+disabled = false
+symbol = "direnv"
+format = "[$symbol$loaded$allowed]($style) "
+loaded_msg = ""
+unloaded_msg = " off"
+allowed_msg = ""
+not_allowed_msg = " blocked"
+denied_msg = " denied"
+style = "#ebc06d"
+
+# Custom modules run through sh rather than STARSHIP_SHELL (zsh), which
+# starts more slowly.
+[custom.tmux]
+when = 'test -n "$TMUX"'
+command = "tmux display-message -p '#S'"
+shell = ["sh"]
+format = "[\uebc8 $output]($style) "
+style = "#89b3b6"
+
+[custom.load]
+when = true
+command = "cut -d' ' -f1 /proc/loadavg"
+shell = ["sh"]
+format = "[\uf4bc $output]($style) "
+style = "#867462"
+{{-   if .gaming }}
+
+[custom.vram]
+when = true
+command = "~/.local/share/dotfiles/starship-vram"
+shell = ["sh"]
+format = "[\U000F08AE $output]($style) "
+style = "#85b695"
+{{-   end }}
+{{- end }}
