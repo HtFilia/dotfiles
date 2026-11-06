@@ -1,0 +1,39 @@
+% system, fedora
+
+# Follow the logs of a systemd unit
+journalctl -fu <unit>
+
+# Show errors from this boot
+journalctl -b -p err
+
+# Show the status of a unit
+systemctl status <unit>
+
+# List failed units
+systemctl --failed
+
+# Find which package provides a file
+dnf provides <path>
+
+# Show the transactions dnf ran
+dnf history list
+
+# Check whether akmods has built the NVIDIA module for every kernel
+rpm -q kernel; ls /lib/modules/*/extra/nvidia* 2>/dev/null
+
+# Show the GPU's memory use and processes
+nvidia-smi
+
+# Show which process listens on a port
+ss -tlnp 'sport = :<port>'
+
+# Ping a host as a graph
+gping <host>
+
+# Show processes as a tree
+procs --tree
+
+# Show processes using the most memory
+procs --sortd mem | head -20
+
+$ unit: systemctl list-units --type=service --no-legend --plain --- --column 1 --delimiter ' '

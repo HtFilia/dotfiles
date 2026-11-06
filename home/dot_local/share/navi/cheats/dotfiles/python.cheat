@@ -1,0 +1,28 @@
+% python, uv
+
+# Create a project
+uv init <name>
+
+# Add a dependency
+uv add <package>
+
+# Add a development dependency
+uv add --dev <package>
+
+# Run a script in the project environment
+uv run <script>
+
+# Sync the environment with uv.lock
+uv sync
+
+# Run a tool once without installing it
+uvx <tool>
+
+# Check types with Pyrefly
+uv run pyrefly check
+
+# Pin the project's Python version
+uv python pin <version>
+
+$ script: fd --type f --extension py
+$ version: echo -e '3.14\n3.13\n3.12'

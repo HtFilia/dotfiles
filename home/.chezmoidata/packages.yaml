@@ -56,6 +56,7 @@ packages:
       # video previews.
       - poppler-utils
       - ffmpegthumbnailer
+      - navi
       # From Microsoft's repository, which the Fedora script configures.
       - code
     perso:

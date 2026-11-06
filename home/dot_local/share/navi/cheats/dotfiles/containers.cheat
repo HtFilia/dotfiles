@@ -1,0 +1,21 @@
+% podman, containers
+
+# List running containers
+podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+
+# Open a shell in a running container
+podman exec -it <container> sh
+
+# Follow a container's logs
+podman logs -f <container>
+
+# Run a throwaway Fedora container in the current directory
+podman run --rm -it -v "$PWD:/work:Z" -w /work registry.fedoraproject.org/fedora:44 bash
+
+# Remove stopped containers, unused images and build cache
+podman system prune
+
+# Show disk used by images, containers and volumes
+podman system df
+
+$ container: podman ps --format '{{.Names}}'

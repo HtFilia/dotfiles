@@ -136,6 +136,10 @@ if command -v fzf &>/dev/null; then
 fi
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+{{- if eq $osid "fedora" }}
+# Ctrl+G opens navi's cheat sheets, or completes the command being typed.
+command -v navi &>/dev/null && eval "$(navi widget zsh)"
+{{- end }}
 
 # Modern replacements that accept the original command's everyday arguments.
 # `command NAME` or `\NAME` runs the original. Icons appear only on a terminal,

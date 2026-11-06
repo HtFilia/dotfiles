@@ -1,0 +1,33 @@
+% git
+
+# Switch to a recent branch
+git switch <branch>
+
+# Create a branch and switch to it
+git switch -c <new_branch>
+
+# Undo the last commit, keeping its changes staged
+git reset --soft HEAD~1
+
+# Show a file as it was in another commit
+git show <commit>:<file>
+
+# Find the commit that introduced a string
+git log -S '<text>' --oneline
+
+# Diff by syntax with difftastic
+git dft <commit>
+
+# Log with syntax-aware diffs
+git dlg -n <count>
+
+# Delete local branches already merged into main
+git cleanup main
+
+# Rebase the current branch on main, interactively
+git rebase -i main
+
+$ branch: git branch --sort=-committerdate --format='%(refname:short)'
+$ commit: git log --oneline --color=always -n 50 --- --column 1 --ansi
+$ file: git ls-files
+$ count: echo 5

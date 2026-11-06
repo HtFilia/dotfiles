@@ -1,0 +1,27 @@
+% dotfiles, chezmoi
+
+# Show what chezmoi would change in the home directory
+chezmoi diff
+
+# Apply the dotfiles
+chezmoi apply
+
+# Bring back a file that an application rewrote
+chezmoi re-add <managed_file>
+
+# Edit a managed file in its source
+chezmoi edit <managed_file>
+
+# Open a shell in the dotfiles source
+chezmoi cd
+
+# Show the answers chezmoi recorded for this machine
+chezmoi data | jq '{profile, context, gaming}'
+
+# Refresh the pinned downloads (yazi, gping, fzf-tab...)
+chezmoi apply --refresh-externals
+
+# Check this machine against the dotfiles
+"$(chezmoi source-path)/../scripts/verify.sh"
+
+$ managed_file: chezmoi managed --include=files --path-style=absolute

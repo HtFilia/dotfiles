@@ -1,0 +1,20 @@
+# navi: cheat sheets searched with fzf, opened in zsh with Ctrl+G.
+# Colours are ANSI names, which Kitty maps to the Melange palette.
+style:
+  tag:
+    color: dark_yellow
+    width_percentage: 20
+    min_width: 16
+  comment:
+    color: cyan
+    width_percentage: 40
+    min_width: 40
+  snippet:
+    color: white
+
+finder:
+  command: fzf
+  overrides: --height 70%
+
+shell:
+  command: zsh
