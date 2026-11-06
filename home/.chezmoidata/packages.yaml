@@ -58,6 +58,7 @@ packages:
       - ffmpegthumbnailer
       - navi
       - difftastic
+      - procs
       # From Microsoft's repository, which the Fedora script configures.
       - code
     perso:
