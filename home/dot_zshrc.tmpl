@@ -330,6 +330,17 @@ export GOBIN="${GOBIN:-$GOPATH/bin}"
 command -v claude &>/dev/null && alias ai='claude' air='claude --resume'
 command -v tldr &>/dev/null && alias helpme='tldr'
 
+{{- if eq $osid "fedora" }}
+# fastfetch once per new Kitty window. Kitty starts each window from its own
+# environment, so the exported flag only stops nested shells, exec zsh and
+# editor terminals from showing it again.
+if [[ -n "${KITTY_WINDOW_ID:-}" && -z "${TMUX:-}${SSH_CONNECTION:-}${CLAUDECODE:-}${DOTFILES_FASTFETCH_SHOWN:-}" ]] &&
+  command -v fastfetch &>/dev/null; then
+  export DOTFILES_FASTFETCH_SHOWN=1
+  fastfetch
+fi
+{{- end }}
+
 # Final aliases, environment overrides and widgets for this machine.
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 # Syntax highlighting must be loaded after widgets from fzf, atuin and local config.
