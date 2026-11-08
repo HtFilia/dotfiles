@@ -11,6 +11,9 @@ packages:
     copr:
       - atim/starship
       - atim/lazygit
+      # Plasma appearance: Klassy window decoration and Bibata cursors.
+      - errornointernet/klassy
+      - peterwu/rendezvous
     common:
       - zsh
       - zsh-autosuggestions
@@ -68,6 +71,12 @@ packages:
       - ninja-build
       - clang-tools-extra
       - gdb
+      # Plasma appearance on top of the Melange Dark colour scheme.
+      - klassy
+      - bibata-cursor-themes
+      - papirus-icon-theme
+      - rsms-inter-fonts
+      - jetbrains-mono-fonts
     gaming:
       - gamemode
       - mangohud

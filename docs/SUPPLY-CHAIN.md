@@ -8,7 +8,7 @@ Nothing is piped from `curl` into a shell.
 
 | Machine | Sources |
 |---|---|
-| Fedora | Fedora repositories (including navi, difftastic and procs); COPR `atim/starship` and `atim/lazygit`; Microsoft's VS Code repository |
+| Fedora | Fedora repositories (including navi, difftastic and procs); COPR `atim/starship`, `atim/lazygit`, `errornointernet/klassy` and `peterwu/rendezvous` (Bibata cursors); Microsoft's VS Code repository |
 | Debian 13 | Official Debian repositories only: no added source, key or backports suite |
 | macOS | Homebrew |
 
