@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # Checks for a machine where `chezmoi init --apply` has just run: acceptance,
 # idempotence, ShellCheck on the scripts rendered for this machine, and the
-# zsh helpers. Used by tests/container.sh and by the macOS CI job.
+# zsh helpers. Used by tests/container.sh.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-for prefix in /opt/homebrew /usr/local; do
-  if [[ "$(uname -s)" == Darwin && -x "$prefix/bin/brew" ]]; then PATH="$prefix/bin:$PATH"; break; fi
-done
 export PATH
 step() { printf '\n== %s\n' "$*"; }
 

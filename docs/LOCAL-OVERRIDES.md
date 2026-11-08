@@ -101,8 +101,7 @@ in `~/.zshenv.local`.
 - Never put a secret in this repository, even in a template: it is public, and
   history keeps everything.
 - Keep tokens in the desktop keyring and read them when needed, for example
-  `secret-tool lookup service github account work` (libsecret) on Linux or
-  `security find-generic-password -s github -w` on macOS.
+  `secret-tool lookup service github account work` (libsecret).
 - No employer information in the repository: no host names, domains, proxies,
   internal repositories or internal tools. The `travail` context carries
   generic differences only; everything specific lives in the local files above.

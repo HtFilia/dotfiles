@@ -18,7 +18,6 @@ agent on first use, so the passphrase is asked once per session:
 
 - Fedora KDE starts an agent and sets `SSH_AUTH_SOCK` for the session.
 - Debian starts `ssh-agent` for graphical sessions through systemd.
-- macOS keeps the passphrase in the login keychain (`UseKeychain yes`).
 
 ```sh
 ssh-keygen -t ed25519 -f ~/.ssh/github -C "github $(hostname)"

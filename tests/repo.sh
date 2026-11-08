@@ -23,14 +23,10 @@ machines=(
   'debian workstation travail false false'
   'debian server perso false true'
   'debian server perso false false'
-  'darwin workstation perso false false'
 )
 for machine in "${machines[@]}"; do
   read -r os profile context gaming baseline <<<"$machine"
-  case "$os" in
-    darwin) facts='"os":"darwin","arch":"arm64"' ;;
-    *) facts="\"os\":\"linux\",\"arch\":\"amd64\",\"osRelease\":{\"id\":\"$os\",\"versionID\":\"$([[ $os == debian ]] && echo 13 || echo 44)\"}" ;;
-  esac
+  facts="\"os\":\"linux\",\"arch\":\"amd64\",\"osRelease\":{\"id\":\"$os\",\"versionID\":\"$([[ $os == debian ]] && echo 13 || echo 44)\"}"
   data="{\"chezmoi\":{$facts},\"profile\":\"$profile\",\"context\":\"$context\",\"gaming\":$gaming,\"systemBaseline\":$baseline}"
   render() { chezmoi --source "$root" execute-template --override-data "$data" <"$1"; }
   for template in home/run_*.tmpl; do
@@ -53,8 +49,8 @@ echo 'ok - .gitignore covers every local override file'
 step 'Dropped platforms are gone'
 # .chezmoiremove names the files those platforms left behind, and GitHub's
 # Linux runners are called ubuntu-latest.
-if git grep -nIiE 'ghostty|ubuntu|wsl|windows terminal|debian 12' -- . \
-    ':!docs/MIGRATION.md' ':!home/.chezmoiremove' ':!.github/workflows/ci.yml' ':!tests/repo.sh'; then
+if git grep -nIiE 'ghostty|ubuntu|wsl|windows terminal|debian 12|macos|darwin|homebrew' -- . \
+    ':!docs/MIGRATION.md' ':!docs/OVH-EMAIL.md' ':!home/.chezmoiremove' ':!.github/workflows/ci.yml' ':!tests/repo.sh'; then
   exit 1
 fi
 echo 'ok - no references outside the documented exceptions'

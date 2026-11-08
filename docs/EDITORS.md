@@ -18,7 +18,7 @@ parser installation are not automatically requested during ordinary startup.
 Configured servers enable only when their executable is available: Lua,
 BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, Bash and clangd. On the
 personal workstations the packages add a C++ compiler, CMake, Ninja, clangd
-and a debugger (gdb on Fedora, lldb from Apple's Command Line Tools);
+and a debugger (gdb);
 `setup-editor.sh cpp` adds the C, C++ and CMake parsers.
 
 ### Explicit provisioning
@@ -51,9 +51,8 @@ according to the formatter/server configuration; inspect `:checkhealth`,
 ## VS Code
 
 `settings.json` and `keybindings.json` are rendered from
-`home/.chezmoitemplates/` into `~/.config/Code/User` on Linux and
-`~/Library/Application Support/Code/User` on macOS. The repository installs
-VS Code on Fedora and macOS; on the Debian work workstation it deploys the
+`home/.chezmoitemplates/` into `~/.config/Code/User`. The repository installs
+VS Code on Fedora; on the Debian work workstation it deploys the
 settings only once `code` is on PATH. A setting changed in VS Code's UI changes
 the deployed copy: `chezmoi diff` shows it, and you port it into the template
 or keep it in a VS Code profile.

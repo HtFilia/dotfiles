@@ -10,7 +10,6 @@ Nothing is piped from `curl` into a shell.
 |---|---|
 | Fedora | Fedora repositories (including navi, difftastic and procs); COPR `atim/starship`, `atim/lazygit`, `errornointernet/klassy` and `peterwu/rendezvous` (Bibata cursors); Microsoft's VS Code repository |
 | Debian 13 | Official Debian repositories only: no added source, key or backports suite |
-| macOS | Homebrew |
 
 The Fedora package script downloads Microsoft's signing key, checks it
 against the SHA256 pinned in the script, and only then imports it and enables

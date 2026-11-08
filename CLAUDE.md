@@ -1,6 +1,7 @@
 # dotfiles
 
-chezmoi dotfiles for four machines; the source root is `home/`
+chezmoi dotfiles for three machines (Fedora workstation, Debian 13
+workstation, Debian 13 server); the source root is `home/`
 (`.chezmoiroot`), so files at the repository root, such as this one and
 `.claude/`, are never deployed. `README.md` and `docs/` explain each part.
 
@@ -10,4 +11,4 @@ chezmoi dotfiles for four machines; the source root is `home/`
 - Content in English; Conventional Commits (`feat:`, `fix:`, `docs:`,
   `test:`, `refactor:`, `chore:`).
 - Default branch `master`. Merge, push and `chezmoi apply` only when the user
-  asks; CI's macOS job has no runner and is expected to fail.
+  asks. Every CI job must pass.

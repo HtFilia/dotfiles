@@ -10,12 +10,6 @@ case "${1:-}" in
 esac
 
 PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-for prefix in /opt/homebrew /usr/local; do
-  if [[ "$(uname -s)" == Darwin && -x "$prefix/bin/brew" ]]; then
-    PATH="$prefix/bin:$prefix/sbin:$PATH:$prefix/opt/rustup/bin:$prefix/opt/llvm/bin"
-    break
-  fi
-done
 export PATH
 
 answers="$(chezmoi execute-template '{{ includeTemplate "osid" . }} {{ .profile }} {{ .context }} {{ .gaming }} {{ .systemBaseline }}' 2>/dev/null)" ||
@@ -43,7 +37,6 @@ if [[ "$profile" == workstation ]]; then
   case "$osid" in
     fedora) commands+=(podman podman-compose code yazi ya navi difft gping procs) ;;
     debian) commands+=(podman podman-compose) ;;
-    darwin) commands+=(docker colima code) ;;
   esac
   if [[ "$context" == perso && "$osid" != debian ]]; then
     commands+=(go c++ cmake ninja clangd)
@@ -78,27 +71,20 @@ check 'completion directories are safe' zsh -fc 'autoload -Uz compaudit; [[ -z "
 check 'Starship configuration' env TERM=xterm-256color STARSHIP_LOG=error starship prompt
 check 'bat Gruvbox theme' bash -c 'bat --list-themes | grep -qx gruvbox-dark'
 check 'Neovim meets the LazyVim minimum (0.11.2)' nvim --headless -u NONE '+lua if vim.fn.has("nvim-0.11.2") == 0 then vim.cmd("cquit 1") end' +qa
-if [[ "$osid" != darwin ]]; then
-  check 'tmux terminfo' infocmp -x tmux-256color
-fi
+check 'tmux terminfo' infocmp -x tmux-256color
 if [[ "$profile" == workstation ]]; then
   check 'Rust toolchain installed' cargo --version
-  if [[ "$osid" == darwin ]]; then
-    check 'Nerd Font symbols installed' brew list --cask font-symbols-only-nerd-font
-  elif available fc-list >/dev/null; then
+  if available fc-list >/dev/null; then
     check 'Nerd Font symbols available to other applications' bash -c 'fc-list : family | grep -q "Symbols Nerd Font Mono"'
   else
     check 'Nerd Font symbols declared to fontconfig' bash -c 'dir="$(sed -n "s:.*<dir>\(.*\)</dir>.*:\1:p" ~/.config/fontconfig/conf.d/50-kitty-symbols.conf)" && test -f "$dir/SymbolsNerdFontMono-Regular.ttf"'
   fi
   check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
-  if [[ "$osid" != darwin ]]; then
-    check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
-    check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
-    check 'User folders under ~/files' bash -c 'grep -qx "XDG_DOWNLOAD_DIR=\"\$HOME/files/downloads\"" ~/.config/user-dirs.dirs && test -d ~/files/downloads -a -d ~/files/docs -a -d ~/files/media'
-  fi
+  check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
+  check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
+  check 'User folders under ~/files' bash -c 'grep -qx "XDG_DOWNLOAD_DIR=\"\$HOME/files/downloads\"" ~/.config/user-dirs.dirs && test -d ~/files/downloads -a -d ~/files/docs -a -d ~/files/media'
   if available code >/dev/null 2>&1; then
-    if [[ "$osid" == darwin ]]; then settings="$HOME/Library/Application Support/Code/User/settings.json"; else settings="$HOME/.config/Code/User/settings.json"; fi
-    check 'VS Code settings deployed' test -f "$settings"
+    check 'VS Code settings deployed' test -f "$HOME/.config/Code/User/settings.json"
   fi
 fi
 if [[ "$osid" == debian ]]; then

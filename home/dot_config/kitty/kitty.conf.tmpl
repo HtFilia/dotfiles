@@ -48,7 +48,7 @@ inactive_tab_background  #211d1b
 active_border_color      #e49b5d
 inactive_border_color    #403a36
 
-# Window: translucent background, blurred on macOS and KDE Plasma.
+# Window: translucent background, blurred on KDE Plasma.
 background_opacity    0.97
 background_blur       12
 window_padding_width  14 16
@@ -57,13 +57,9 @@ scrollback_lines      100000
 mouse_hide_wait       -1
 copy_on_select        clipboard
 shell_integration     enabled
-{{- if eq .chezmoi.os "linux" }}
 # Open zsh even when the desktop session started before `chsh`: it keeps
 # SHELL=/bin/bash until the next login, and Kitty would start bash.
 shell                 zsh
-{{- end }}
-# Keep the right Option key available for accented characters on macOS.
-macos_option_as_alt   left
 
 # Shortcuts that differ from Kitty's defaults.
 enabled_layouts splits,stack

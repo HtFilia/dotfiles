@@ -5,7 +5,7 @@
 [![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Shell, Git, SSH, tmux, Kitty, Plasma colours, Neovim and VS Code configuration for four
+Shell, Git, SSH, tmux, Kitty, Plasma colours, Neovim and VS Code configuration for three
 machines, managed with [chezmoi](https://www.chezmoi.io/). chezmoi deploys the
 files, installs packages with each platform's package manager and downloads
 the few pinned binaries a platform lacks.
@@ -15,7 +15,6 @@ the few pinned binaries a platform lacks.
 | Personal workstation (development, games) | Fedora 44+, KDE Plasma | `workstation` | `perso`, gaming | dnf, COPR, Microsoft (VS Code), pinned GitHub releases |
 | Work workstation | Debian 13 | `workstation` | `travail` | Official apt repositories, pinned GitHub releases |
 | VPS | Debian 13, no desktop | `server` | `perso` | Official apt repositories, pinned GitHub releases |
-| Mac | macOS | `workstation` | `perso` | Homebrew |
 
 ## Install
 
@@ -49,18 +48,6 @@ sha256sum --check --ignore-missing "chezmoi_${version}_checksums.txt"
 echo "6e5827598cbfc02d132b04f95b5ea10efb5b79230e2a4a0e52df4af144a8ee9f  $archive" | sha256sum --check
 mkdir -p ~/.local/bin && tar -xzf "$archive" -C ~/.local/bin chezmoi
 ~/.local/bin/chezmoi init --apply HtFilia
-```
-
-### macOS
-
-Install the Xcode Command Line Tools (`xcode-select --install`) and Homebrew
-from its signed package on the
-[Homebrew releases page](https://github.com/Homebrew/brew/releases/latest), then:
-
-<!-- install:darwin -->
-```sh
-brew install chezmoi
-chezmoi init --apply HtFilia
 ```
 
 ### Questions and first steps
@@ -113,8 +100,8 @@ curl -fsSLO https://github.com/OWNER/TOOL/releases/download/vX.Y.Z/ARCHIVE
 sha256sum ARCHIVE    # must match the checksum file the project publishes
 ```
 
-The package manager upgrades packaged tools (`dnf upgrade`, `apt upgrade`,
-`brew upgrade`); [supply chain](docs/SUPPLY-CHAIN.md) lists what is pinned.
+The package manager upgrades packaged tools (`dnf upgrade`,
+`apt upgrade`); [supply chain](docs/SUPPLY-CHAIN.md) lists what is pinned.
 
 ## Repository map
 
@@ -148,6 +135,6 @@ tests/container.sh fedora-perso    # also debian-travail, debian-server, debian-
 
 Each run installs one machine from scratch in a Podman container with the
 commands above, checks it, applies again and expects no change; `--worktree`
-tests uncommitted changes. CI runs the four containers and a macOS install.
+tests uncommitted changes. CI runs the four containers.
 
 MIT licensed.

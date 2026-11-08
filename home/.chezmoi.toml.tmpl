@@ -5,11 +5,11 @@
 {{- if eq .chezmoi.os "linux" -}}
 {{-   $osid = .chezmoi.osRelease.id -}}
 {{- end -}}
-{{- if not (has $osid (list "fedora" "debian" "darwin")) -}}
-{{-   fail (printf "unsupported operating system %q: use Fedora, Debian 13 or macOS" $osid) -}}
+{{- if not (has $osid (list "fedora" "debian")) -}}
+{{-   fail (printf "unsupported operating system %q: use Fedora or Debian 13" $osid) -}}
 {{- end -}}
-{{- if and (eq .chezmoi.os "linux") (ne .chezmoi.arch "amd64") -}}
-{{-   fail "Linux machines must be x86_64" -}}
+{{- if ne .chezmoi.arch "amd64" -}}
+{{-   fail "machines must be x86_64" -}}
 {{- end -}}
 {{- if and (eq $osid "debian") (ne .chezmoi.osRelease.versionID "13") -}}
 {{-   fail "Debian 13 (trixie) is required" -}}

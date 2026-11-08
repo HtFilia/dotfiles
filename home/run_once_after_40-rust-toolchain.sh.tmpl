@@ -12,13 +12,8 @@ if [[ ! -x "$HOME/.cargo/bin/rustup" ]]; then
   rustup-init -y --no-modify-path --default-toolchain stable
 fi
 {{- else }}
-{{-   if eq $osid "darwin" }}
-
-rustup={{ ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}/opt/rustup/bin/rustup
-{{-   else }}
 
 rustup=rustup
-{{-   end }}
 if ! "$rustup" toolchain list 2>/dev/null | grep -q '^stable'; then
   echo "Installing the stable Rust toolchain in ~/.rustup."
   "$rustup" default stable

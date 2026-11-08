@@ -7,7 +7,6 @@ profile="$(chezmoi execute-template '{{ .profile }}')"
 source_status="$(git -C "$source_dir" status --porcelain)"
 failures=0
 created=()
-# macOS ships bash 3.2, where an empty array trips set -u.
 cleanup() { rm -rf ${created[@]+"${created[@]}"}; }
 trap cleanup EXIT
 # write FILE CONTENT: create a local override file and remember it.

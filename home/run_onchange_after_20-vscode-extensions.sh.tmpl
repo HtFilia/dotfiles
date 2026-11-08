@@ -1,14 +1,11 @@
 {{- $osid := includeTemplate "osid" . -}}
-{{- /* The repository installs VS Code on Fedora and macOS; on Debian it only
+{{- /* The repository installs VS Code on Fedora; on Debian it only
        configures a VS Code that is already installed. */ -}}
 {{- if and (eq .profile "workstation") (or (ne $osid "debian") (lookPath "code")) -}}
 #!/usr/bin/env bash
 # Install the VS Code extensions listed in .chezmoidata/packages.yaml that are
 # missing. No sudo.
 set -euo pipefail
-{{- if eq .chezmoi.os "darwin" }}
-PATH="{{ ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}/bin:$PATH"
-{{- end }}
 
 extensions=(
 {{- range $list := list "common" .context }}

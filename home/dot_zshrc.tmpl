@@ -3,12 +3,7 @@
 # ~/.zshrc.settings (read first) and ~/.zshrc.local (read last).
 # shellcheck disable=all
 {{- $osid := includeTemplate "osid" . }}
-{{- $brew := "" }}
-{{- if eq .chezmoi.os "darwin" }}
-{{-   $brew = ternary "/opt/homebrew" "/usr/local" (eq .chezmoi.arch "arm64") }}
-{{- end }}
 {{- $share := "/usr/share" }}
-{{- if $brew }}{{ $share = printf "%s/share" $brew }}{{ end }}
 
 # Inputs read before the integrations below: command-override flags, or
 # STARSHIP_CONFIG, RIPGREP_CONFIG_PATH and ATUIN_CONFIG_DIR pointing at a local
@@ -17,12 +12,6 @@
 
 typeset -U path PATH fpath
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" $path)
-{{- if $brew }}
-export HOMEBREW_PREFIX={{ $brew }}
-# rustup and llvm are keg-only; llvm comes last so Apple's clang stays first.
-path=("$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path "$HOMEBREW_PREFIX/opt/rustup/bin" "$HOMEBREW_PREFIX/opt/llvm/bin")
-fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
-{{- end }}
 {{- if eq $osid "fedora" }}
 # Completions for the pinned binaries of .chezmoiexternal (yazi, ya).
 fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
@@ -35,11 +24,7 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"
 export LESS="-R --mouse --wheel-lines=3"
-{{- if eq .chezmoi.os "darwin" }}
-export LANG="${LANG:-en_US.UTF-8}"
-{{- else }}
 export LANG="${LANG:-C.UTF-8}"
-{{- end }}
 # groff 1.23+ emits ANSI SGR codes that col -b cannot strip; -c restores overstrike.
 command -v bat &>/dev/null && command -v col &>/dev/null && export MANROFFOPT="-c" MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Kitty and tmux advertise true color; SSH need not forward COLORTERM.
@@ -70,7 +55,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # Source a file only if it and every parent directory belong to root or to
 # this user and are not writable by group or others. Distribution plugins
-# under /usr/share belong to root; Homebrew's belong to the user.
+# under /usr/share belong to root.
 zmodload -F zsh/stat b:zstat
 _dotfiles_safe_source() {
   local file="$1" directory
@@ -213,20 +198,10 @@ alias dnfrm='sudo dnf remove' dnfinfo='dnf info'
 alias aptup='sudo apt update && sudo apt upgrade'
 alias apti='sudo apt install' apts='apt search' aptrm='sudo apt remove'
 alias aptshow='apt show'
-{{- else if eq $osid "darwin" }}
-alias brewup='brew update && brew upgrade && brew cleanup'
-alias brewi='brew install' brews='brew search' brewrm='brew uninstall'
-alias brewinfo='brew info'
 {{- end }}
-{{- if eq .chezmoi.os "darwin" }}
-alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
-alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
-alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
-{{- else }}
 alias free='free -h' open='xdg-open' ip='ip -color=auto' diff='diff --color=auto'
 alias sc='systemctl' scu='systemctl --user' jcf='journalctl -fu'
 alias jcu='journalctl -u' jcb='journalctl -b'
-{{- end }}
 
 mkcd() { mkdir -p "$1" && cd "$1" || return; }
 extract() {

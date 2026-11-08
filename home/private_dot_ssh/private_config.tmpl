@@ -10,10 +10,5 @@ Host github.com
     IdentityFile {{ if eq .context "travail" }}~/.ssh/github_work{{ else }}~/.ssh/github{{ end }}
     IdentitiesOnly yes
     AddKeysToAgent yes
-{{- if eq .chezmoi.os "darwin" }}
-    # Apple's OpenSSH only; other builds skip the option.
-    IgnoreUnknown UseKeychain
-    UseKeychain yes
-{{- end }}
     PreferredAuthentications publickey
     PasswordAuthentication no

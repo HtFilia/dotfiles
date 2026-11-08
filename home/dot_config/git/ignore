@@ -1,7 +1,7 @@
 # Global ignores: operating system and editor files only. Build output,
 # dependencies, logs and secrets belong in each repository's .gitignore.
 
-# macOS Finder metadata
+# Finder metadata (archives and repositories made on a Mac)
 .DS_Store
 .DS_Store?
 ._*

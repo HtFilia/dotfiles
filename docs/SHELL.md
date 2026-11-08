@@ -6,7 +6,7 @@ and prints nothing, so noninteractive SSH commands can locate user-installed
 tools.
 
 `.zshrc` is a chezmoi template rendered for each machine. It reads
-`.zshrc.settings`, sets PATH (with Homebrew's prefix on macOS), pager, locale
+`.zshrc.settings`, sets PATH, pager, locale
 and history, checks completion permissions with compinit, loads the plugins,
 starts the integrations of installed tools, defines aliases and helpers, reads
 `.zshrc.local` and finally loads syntax highlighting. Every integration is
@@ -16,11 +16,9 @@ shell. uv completion is cached and regenerated when its executable changes.
 ## Plugins
 
 zsh-autosuggestions and zsh-syntax-highlighting come from packages: under
-`/usr/share` on Fedora and Debian, under Homebrew's `share` directory on macOS.
+`/usr/share` on Fedora and Debian.
 `.zshrc` sources a plugin only if the file and every parent directory belong
-to root or to you and are not writable by group or others. If Homebrew's
-directories are group-writable, `chmod -R go-w "$(brew --prefix)/share"`
-fixes both the plugins and compinit's warning.
+to root or to you and are not writable by group or others.
 
 ## Customize
 

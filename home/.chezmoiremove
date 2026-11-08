@@ -4,8 +4,6 @@
 # Ghostty configuration and its compiled terminfo entries.
 .config/ghostty/config.ghostty
 .config/ghostty/config
-Library/Application Support/com.mitchellh.ghostty/config
-Library/Application Support/com.mitchellh.ghostty/config.ghostty
 .terminfo/x/xterm-ghostty
 .terminfo/g/ghostty
 .terminfo/G/Ghostty

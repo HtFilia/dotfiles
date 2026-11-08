@@ -1,8 +1,6 @@
 {{- $osid := includeTemplate "osid" . -}}
 {{- $fedora := eq $osid "fedora" -}}
 {{- $debian := eq $osid "debian" -}}
-{{- $darwin := eq $osid "darwin" -}}
-{{- $linux := eq .chezmoi.os "linux" -}}
 {{- $workstation := eq .profile "workstation" -}}
 {{- /* gh, dust, hyperfine, yq, uv and rustup: everywhere but the Debian server. */ -}}
 {{- $dev := or (not $debian) $workstation -}}
@@ -10,7 +8,7 @@
 {{- $vscode := and $workstation (or (not $debian) (lookPath "code")) -}}
 # Tools on this machine
 
-chezmoi writes this file on every apply, for {{ if $fedora }}Fedora{{ else if $debian }}Debian 13{{ else }}macOS{{ end }}, profile
+chezmoi writes this file on every apply, for {{ if $fedora }}Fedora{{ else }}Debian 13{{ end }}, profile
 `{{ .profile }}`, context `{{ .context }}`{{ if .gaming }}, gaming{{ end }}. Its source is
 `~/.local/share/chezmoi/home/dot_claude/dotfiles-tools.md.tmpl`; change that,
 not this file.
@@ -52,10 +50,8 @@ not this file.
 | Shell scripts | `shellcheck`, `shfmt` | |
 | Secrets in a repository | `gitleaks` | |
 | GitHub Actions workflows | `actionlint` | |
-{{- if and $linux $workstation }}
+{{- if $workstation }}
 | Clipboard | `wl-copy`, `wl-paste` | Wayland{{ if $debian }}; `xclip` for X11{{ end }}. |
-{{- else if $darwin }}
-| Clipboard | `pbcopy`, `pbpaste` | |
 {{- end }}
 {{- if $fedora }}
 | Processes | `procs` | `procs NAME`, `procs --tree`, `procs --sortd mem`. `ps` stays the standard one. |
@@ -87,23 +83,15 @@ not this file.
 - Node.js: `node` and `npm`{{ if $fedora }} (Node 24){{ end }}.
 {{- if $native }}
 - Go: `go`, with binaries in `~/go/bin`.
-{{-   if $fedora }}
 - C and C++: gcc and g++, clangd, clang-format and clang-tidy, cmake, ninja,
   gdb.
-{{-   else }}
-- C and C++: Apple clang and lldb from the Command Line Tools; Homebrew's llvm
-  (keg-only, last on PATH) for clangd; cmake, ninja.
-{{-   end }}
 {{- end }}
 {{- if and $debian (not $workstation) }}
 - C and C++: build-essential (gcc, g++, make).
 {{- end }}
-{{- if and $workstation $linux }}
+{{- if $workstation }}
 - Containers: `podman` and `podman-compose`, rootless; there is no Docker.
   Use fully qualified image names such as `docker.io/library/debian:13`.
-{{- else if $darwin }}
-- Containers: the `docker` CLI with Compose and Buildx, served by Colima;
-  run `colima start` first.
 {{- end }}
 
 ## Editors and terminal
@@ -121,7 +109,7 @@ not this file.
 - Desktop: KDE Plasma on Wayland with the Melange Dark colour scheme, which
   matches the Kitty, tmux and Starship colours.
 {{- end }}
-{{- if and $workstation $linux }}
+{{- if $workstation }}
 - User folders live under `~/files`: `downloads`, `docs` and `media` (pictures,
   music and videos). There is no `~/Desktop`, `~/Documents` or `~/Downloads`;
   `xdg-user-dir DOWNLOAD` gives the download folder.
@@ -135,17 +123,15 @@ not this file.
 - dnf installs packages, with COPR for Starship, LazyGit, Klassy and Bibata
   cursors and Microsoft's repository for VS Code. Pinned GitHub releases add yazi and ya, gping
   (`~/.local/bin`) and fzf-tab (`~/.local/share/zsh/plugins`).
-{{- else if $debian }}
+{{- else }}
 - apt installs packages from the official Debian 13 repositories only. Pinned
   GitHub releases add what Debian lacks: chezmoi, nvim{{ if $workstation }}, uv, uvx, yq{{ end }} and
   actionlint.
-{{- else }}
-- Homebrew installs packages and casks.
 {{- end }}
 - To add a tool for good, add it to
   `~/.local/share/chezmoi/home/.chezmoidata/packages.yaml` and run
-  `chezmoi apply`; the package script installs only what is missing{{ if not $darwin }} and uses
-  sudo{{ end }}.
+  `chezmoi apply`; the package script installs only what is missing and uses
+  sudo.
 - chezmoi manages the dotfiles. Edit the sources in
   `~/.local/share/chezmoi/home` (`.tmpl` files are templates), check with
   `chezmoi diff`, deploy with `chezmoi apply`. `scripts/verify.sh` in that
@@ -166,8 +152,8 @@ not this file.
 | `vi`, `vim` | `nvim` |
 | `top` | `htop` |
 | `fd` | `fd --hidden --exclude .git` |
-| `grep`{{ if $linux }}, `diff`, `ip`{{ end }} | the same command with colour |
-| `df`, `du`{{ if $linux }}, `free`{{ end }} | human-readable sizes |
+| `grep`, `diff`, `ip` | the same command with colour |
+| `df`, `du`, `free` | human-readable sizes |
 | `g`, `gs`, `gd`, `gl`, `gco`, … | Git shortcuts |
 | `lg`, `ai`, `air` | LazyGit; Claude; Claude resuming a session |
 {{- if $fedora }}
@@ -178,11 +164,8 @@ not this file.
 {{- end }}
 {{- if $fedora }}
 | `dnfup`, `dnfi`, `dnfs`, `dnfrm`, `dnfinfo` | dnf upgrade, install, search, remove, info |
-{{- else if $debian }}
-| `aptup`, `apti`, `apts`, `aptrm`, `aptshow` | apt upgrade, install, search, remove, show |
 {{- else }}
-| `brewup`, `brewi`, `brews`, `brewrm`, `brewinfo` | brew upgrade, install, search, uninstall, info |
-| `d`, `dc`, `dps`, `dex`, `dlog` | Docker and Compose shortcuts |
+| `aptup`, `apti`, `apts`, `aptrm`, `aptshow` | apt upgrade, install, search, remove, show |
 {{- end }}
 
 `DOTFILES_ENABLE_COMMAND_OVERRIDES=1` in `~/.zshrc.settings` also maps `less`

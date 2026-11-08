@@ -5,7 +5,8 @@ description: Add, change or remove a tool, alias, package or config file in this
 
 # Change the dotfiles
 
-The repository sets up four machines (`chezmoi data`: profile, context,
+The repository sets up three machines (Fedora workstation, Debian 13
+workstation, Debian 13 server) (`chezmoi data`: profile, context,
 gaming). Decide first which machines a change targets; ask if unclear
 ("Fedora only?" is a common answer). The source root is `home/`
 (`.chezmoiroot`).
@@ -14,7 +15,7 @@ gaming). Decide first which machines a change targets; ask if unclear
 
 | Change | Where |
 |---|---|
-| Package from dnf, APT, Homebrew or COPR | `home/.chezmoidata/packages.yaml`, in the list for the right OS and profile/context/gaming |
+| Package from dnf, APT or COPR | `home/.chezmoidata/packages.yaml`, in the list for the right OS and profile/context/gaming |
 | Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum; add a row to `docs/SUPPLY-CHAIN.md` |
 | Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables) |
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
@@ -50,8 +51,7 @@ Run the container test for every machine the change touches.
 - Branch per change, Conventional Commits (`feat:`, `fix:`, `docs:`,
   `test:`, …).
 - Only when the user asks: merge into `master`, push, then watch CI with
-  `gh run watch`. The macOS job has no runner and is expected to fail; every
-  Linux scenario must pass.
+  `gh run watch`; every scenario must pass.
 - Then `chezmoi apply` on the current machine (it rewrites files in `~`
   without backups, so show `chezmoi diff` first) and `scripts/verify.sh`.
   Package changes need sudo: the user runs the apply when the package script

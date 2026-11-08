@@ -88,8 +88,6 @@ Package aliases follow the machine's package manager:
 |---|---|---|---|---|---|
 | Fedora | `dnfup` | `dnfi` | `dnfs` | `dnfrm` | `dnfinfo` |
 | Debian | `aptup` | `apti` | `apts` | `aptrm` | `aptshow` |
-| macOS | `brewup` | `brewi` | `brews` | `brewrm` | `brewinfo` |
 
-macOS also has `showfiles`, `hidefiles` and `flushdns`. Linux has `sc`, `scu`,
-`jcf`, `jcu`, `jcb` for systemd and journald, and `open` for xdg-open. `df`,
-`du` and Linux `free` use human units.
+`sc`, `scu`, `jcf`, `jcu` and `jcb` cover systemd and journald, and `open`
+runs xdg-open. `df`, `du` and `free` use human units.

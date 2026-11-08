@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Print the README install commands for one operating system, answering
 # chezmoi's questions and pointing it at another repository URL.
-# Usage: tests/readme-install.sh fedora|debian|darwin URL [CHEZMOI-INIT-FLAGS...]
+# Usage: tests/readme-install.sh fedora|debian URL [CHEZMOI-INIT-FLAGS...]
 # An empty URL keeps chezmoi on an existing source directory.
 set -euo pipefail
 os="${1:?operating system}"

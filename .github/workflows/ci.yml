@@ -28,26 +28,3 @@ jobs:
 
       - name: Install from scratch in a Podman container
         run: tests/container.sh "${{ matrix.scenario }}"
-
-  macos:
-    name: Install (macOS)
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Name the tested commit
-        run: git switch -c ci-test
-
-      - name: Install with the README commands
-        run: |
-          commands="$(tests/readme-install.sh darwin "file://$GITHUB_WORKSPACE" \
-            --promptChoice profile=workstation,context=perso)"
-          printf '%s\n' "$commands"
-          bash -euo pipefail -c "$commands"
-
-      - name: Check the machine
-        run: bash "$(chezmoi source-path)/../tests/machine.sh"

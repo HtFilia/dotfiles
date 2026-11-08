@@ -22,8 +22,7 @@ there is kept until the managed scheme changes.
 ## Fonts
 
 Fira Code is the font everywhere. Nerd Font symbols come from the font bundled
-with Kitty, shared with other applications on Linux through fontconfig and
-installed from Homebrew on macOS; see [Kitty and tmux](TERMINALS.md). SSH
+with Kitty, shared with other applications through fontconfig; see [Kitty and tmux](TERMINALS.md). SSH
 servers need no fonts.
 
 ## htop

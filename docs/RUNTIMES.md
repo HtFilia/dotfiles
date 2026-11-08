@@ -3,13 +3,13 @@
 Each machine gets one default version of a runtime from its package manager.
 Projects that need a specific version declare it in version-controlled files.
 
-| Runtime | Fedora | Debian 13 | macOS | Project control |
-|---|---|---|---|---|
-| Python | system `python3`, uv | `python3`; uv on the work workstation | uv | `pyproject.toml`, `uv.lock`, `.python-version` |
-| Node | `nodejs24` | `nodejs` 20 and `npm` | `node` | lockfile, `engines`, `packageManager` |
-| Go | `golang` | not installed | `go` | `go.mod`, including its `toolchain` line |
-| Rust | rustup, stable toolchain | rustup, stable toolchain (work workstation) | rustup, stable toolchain | `rust-toolchain.toml`, `Cargo.lock` |
-| C, C++ | g++, CMake, Ninja, clangd, gdb | not installed | Apple clang, CMake, Ninja, clangd, lldb | `CMakeLists.txt`, `compile_commands.json` |
+| Runtime | Fedora | Debian 13 | Project control |
+|---|---|---|---|
+| Python | system `python3`, uv | `python3`; uv on the work workstation | `pyproject.toml`, `uv.lock`, `.python-version` |
+| Node | `nodejs24` | `nodejs` 20 and `npm` | lockfile, `engines`, `packageManager` |
+| Go | `golang` | not installed | `go.mod`, including its `toolchain` line |
+| Rust | rustup, stable toolchain | rustup, stable toolchain (work workstation) | `rust-toolchain.toml`, `Cargo.lock` |
+| C, C++ | g++, CMake, Ninja, clangd, gdb | not installed | `CMakeLists.txt`, `compile_commands.json` |
 
 ## Python
 
