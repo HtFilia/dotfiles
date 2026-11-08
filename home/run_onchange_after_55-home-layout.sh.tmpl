@@ -1,0 +1,19 @@
+{{- if and (eq .chezmoi.os "linux") (eq .profile "workstation") -}}
+#!/usr/bin/env bash
+# Create the folders that ~/.config/user-dirs.dirs points to, and remove the
+# default ones it replaces when they are empty. A folder that still holds
+# files is left in place, with a note to move them. No sudo.
+# user-dirs.dirs: {{ include "dot_config/user-dirs.dirs" | sha256sum }}
+set -euo pipefail
+
+mkdir -p "$HOME/files/docs" "$HOME/files/downloads" "$HOME/files/media" "$HOME/.local/share/desktop"
+
+for old in Desktop Documents Downloads Music Pictures Public Templates Videos; do
+  dir="$HOME/$old"
+  [[ -d "$dir" && ! -L "$dir" ]] || continue
+  if [[ "$old" == Desktop && -f "$dir/.directory" && ! -e "$HOME/.local/share/desktop/.directory" ]]; then
+    mv "$dir/.directory" "$HOME/.local/share/desktop/"
+  fi
+  rmdir "$dir" 2>/dev/null || printf '%s is not empty: move its contents under %s, then remove it.\n' "$dir" "$HOME/files"
+done
+{{ end -}}

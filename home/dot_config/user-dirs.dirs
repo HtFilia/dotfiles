@@ -1,0 +1,10 @@
+# Managed by hand: xdg-user-dirs-update is disabled in user-dirs.conf.
+# "$HOME/" disables a directory.
+XDG_DESKTOP_DIR="$HOME/.local/share/desktop"
+XDG_DOWNLOAD_DIR="$HOME/files/downloads"
+XDG_DOCUMENTS_DIR="$HOME/files/docs"
+XDG_MUSIC_DIR="$HOME/files/media"
+XDG_PICTURES_DIR="$HOME/files/media"
+XDG_VIDEOS_DIR="$HOME/files/media"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_PUBLICSHARE_DIR="$HOME/"

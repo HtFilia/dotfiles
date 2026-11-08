@@ -121,6 +121,11 @@ not this file.
 - Desktop: KDE Plasma on Wayland with the Melange Dark colour scheme, which
   matches the Kitty, tmux and Starship colours.
 {{- end }}
+{{- if and $workstation $linux }}
+- User folders live under `~/files`: `downloads`, `docs` and `media` (pictures,
+  music and videos). There is no `~/Desktop`, `~/Documents` or `~/Downloads`;
+  `xdg-user-dir DOWNLOAD` gives the download folder.
+{{- end }}
 {{- if .gaming }}
 - Gaming: GameMode and MangoHud (`~/.config/MangoHud/MangoHud.conf`).
 {{- end }}

@@ -94,6 +94,7 @@ if [[ "$profile" == workstation ]]; then
   if [[ "$osid" != darwin ]]; then
     check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
     check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
+    check 'User folders under ~/files' bash -c 'grep -qx "XDG_DOWNLOAD_DIR=\"\$HOME/files/downloads\"" ~/.config/user-dirs.dirs && test -d ~/files/downloads -a -d ~/files/docs -a -d ~/files/media'
   fi
   if available code >/dev/null 2>&1; then
     if [[ "$osid" == darwin ]]; then settings="$HOME/Library/Application Support/Code/User/settings.json"; else settings="$HOME/.config/Code/User/settings.json"; fi

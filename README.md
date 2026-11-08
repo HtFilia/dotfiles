@@ -136,6 +136,7 @@ The package manager upgrades packaged tools (`dnf upgrade`, `apt upgrade`,
 [SSH](docs/SSH.md) · [Kitty and tmux](docs/TERMINALS.md) ·
 [Neovim and VS Code](docs/EDITORS.md) · [Runtimes](docs/RUNTIMES.md) ·
 [Keybindings](docs/KEYBINDINGS.md) · [Appearance](docs/VISUALS.md) ·
+[Home folders](docs/HOME-LAYOUT.md) ·
 [Supply chain](docs/SUPPLY-CHAIN.md) · [Debian VPS](docs/VPS-SERVER.md) ·
 [VPS email alerts](docs/OVH-EMAIL.md)
 

@@ -12,6 +12,8 @@ Library/**
 .local/bin/nvim
 {{- end }}
 {{- if eq .chezmoi.os "darwin" }}
+.config/user-dirs.dirs
+.config/user-dirs.conf
 .config/Code
 .config/Code/**
 .config/fontconfig
@@ -39,6 +41,8 @@ Library/**
 .config/MangoHud/**
 {{- end }}
 {{- if eq .profile "server" }}
+.config/user-dirs.dirs
+.config/user-dirs.conf
 .config/Code
 .config/Code/**
 .config/kitty
