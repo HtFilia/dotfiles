@@ -40,7 +40,8 @@ export LANG="${LANG:-en_US.UTF-8}"
 {{- else }}
 export LANG="${LANG:-C.UTF-8}"
 {{- end }}
-command -v bat &>/dev/null && command -v col &>/dev/null && export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+# groff 1.23+ emits ANSI SGR codes that col -b cannot strip; -c restores overstrike.
+command -v bat &>/dev/null && command -v col &>/dev/null && export MANROFFOPT="-c" MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Kitty and tmux advertise true color; SSH need not forward COLORTERM.
 [[ "$TERM" == xterm-kitty || "$TERM" == tmux-256color ]] && export COLORTERM=truecolor
 export BAT_THEME="gruvbox-dark"
