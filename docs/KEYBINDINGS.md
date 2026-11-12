@@ -97,7 +97,7 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Hide or show the fzf preview | `Ctrl-/` |
 | History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
-| Move forward one word | `Alt-f` |
+| Move back / forward one word | `Ctrl-←` / `Ctrl-→`, `Alt-←` / `Alt-→`, `Alt-b` / `Alt-f` |
 | Completion in fzf, with preview (Fedora) | `Tab` (fzf-tab) |
 | Previous / next completion group | `<` / `>` |
 | Cheat sheets (Fedora) | `Ctrl-g` (navi) |
