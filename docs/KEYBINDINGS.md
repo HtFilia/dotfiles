@@ -2,12 +2,12 @@
 
 ## tmux
 
-Prefix: **`Ctrl-a`**
+Prefix: **`Ctrl-b`**
 
 | Action | Keys |
 |---|---|
-| Split horizontal | `prefix` + `|` |
-| Split vertical | `prefix` + `-` |
+| Split side by side | `prefix` + `%` |
+| Split top / bottom | `prefix` + `"` |
 | New window | `prefix` + `c` |
 | Next / Prev window | `prefix` + `n` / `p` |
 | Window 1-5 (no prefix) | `Alt-1` … `Alt-5` |
