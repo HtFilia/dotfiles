@@ -1,7 +1,8 @@
 # Git configuration
 
 The default branch name is `main`. Neovim edits commit messages and merge files;
-delta pages diffs with the built-in Gruvbox syntax theme. Delta and Neovim must
+delta pages diffs with bat's `ansi` syntax theme, which takes its colours from
+the terminal palette (Dusk), on Dusk's soft sage and rose line backgrounds. Delta and Neovim must
 be available on PATH for these integrations.
 
 ## Daily behavior

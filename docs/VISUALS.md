@@ -13,8 +13,9 @@ Three files are generated from that palette and should not be edited by hand:
 `home/dot_config/kitty/dusk.conf` (Kitty) and
 `home/dot_config/nvim/lua/dusk_palette.lua` (Neovim's base16 colours). tmux,
 Starship, yazi, fzf, zsh suggestions and fastfetch carry the same hex values
-in their own configuration files. VS Code and the syntax highlighting in bat
-and delta keep Gruvbox Material.
+in their own configuration files. bat and delta highlight syntax with the
+terminal's ANSI colours (their `ansi` theme), so they follow Dusk too. VS Code
+keeps Gruvbox Material.
 
 ## Plasma
 

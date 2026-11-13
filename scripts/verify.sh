@@ -68,7 +68,7 @@ check 'Claude Code shells keep the standard ls, cat and cd' env CLAUDECODE=1 zsh
 check 'Claude Code tools reference deployed' test -f "$HOME/.claude/dotfiles-tools.md"
 check 'completion directories are safe' zsh -fc 'autoload -Uz compaudit; [[ -z "$(compaudit 2>/dev/null)" ]]'
 check 'Starship configuration' env TERM=xterm-256color STARSHIP_LOG=error starship prompt
-check 'bat Gruvbox theme' bash -c 'bat --list-themes | grep -qx gruvbox-dark'
+check 'bat ansi theme' bash -c 'bat --list-themes | grep -qx ansi'
 check 'Neovim meets the LazyVim minimum (0.11.2)' nvim --headless -u NONE '+lua if vim.fn.has("nvim-0.11.2") == 0 then vim.cmd("cquit 1") end' +qa
 check 'tmux terminfo' infocmp -x tmux-256color
 if [[ "$profile" == workstation ]]; then

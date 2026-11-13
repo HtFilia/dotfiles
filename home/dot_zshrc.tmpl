@@ -29,7 +29,8 @@ export LANG="${LANG:-C.UTF-8}"
 command -v bat &>/dev/null && command -v col &>/dev/null && export MANROFFOPT="-c" MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Kitty and tmux advertise true color; SSH need not forward COLORTERM.
 [[ "$TERM" == xterm-kitty || "$TERM" == tmux-256color ]] && export COLORTERM=truecolor
-export BAT_THEME="gruvbox-dark"
+# ansi: syntax colours from the terminal palette (Dusk in Kitty).
+export BAT_THEME="ansi"
 export RIPGREP_CONFIG_PATH="${RIPGREP_CONFIG_PATH:-$HOME/.config/ripgrep/config}"
 
 HISTFILE="$HOME/.zsh_history"

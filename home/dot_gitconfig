@@ -15,14 +15,20 @@
     navigate = true
     line-numbers = true
     side-by-side = false
-    syntax-theme = "gruvbox-dark"
+    # Syntax colours from the terminal palette (Dusk); line backgrounds are
+    # Dusk's soft sage and rose.
+    syntax-theme = "ansi"
+    plus-style = syntax "#2F3A32"
+    plus-emph-style = syntax "#3D5040"
+    minus-style = syntax "#45302E"
+    minus-emph-style = syntax "#5E3B39"
     features = decorations
 
 [delta "decorations"]
-    commit-decoration-style = "#7daea3 box ul"
-    file-style = bold "#d4be98"
-    file-decoration-style = "#7daea3 ul"
-    hunk-header-decoration-style = "#7daea3 box"
+    commit-decoration-style = "#AE9FDB box ul"
+    file-style = bold "#E4DDD6"
+    file-decoration-style = "#AE9FDB ul"
+    hunk-header-decoration-style = "#AE9FDB box"
 
 [merge]
     conflictstyle = zdiff3
