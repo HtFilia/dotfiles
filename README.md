@@ -59,9 +59,8 @@ server ([VPS](docs/VPS-SERVER.md#system-baseline)). Afterwards, run
 `chsh -s "$(command -v zsh)"` and put your Git identity in
 `~/.gitconfig.local` ([Git](docs/GIT.md)).
 
-With `gaming = true`, Fedora also gets GameMode and MangoHud with its overlay
-config. Steam comes from RPM Fusion's nonfree repository, which this
-repository does not add: enable RPM Fusion, then `sudo dnf install steam`.
+With `gaming = true`, Fedora also gets GameMode. Steam comes from RPM Fusion's
+nonfree repository, which this repository does not add: enable RPM Fusion, then `sudo dnf install steam`.
 
 ## Daily use
 

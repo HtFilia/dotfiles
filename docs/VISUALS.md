@@ -1,8 +1,8 @@
 # Melange appearance
 
-Melange is the palette of Kitty, tmux, Starship, fzf, zsh suggestions and the
-MangoHud overlay (and, on Fedora, of yazi, navi and fastfetch), and of the Plasma desktop on Linux workstations: pastel
-earth tones (clay, amber, sage, teal, lavender, rose) on a warm cocoa
+Melange is the palette of Kitty, tmux, Starship, fzf and zsh suggestions (and,
+on Fedora, of yazi, navi and fastfetch), and of the Plasma desktop on Linux
+workstations: pastel earth tones (clay, amber, sage, teal, lavender, rose) on a warm cocoa
 background, with text at 11.8:1 against it. The colours come from
 [melange-nvim](https://github.com/savq/melange-nvim). Each tool keeps its
 colours in its own configuration file; there is no theme switcher. Neovim,

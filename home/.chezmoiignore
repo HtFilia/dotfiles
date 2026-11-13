@@ -20,10 +20,6 @@
 {{- if or (ne $osid "fedora") (not .gaming) }}
 .local/share/dotfiles/starship-vram
 {{- end }}
-{{- if not .gaming }}
-.config/MangoHud
-.config/MangoHud/**
-{{- end }}
 {{- if eq .profile "server" }}
 .config/user-dirs.dirs
 .config/user-dirs.conf

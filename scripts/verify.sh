@@ -44,8 +44,7 @@ if [[ "$profile" == workstation ]]; then
   fi
 fi
 if [[ "$gaming" == true ]]; then
-  commands+=(mangohud gamemoded)
-  check 'MangoHud configuration deployed' test -f "$HOME/.config/MangoHud/MangoHud.conf"
+  commands+=(gamemoded)
 fi
 [[ "$profile" == server ]] && commands+=(ncdu ip ss dig ping ps)
 for tool in "${commands[@]}"; do

@@ -79,7 +79,6 @@ packages:
       - jetbrains-mono-fonts
     gaming:
       - gamemode
-      - mangohud
 
   debian:
     # Official Debian 13 repositories only.
