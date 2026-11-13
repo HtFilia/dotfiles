@@ -1,16 +1,21 @@
 return {
+  -- Dusk: base16 colours from lua/dusk_palette.lua, generated from the
+  -- Alpenglow & Dusk palette so the editor matches Kitty and tmux.
   {
-    "sainnhe/gruvbox-material",
-    commit = "11d779b26a9ab2b3db8c22c6ac9fb6e8ed4fea79",
+    "nvim-mini/mini.base16",
+    commit = "e1bb1cb70aa33dc7038cd79bb597325e51597fa1",
     lazy = false,
     priority = 1000,
-    config = function()
-      vim.o.background = "dark"
-      vim.g.gruvbox_material_background = "medium"
-      vim.g.gruvbox_material_foreground = "material"
-      vim.g.gruvbox_material_better_performance = 1
-      vim.cmd.colorscheme("gruvbox-material")
-    end,
+  },
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = function()
+        vim.o.background = "dark"
+        require("mini.base16").setup({ palette = require("dusk_palette"), use_cterm = true })
+        vim.g.colors_name = "dusk"
+      end,
+    },
   },
   {
     "mason-org/mason.nvim",

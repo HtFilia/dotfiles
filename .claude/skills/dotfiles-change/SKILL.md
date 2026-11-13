@@ -19,7 +19,7 @@ gaming). Decide first which machines a change targets; ask if unclear
 | Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum; add a row to `docs/SUPPLY-CHAIN.md` |
 | Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables) |
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
-| Plasma colours | `home/dot_local/share/color-schemes/MelangeDark.colors` |
+| Colours (Plasma, Kitty, nvim) | generated from the Alpenglow & Dusk palette: `Dusk.colors`, `kitty/dusk.conf`, `nvim/lua/dusk_palette.lua` are overwritten by the palette build, so change the palette; tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand |
 
 The repository is public: no secrets, host names or personal details, even
 in templates.

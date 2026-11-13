@@ -1,5 +1,5 @@
 # Native htop settings; delay is measured in tenths of a second.
-# Black Night uses the terminal palette and works with the dark Melange background.
+# Black Night uses the terminal palette, so htop follows Kitty's Dusk colours.
 color_scheme=5
 delay=5
 hide_kernel_threads=1

@@ -1,15 +1,15 @@
 {{- if and (eq .chezmoi.os "linux") (eq .profile "workstation") -}}
 #!/usr/bin/env bash
-# Apply the Melange Dark colour scheme to Plasma, and again whenever the scheme
+# Apply the Dusk colour scheme to Plasma, and again whenever the scheme
 # changes. Outside a Plasma session (another desktop, SSH, a container) it only
 # prints how to apply it later. No sudo.
-# MelangeDark.colors: {{ include "dot_local/share/color-schemes/MelangeDark.colors" | sha256sum }}
+# Dusk.colors: {{ include "dot_local/share/color-schemes/Dusk.colors" | sha256sum }}
 set -euo pipefail
-scheme=MelangeDark
+scheme=Dusk
 
 if ! command -v plasma-apply-colorscheme >/dev/null 2>&1 ||
   [[ "${XDG_CURRENT_DESKTOP:-}" != *KDE* || -z "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]]; then
-  echo "No Plasma session: choose Melange Dark in System Settings > Colours & Themes > Colours."
+  echo "No Plasma session: choose Dusk in System Settings > Colours & Themes > Colours."
   exit 0
 fi
 

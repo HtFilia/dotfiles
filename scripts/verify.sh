@@ -80,7 +80,7 @@ if [[ "$profile" == workstation ]]; then
   fi
   check 'Kitty configuration loads' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; load_config(os.path.join(config_dir, "kitty.conf"))'
   check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
-  check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/MelangeDark.colors"
+  check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/Dusk.colors"
   check 'User folders under ~/files' bash -c 'grep -qx "XDG_DOWNLOAD_DIR=\"\$HOME/files/downloads\"" ~/.config/user-dirs.dirs && test -d ~/files/downloads -a -d ~/files/docs -a -d ~/files/media'
   if available code >/dev/null 2>&1; then
     check 'VS Code settings deployed' test -f "$HOME/.config/Code/User/settings.json"

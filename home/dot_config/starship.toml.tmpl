@@ -1,8 +1,8 @@
 {{- $osid := includeTemplate "osid" . -}}
-# A compact two-line prompt in the Melange palette, matching Kitty and tmux.
+# A compact two-line prompt in the Dusk palette, matching Kitty and tmux.
 add_newline = true
 command_timeout = 500
-format = "[┌─](bold #867462)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #867462)$character"
+format = "[┌─](bold #7C736D)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #7C736D)$character"
 {{- if eq $osid "fedora" }}
 right_format = "$jobs$status$direnv$python$nodejs$rust$golang$cmd_duration${custom.tmux}${custom.load}{{ if .gaming }}${custom.vram}{{ end }}"
 {{- else }}
@@ -12,29 +12,29 @@ right_format = "$python$nodejs$rust$golang$cmd_duration"
 [username]
 show_always = false
 format = "[$user]($style)@"
-style_user = "#c1a78e"
+style_user = "#C9C0B8"
 
 [hostname]
 ssh_only = true
 format = "[$hostname]($style) "
-style = "#a3a9ce"
+style = "#8FAFD3"
 
 [directory]
 format = "[ $path]($style)[$read_only]($read_only_style) "
-style = "bold #e49b5d"
+style = "bold #AE9FDB"
 read_only = " "
-read_only_style = "#ebc06d"
+read_only_style = "#D9B26F"
 truncation_length = 3
 truncate_to_repo = true
 truncation_symbol = "…/"
 
 [git_branch]
 format = "[│ $branch]($style) "
-style = "#89b3b6"
+style = "#86B8B4"
 
 [git_status]
 format = "([$all_status$ahead_behind]($style) )"
-style = "#ebc06d"
+style = "#D9B26F"
 conflicted = "=${count}"
 ahead = "⇡${count}"
 behind = "⇣${count}"
@@ -48,40 +48,40 @@ deleted = "✘${count}"
 [cmd_duration]
 min_time = 2_000
 format = "[· $duration]($style) "
-style = "#c1a78e"
+style = "#C9C0B8"
 
 [python]
 format = "[py $version]($style) "
-style = "#ebc06d"
+style = "#D9B26F"
 
 [nodejs]
 format = "[node $version]($style) "
-style = "#85b695"
+style = "#8FB39A"
 
 [rust]
 format = "[rs $version]($style) "
-style = "#d47766"
+style = "#E08C8C"
 
 [golang]
 format = "[go $version]($style) "
-style = "#89b3b6"
+style = "#86B8B4"
 
 [character]
-success_symbol = "[❯](bold #85b695)"
-error_symbol = "[✗](bold #d47766)"
-vimcmd_symbol = "[❮](bold #a3a9ce)"
+success_symbol = "[❯](bold #8FB39A)"
+error_symbol = "[✗](bold #E08C8C)"
+vimcmd_symbol = "[❮](bold #8FAFD3)"
 {{- if eq $osid "fedora" }}
 
 [jobs]
 symbol = "\uf013 "
 format = "[$symbol$number]($style) "
-style = "#cf9bc2"
+style = "#D9A0A0"
 
 [status]
 disabled = false
 format = "[$symbol$status]($style) "
 symbol = "\u2718 "
-style = "#d47766"
+style = "#E08C8C"
 
 [direnv]
 disabled = false
@@ -92,7 +92,7 @@ unloaded_msg = " off"
 allowed_msg = ""
 not_allowed_msg = " blocked"
 denied_msg = " denied"
-style = "#ebc06d"
+style = "#D9B26F"
 
 # Custom modules run through sh rather than STARSHIP_SHELL (zsh), which
 # starts more slowly.
@@ -101,14 +101,14 @@ when = 'test -n "$TMUX"'
 command = "tmux display-message -p '#S'"
 shell = ["sh"]
 format = "[\uebc8 $output]($style) "
-style = "#89b3b6"
+style = "#86B8B4"
 
 [custom.load]
 when = true
 command = "cut -d' ' -f1 /proc/loadavg"
 shell = ["sh"]
 format = "[\uf4bc $output]($style) "
-style = "#867462"
+style = "#7C736D"
 {{-   if .gaming }}
 
 [custom.vram]
@@ -116,6 +116,6 @@ when = true
 command = "~/.local/share/dotfiles/starship-vram"
 shell = ["sh"]
 format = "[\U000F08AE $output]($style) "
-style = "#85b695"
+style = "#8FB39A"
 {{-   end }}
 {{- end }}

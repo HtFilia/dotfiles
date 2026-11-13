@@ -71,7 +71,7 @@ packages:
       - ninja-build
       - clang-tools-extra
       - gdb
-      # Plasma appearance on top of the Melange Dark colour scheme.
+      # Plasma appearance on top of the Dusk colour scheme.
       - klassy
       - bibata-cursor-themes
       - papirus-icon-theme

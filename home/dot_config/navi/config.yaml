@@ -1,5 +1,5 @@
 # navi: cheat sheets searched with fzf, opened in zsh with Ctrl+G.
-# Colours are ANSI names, which Kitty maps to the Melange palette.
+# Colours are ANSI names, which Kitty maps to the Dusk palette.
 style:
   tag:
     color: dark_yellow

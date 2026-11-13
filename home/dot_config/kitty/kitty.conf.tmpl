@@ -1,5 +1,5 @@
 # ~/.config/kitty/kitty.conf
-# Kitty terminal: Melange palette, Fira Code, splits.
+# Kitty terminal: Dusk palette, Fira Code, splits.
 # Kitty bundles the Nerd Font symbols used by Starship and eza.
 
 # Font
@@ -12,41 +12,13 @@ font_size        12.0
 # the proportional Symbols Nerd Font takes the other icons.
 symbol_map       U+E000-U+F8FF,U+F0001-U+F1AF0 Symbols Nerd Font Mono
 
-# Melange dark palette (github.com/savq/melange-nvim): pastel earth tones on
-# warm cocoa, text at 11.8:1 against the background.
-foreground            #ece1d7
-background            #292522
-cursor                #ebc06d
-cursor_text_color     #292522
-selection_foreground  #ece1d7
-selection_background  #403a36
-url_color             #a3a9ce
-color0   #34302c
-color1   #bd8183
-color2   #78997a
-color3   #e49b5d
-color4   #7f91b2
-color5   #b380b0
-color6   #7b9695
-color7   #c1a78e
-color8   #867462
-color9   #d47766
-color10  #85b695
-color11  #ebc06d
-color12  #a3a9ce
-color13  #cf9bc2
-color14  #89b3b6
-color15  #ece1d7
+# Dusk palette (lavender and dusk rose on warm charcoal): colours, tabs and
+# split borders come from dusk.conf, generated from the Alpenglow & Dusk
+# palette. Edit the palette, not that file.
+include dusk.conf
 
-# Tabs and split borders follow the tmux status line.
+# Tabs on top, coloured like the tmux status line.
 tab_bar_edge             top
-tab_bar_background       #211d1b
-active_tab_foreground    #292522
-active_tab_background    #e49b5d
-inactive_tab_foreground  #867462
-inactive_tab_background  #211d1b
-active_border_color      #e49b5d
-inactive_border_color    #403a36
 
 # Window: translucent background, blurred on KDE Plasma.
 background_opacity    0.97

@@ -7,7 +7,7 @@ tmux owns sessions, panes and processes that must survive a disconnect.
 ## Kitty
 
 `~/.config/kitty/kitty.conf` sets Fira Code 12 with stylistic set 1, the
-Melange palette, a 97 % opaque background blurred on KDE Plasma,
+Dusk palette, a 97 % opaque background blurred on KDE Plasma,
 100 000 lines of scrollback, copy on select and shell integration. Kitty draws
 Nerd Font symbols from its bundled font, so no patched font is installed;
 `symbol_map` pins the icon codepoints to it, so that no other installed font

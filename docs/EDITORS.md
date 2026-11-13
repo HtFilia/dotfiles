@@ -13,7 +13,8 @@ deployed `lazy-lock.json`; `chezmoi diff` then shows the new lock, and
 `chezmoi re-add ~/.config/nvim/lazy-lock.json` brings it into the repository
 after review.
 
-The active theme is Gruvbox Material. Mason tool installation and Treesitter
+The active theme is Dusk, drawn by `mini.base16` from `lua/dusk_palette.lua`
+(see [Dusk appearance](VISUALS.md)). Mason tool installation and Treesitter
 parser installation are not automatically requested during ordinary startup.
 Configured servers enable only when their executable is available: Lua,
 BasedPyright/Ruff, Go, Rust, TypeScript/JavaScript, Bash and clangd. On the
