@@ -40,3 +40,7 @@
 .config/Code
 .config/Code/**
 {{- end }}
+{{- if or (ne (includeTemplate "osid" .) "fedora") (ne .profile "workstation") }}
+.local/share/boot-theme
+.local/share/boot-theme/**
+{{- end }}
