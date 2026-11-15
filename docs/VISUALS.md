@@ -32,7 +32,7 @@ until the managed scheme changes.
 
 On the Fedora workstation the boot loader menu and the boot splash share one
 scene, Dusk Ridge: a plum-to-peach dusk sky behind two ridges. GRUB shows it
-with a translucent menu panel on the right; Plymouth shows it with a glow that
+with a translucent menu panel on the right, drawn at 4K; Plymouth draws it once per monitor, each at its own size, with a glow that
 rises as the system boots, a thin progress line and twinkling stars.
 
 The sources are in `scripts/boot-art/` (`scene.svg`, `sky.svg`, `ridges.svg`,
@@ -44,7 +44,7 @@ sunset gradient. `chezmoi apply` deploys the files to
 
 - `run_onchange_after_60-grub-theme.sh.tmpl` installs the theme into
   `/boot/grub2/themes/dusk-ridge`, generates the Inter fonts, sets `gfxterm`,
-  `GRUB_THEME` and a 1080p `GRUB_GFXMODE` in `/etc/default/grub`, and runs
+  `GRUB_THEME` and a 4K `GRUB_GFXMODE` (1080p as fallback) in `/etc/default/grub`, and runs
   `grub2-mkconfig`.
 - `run_onchange_after_65-plymouth-theme.sh.tmpl` installs the Plymouth theme
   into `/usr/share/plymouth/themes/dusk-ridge`, makes it the default and

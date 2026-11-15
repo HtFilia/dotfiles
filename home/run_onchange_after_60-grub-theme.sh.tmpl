@@ -25,9 +25,10 @@ trap 'rm -rf "$work"' EXIT
 cp "$source_dir"/* "$work"/
 # Inter, falling back to whatever fontconfig matches; the family names are
 # fixed by -n so theme.txt does not depend on the font chosen.
-grub2-mkfont -s 44 -n "Dusk Title" -o "$work/title-44.pf2" "$(font_file 'Inter:style=SemiBold')" 2>/dev/null
-grub2-mkfont -s 28 -n "Dusk Item" -o "$work/item-28.pf2" "$(font_file 'Inter:style=Regular')" 2>/dev/null
-grub2-mkfont -s 24 -n "Dusk Item" -o "$work/item-24.pf2" "$(font_file 'Inter:style=Regular')" 2>/dev/null
+latin=0x0020-0x007e,0x00a0-0x017f,0x2010-0x2026
+grub2-mkfont -r "$latin" -s 88 -n "Dusk Title" -o "$work/title-88.pf2" "$(font_file 'Inter:style=SemiBold')" 2>/dev/null
+grub2-mkfont -r "$latin" -s 56 -n "Dusk Item" -o "$work/item-56.pf2" "$(font_file 'Inter:style=Regular')" 2>/dev/null
+grub2-mkfont -r "$latin" -s 48 -n "Dusk Item" -o "$work/item-48.pf2" "$(font_file 'Inter:style=Regular')" 2>/dev/null
 
 echo "sudo: install the theme into $theme_dir"
 sudo rm -rf "$theme_dir"
@@ -44,7 +45,7 @@ set_grub_default() { # key value: replace or append in /etc/default/grub
 echo "sudo: point /etc/default/grub at the theme"
 set_grub_default GRUB_TERMINAL_OUTPUT '"gfxterm"'
 set_grub_default GRUB_THEME "\"$theme_dir/theme.txt\""
-set_grub_default GRUB_GFXMODE '"1920x1080,auto"'
+set_grub_default GRUB_GFXMODE '"3840x2160,1920x1080,auto"'
 set_grub_default GRUB_GFXPAYLOAD_LINUX keep
 
 echo "sudo: regenerate grub.cfg"

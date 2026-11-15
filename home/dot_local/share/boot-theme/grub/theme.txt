@@ -1,34 +1,35 @@
-# Dusk Ridge: GRUB theme for a 1920x1080 screen. The panel is drawn into
-# background.png; the fonts (Dusk Title, Dusk Item) are generated from Inter
-# when the install script runs.
+# Dusk Ridge: GRUB theme for a 4K screen (3840x2160). Positions are
+# percentages, so the layout holds at any resolution; only the text keeps its
+# 4K size. The panel is drawn into background.png; the fonts (Dusk Title,
+# Dusk Item) are generated from Inter when the install script runs.
 desktop-image: "background.png"
 desktop-color: "#2D2A38"
 title-text: ""
-terminal-font: "Dusk Item Regular 24"
+terminal-font: "Dusk Item Regular 48"
 
 + label {
-  left = 1000
-  top = 235
-  width = 760
-  height = 60
+  left = 52%
+  top = 21%
+  width = 40%
+  height = 7%
   text = "FEDORA 44"
-  font = "Dusk Title Regular 44"
+  font = "Dusk Title Regular 88"
   color = "#F7D9CC"
   align = "left"
 }
 
 + boot_menu {
-  left = 981
-  top = 340
-  width = 800
-  height = 440
-  item_font = "Dusk Item Regular 28"
+  left = 51%
+  top = 31%
+  width = 41%
+  height = 41%
+  item_font = "Dusk Item Regular 56"
   item_color = "#D8CBC4"
-  selected_item_font = "Dusk Item Regular 28"
+  selected_item_font = "Dusk Item Regular 56"
   selected_item_color = "#2D2A28"
-  item_height = 56
-  item_padding = 20
-  item_spacing = 10
+  item_height = 112
+  item_padding = 40
+  item_spacing = 20
   icon_width = 0
   icon_height = 0
   item_icon_space = 0
@@ -38,12 +39,12 @@ terminal-font: "Dusk Item Regular 24"
 
 + label {
   id = "__timeout__"
-  left = 1000
-  top = 820
-  width = 760
-  height = 40
+  left = 52%
+  top = 75%
+  width = 40%
+  height = 5%
   text = "Booting in %d s"
-  font = "Dusk Item Regular 24"
+  font = "Dusk Item Regular 48"
   color = "#D8CBC4"
   align = "left"
 }

@@ -1,85 +1,116 @@
 # Dusk Ridge boot splash. Layers, back to front: sky, stars, glow, ridges,
 # progress line. The glow rises with boot progress; the stars twinkle.
+# The scene is drawn once per monitor, at that monitor's own position and
+# size, so any layout (side by side, portrait, mirrored) is fully covered.
 # Sizes are in "artwork units": 1 unit = 1 pixel of the 1920x1080 scene,
-# scaled so the scene fits the smaller dimension of the screen.
+# scaled so the scene fits the smaller dimension of the monitor.
 
 Window.SetBackgroundTopColor(0.227, 0.200, 0.314);
 Window.SetBackgroundBottomColor(0.902, 0.718, 0.651);
 
-screen_width = Window.GetWidth();
-screen_height = Window.GetHeight();
-unit = Math.Min(screen_width / 1920, screen_height / 1080);
-
-sky = Sprite(Image("sky.png").Scale(screen_width, screen_height));
-sky.SetPosition(0, 0, 0);
-
-# Stars: x and y as fractions of the screen, and a size in artwork units.
+# Stars: x and y as fractions of the monitor, and a size in artwork units.
 star_x = [0.11, 0.24, 0.38, 0.07, 0.46, 0.60, 0.75, 0.88, 0.68];
 star_y = [0.14, 0.08, 0.19, 0.31, 0.11, 0.15, 0.09, 0.22, 0.30];
 star_size = [10, 8, 10, 8, 8, 9, 8, 10, 8];
-star_image = Image("star.png");
 star_count = 9;
-for (i = 0; i < star_count; i++) {
-  star_scaled = star_image.Scale(star_size[i] * unit, star_size[i] * unit);
-  star[i] = Sprite(star_scaled);
-  star[i].SetPosition(star_x[i] * screen_width, star_y[i] * screen_height, 5);
-  star[i].SetOpacity(0.2);
-}
 
-# Glow: its centre rests 440 units above the bottom edge, left of centre,
-# and starts 260 units lower, hidden behind the ridges.
-glow_size = 1120 * unit;
-glow = Sprite(Image("glow.png").Scale(glow_size, glow_size));
-glow_x = screen_width * 0.333 - glow_size / 2;
-glow_rest_y = screen_height - 440 * unit - glow_size / 2;
-glow.SetPosition(glow_x, glow_rest_y + 260 * unit, 10);
-glow.SetOpacity(0.2);
-
-ridge_height = 640 * unit;
-ridges = Sprite(Image("ridges.png").Scale(screen_width, ridge_height));
-ridges.SetPosition(0, screen_height - ridge_height, 30);
-
-# Progress line, centred, 600 units wide, a little above the bottom edge.
-bar_width = 600 * unit;
-bar_height = Math.Max(4, 6 * unit);
-bar_x = (screen_width - bar_width) / 2;
-bar_y = screen_height - 120 * unit;
-bar_track = Sprite(Image("bar-track.png").Scale(bar_width, bar_height));
-bar_track.SetPosition(bar_x, bar_y, 40);
+star_image = Image("star.png");
+sky_image = Image("sky.png");
+ridges_image = Image("ridges.png");
+glow_image = Image("glow.png");
+bar_track_image = Image("bar-track.png");
 bar_fill_image = Image("bar-fill.png");
-bar_fill = Sprite(bar_fill_image.Scale(1, bar_height));
-bar_fill.SetPosition(bar_x, bar_y, 41);
+
+# At most 8 monitors; a monitor index past the last one has no width.
+head_count = 0;
+while (head_count < 8 && Window.GetWidth(head_count)) head_count++;
+if (head_count == 0) head_count = 1;
+
+for (head = 0; head < head_count; head++) {
+  head_x[head] = Window.GetX(head);
+  head_y[head] = Window.GetY(head);
+  head_w[head] = Window.GetWidth(head);
+  head_h[head] = Window.GetHeight(head);
+  if (!head_w[head]) {
+    head_x[head] = 0;
+    head_y[head] = 0;
+    head_w[head] = Window.GetWidth();
+    head_h[head] = Window.GetHeight();
+  }
+  unit[head] = Math.Min(head_w[head] / 1920, head_h[head] / 1080);
+
+  sky[head] = Sprite(sky_image.Scale(head_w[head], head_h[head]));
+  sky[head].SetPosition(head_x[head], head_y[head], 0);
+
+  for (i = 0; i < star_count; i++) {
+    size = star_size[i] * unit[head];
+    s = head * star_count + i;
+    star[s] = Sprite(star_image.Scale(size, size));
+    star[s].SetPosition(head_x[head] + star_x[i] * head_w[head], head_y[head] + star_y[i] * head_h[head], 5);
+    star[s].SetOpacity(0.2);
+  }
+
+  # Glow: its centre rests 440 units above the bottom edge, left of centre,
+  # and starts 260 units lower, hidden behind the ridges.
+  glow_size[head] = 1120 * unit[head];
+  glow[head] = Sprite(glow_image.Scale(glow_size[head], glow_size[head]));
+  glow_x[head] = head_x[head] + head_w[head] * 0.333 - glow_size[head] / 2;
+  glow_rest_y[head] = head_y[head] + head_h[head] - 440 * unit[head] - glow_size[head] / 2;
+  glow[head].SetPosition(glow_x[head], glow_rest_y[head] + 260 * unit[head], 10);
+  glow[head].SetOpacity(0.2);
+
+  ridge_height = 640 * unit[head];
+  ridges[head] = Sprite(ridges_image.Scale(head_w[head], ridge_height));
+  ridges[head].SetPosition(head_x[head], head_y[head] + head_h[head] - ridge_height, 30);
+
+  # Progress line, centred, 600 units wide, a little above the bottom edge.
+  bar_w[head] = 600 * unit[head];
+  bar_h[head] = Math.Max(4, 6 * unit[head]);
+  bar_x[head] = head_x[head] + (head_w[head] - bar_w[head]) / 2;
+  bar_y[head] = head_y[head] + head_h[head] - 120 * unit[head];
+  bar_track[head] = Sprite(bar_track_image.Scale(bar_w[head], bar_h[head]));
+  bar_track[head].SetPosition(bar_x[head], bar_y[head], 40);
+  bar_fill[head] = Sprite(bar_fill_image.Scale(1, bar_h[head]));
+  bar_fill[head].SetPosition(bar_x[head], bar_y[head], 41);
+  last_fill_width[head] = 1;
+}
 
 boot_progress = 0;
 shown_progress = 0;
 frame = 0;
-last_fill_width = 1;
 
 fun boot_progress_callback(time, progress) {
   global.boot_progress = progress;
 }
 Plymouth.SetBootProgressFunction(boot_progress_callback);
 
-# Called about 50 times a second. The line follows the real progress but never
-# stands still: a slow clock moves it up to 85 % if progress is not reported.
+# Called about 50 times a second. Moving a full-screen glow and many stars on
+# every call is heavy at 4K without a GPU, so the scene updates every third
+# call (about 17 times a second), which still reads as smooth for slow motion.
+# The line follows the real progress but never stands still: a slow clock moves
+# it up to 85 % if progress is not reported.
 fun refresh_callback() {
   global.frame = global.frame + 1;
+  if (Math.Int(global.frame / 3) * 3 != global.frame) return;
+
   target = Math.Max(global.boot_progress, Math.Min(0.85, global.frame / 500));
-  global.shown_progress = global.shown_progress + (target - global.shown_progress) * 0.04;
+  global.shown_progress = global.shown_progress + (target - global.shown_progress) * 0.12;
   shown = global.shown_progress;
 
-  glow.SetPosition(glow_x, glow_rest_y + 260 * unit * (1 - shown), 10);
-  glow.SetOpacity(0.2 + 0.8 * shown);
+  for (head = 0; head < head_count; head++) {
+    glow[head].SetPosition(glow_x[head], glow_rest_y[head] + 260 * unit[head] * (1 - shown), 10);
+    glow[head].SetOpacity(0.2 + 0.8 * shown);
 
-  fill_width = Math.Int(bar_width * shown);
-  if (fill_width < 1) fill_width = 1;
-  if (fill_width != global.last_fill_width) {
-    bar_fill.SetImage(bar_fill_image.Scale(fill_width, bar_height));
-    global.last_fill_width = fill_width;
-  }
+    fill_width = Math.Int(bar_w[head] * shown / 4) * 4;
+    if (fill_width < 4) fill_width = 4;
+    if (fill_width != global.last_fill_width[head]) {
+      bar_fill[head].SetImage(bar_fill_image.Scale(fill_width, bar_h[head]));
+      global.last_fill_width[head] = fill_width;
+    }
 
-  for (i = 0; i < star_count; i++) {
-    star[i].SetOpacity(0.15 + 0.75 * (0.5 + 0.5 * Math.Sin(global.frame * 0.06 + i * 1.3)));
+    for (i = 0; i < star_count; i++) {
+      star[head * star_count + i].SetOpacity(0.15 + 0.75 * (0.5 + 0.5 * Math.Sin(global.frame * 0.06 + i * 1.3)));
+    }
   }
 }
 Plymouth.SetRefreshFunction(refresh_callback);
