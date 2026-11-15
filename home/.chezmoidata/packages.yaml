@@ -77,6 +77,8 @@ packages:
       - papirus-icon-theme
       - rsms-inter-fonts
       - jetbrains-mono-fonts
+      # Plymouth boot splash (the Dusk Ridge theme) uses the script module.
+      - plymouth-plugin-script
     gaming:
       - gamemode
 

@@ -1,0 +1,85 @@
+# Dusk Ridge boot splash. Layers, back to front: sky, stars, glow, ridges,
+# progress line. The glow rises with boot progress; the stars twinkle.
+# Sizes are in "artwork units": 1 unit = 1 pixel of the 1920x1080 scene,
+# scaled so the scene fits the smaller dimension of the screen.
+
+Window.SetBackgroundTopColor(0.227, 0.200, 0.314);
+Window.SetBackgroundBottomColor(0.902, 0.718, 0.651);
+
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+unit = Math.Min(screen_width / 1920, screen_height / 1080);
+
+sky = Sprite(Image("sky.png").Scale(screen_width, screen_height));
+sky.SetPosition(0, 0, 0);
+
+# Stars: x and y as fractions of the screen, and a size in artwork units.
+star_x = [0.11, 0.24, 0.38, 0.07, 0.46, 0.60, 0.75, 0.88, 0.68];
+star_y = [0.14, 0.08, 0.19, 0.31, 0.11, 0.15, 0.09, 0.22, 0.30];
+star_size = [10, 8, 10, 8, 8, 9, 8, 10, 8];
+star_image = Image("star.png");
+star_count = 9;
+for (i = 0; i < star_count; i++) {
+  star_scaled = star_image.Scale(star_size[i] * unit, star_size[i] * unit);
+  star[i] = Sprite(star_scaled);
+  star[i].SetPosition(star_x[i] * screen_width, star_y[i] * screen_height, 5);
+  star[i].SetOpacity(0.2);
+}
+
+# Glow: its centre rests 440 units above the bottom edge, left of centre,
+# and starts 260 units lower, hidden behind the ridges.
+glow_size = 1120 * unit;
+glow = Sprite(Image("glow.png").Scale(glow_size, glow_size));
+glow_x = screen_width * 0.333 - glow_size / 2;
+glow_rest_y = screen_height - 440 * unit - glow_size / 2;
+glow.SetPosition(glow_x, glow_rest_y + 260 * unit, 10);
+glow.SetOpacity(0.2);
+
+ridge_height = 640 * unit;
+ridges = Sprite(Image("ridges.png").Scale(screen_width, ridge_height));
+ridges.SetPosition(0, screen_height - ridge_height, 30);
+
+# Progress line, centred, 600 units wide, a little above the bottom edge.
+bar_width = 600 * unit;
+bar_height = Math.Max(4, 6 * unit);
+bar_x = (screen_width - bar_width) / 2;
+bar_y = screen_height - 120 * unit;
+bar_track = Sprite(Image("bar-track.png").Scale(bar_width, bar_height));
+bar_track.SetPosition(bar_x, bar_y, 40);
+bar_fill_image = Image("bar-fill.png");
+bar_fill = Sprite(bar_fill_image.Scale(1, bar_height));
+bar_fill.SetPosition(bar_x, bar_y, 41);
+
+boot_progress = 0;
+shown_progress = 0;
+frame = 0;
+last_fill_width = 1;
+
+fun boot_progress_callback(time, progress) {
+  global.boot_progress = progress;
+}
+Plymouth.SetBootProgressFunction(boot_progress_callback);
+
+# Called about 50 times a second. The line follows the real progress but never
+# stands still: a slow clock moves it up to 85 % if progress is not reported.
+fun refresh_callback() {
+  global.frame = global.frame + 1;
+  target = Math.Max(global.boot_progress, Math.Min(0.85, global.frame / 500));
+  global.shown_progress = global.shown_progress + (target - global.shown_progress) * 0.04;
+  shown = global.shown_progress;
+
+  glow.SetPosition(glow_x, glow_rest_y + 260 * unit * (1 - shown), 10);
+  glow.SetOpacity(0.2 + 0.8 * shown);
+
+  fill_width = Math.Int(bar_width * shown);
+  if (fill_width < 1) fill_width = 1;
+  if (fill_width != global.last_fill_width) {
+    bar_fill.SetImage(bar_fill_image.Scale(fill_width, bar_height));
+    global.last_fill_width = fill_width;
+  }
+
+  for (i = 0; i < star_count; i++) {
+    star[i].SetOpacity(0.15 + 0.75 * (0.5 + 0.5 * Math.Sin(global.frame * 0.06 + i * 1.3)));
+  }
+}
+Plymouth.SetRefreshFunction(refresh_callback);

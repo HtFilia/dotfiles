@@ -1,0 +1,35 @@
+{{- if and (eq (includeTemplate "osid" .) "fedora") (eq .profile "workstation") -}}
+#!/usr/bin/env bash
+# Install the Dusk Ridge Plymouth boot splash and make it the default theme.
+# Runs again when the theme files change. The steps marked "sudo" write to
+# /usr/share/plymouth/themes and rebuild the initramfs, which takes about a
+# minute; the change shows at the next boot. Needs plymouth-plugin-script,
+# which the package script installs.
+{{- range $file := list "dusk-ridge.plymouth" "dusk-ridge.script" "sky.png" "ridges.png" "glow.png" "star.png" "bar-track.png" "bar-fill.png" }}
+# {{ $file }}: {{ include (printf "dot_local/share/boot-theme/plymouth/%s" $file) | sha256sum }}
+{{- end }}
+set -euo pipefail
+source_dir="$HOME/.local/share/boot-theme/plymouth"
+theme_dir=/usr/share/plymouth/themes/dusk-ridge
+
+if ! command -v plymouth-set-default-theme >/dev/null 2>&1 || [[ ! -e /usr/lib64/plymouth/script.so ]]; then
+  echo "Plymouth theme: plymouth or plymouth-plugin-script is missing; skipped."
+  exit 0
+fi
+
+echo "sudo: install the theme into $theme_dir"
+sudo rm -rf "$theme_dir"
+sudo install -d -m 755 "$theme_dir"
+sudo install -m 644 "$source_dir"/* "$theme_dir"/
+
+echo "sudo: make it the default theme and rebuild the initramfs (about a minute)"
+sudo plymouth-set-default-theme -R dusk-ridge
+
+initramfs="/boot/initramfs-$(uname -r).img"
+if sudo lsinitrd "$initramfs" 2>/dev/null | grep -q 'plymouth/themes/dusk-ridge/dusk-ridge.script'; then
+  echo "Plymouth theme installed and found in $initramfs; it shows at the next boot."
+else
+  echo "Warning: the theme is not in $initramfs; do not reboot before checking." >&2
+  exit 1
+fi
+{{ end -}}

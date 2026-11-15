@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Dusk Ridge
+Description=A dusk sky where the glow rises behind two ridges as the system boots, with twinkling stars.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/dusk-ridge
+ScriptFile=/usr/share/plymouth/themes/dusk-ridge/dusk-ridge.script

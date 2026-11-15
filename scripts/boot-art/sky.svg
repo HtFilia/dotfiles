@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4" height="1080" viewBox="0 0 4 1080">
+  <!-- Dusk Ridge sky: plum to mauve to peach, stretched to the screen. -->
+  <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3A3350"/><stop offset="0.55" stop-color="#9A6F86"/><stop offset="1" stop-color="#E6B7A6"/>
+  </linearGradient></defs>
+  <rect width="4" height="1080" fill="url(#s)"/>
+</svg>

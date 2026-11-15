@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="640" viewBox="0 0 1920 640">
+  <!-- The two ridges of scene.svg (its bottom 640 px), on a transparent sky. -->
+  <path d="M0 640 L0 260 L215 100 L375 220 L595 0 L835 260 L1030 160 L1190 300 L1500 200 L1920 320 L1920 640 Z" fill="#4A3F5C"/>
+  <path d="M0 640 L0 390 L280 260 L480 390 L715 210 L930 400 L1190 320 L1500 420 L1920 360 L1920 640 Z" fill="#2D2A38"/>
+</svg>

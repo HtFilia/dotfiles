@@ -24,4 +24,15 @@ crop e 12x24+36+12
 crop sw 12x12+0+36
 crop s 24x12+12+36
 crop se 12x12+36+36
-echo "Boot artwork written to $out"
+
+# Plymouth layers: sky, ridges and glow from their SVGs, plus a star and the
+# progress line (a track and its fill) drawn here.
+plymouth="$here/../../home/dot_local/share/boot-theme/plymouth"
+mkdir -p "$plymouth"
+rsvg-convert "$here/sky.svg" -o "$plymouth/sky.png"
+rsvg-convert "$here/ridges.svg" -o "$plymouth/ridges.png"
+rsvg-convert "$here/glow.svg" -o "$plymouth/glow.png"
+magick -size 16x16 radial-gradient:'#FFF4EC-rgba(247,217,204,0)' -define png:color-type=6 "$plymouth/star.png"
+magick -size 600x6 xc:none -fill '#F7D9CC' -draw 'roundrectangle 0,0 599,5 3,3' -channel A -evaluate multiply 0.2 +channel "$plymouth/bar-track.png"
+magick -size 600x6 xc:none -fill '#E6B7A6' -draw 'roundrectangle 0,0 599,5 3,3' "$plymouth/bar-fill.png"
+echo "Boot artwork written to $out and $plymouth"
