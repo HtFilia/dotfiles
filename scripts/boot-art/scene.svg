@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <!-- Dusk Ridge: dusk sky (plum to peach), glow behind two ridges, and the
+       translucent panel that holds the GRUB menu. Colours are Dusk values
+       carried by hand; the sky is the sunset gradient chosen from the lookbook. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A3350"/>
+      <stop offset="0.55" stop-color="#9A6F86"/>
+      <stop offset="1" stop-color="#E6B7A6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="640" cy="640" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7D9CC" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F7D9CC" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <g fill="#F7D9CC" opacity="0.55">
+    <circle cx="210" cy="150" r="2"/><circle cx="470" cy="90" r="1.5"/><circle cx="720" cy="210" r="2"/>
+    <circle cx="130" cy="330" r="1.5"/><circle cx="880" cy="120" r="1.5"/><circle cx="340" cy="260" r="1.5"/>
+  </g>
+  <path d="M0 1080 L0 700 L215 540 L375 660 L595 440 L835 700 L1030 600 L1190 740 L1500 640 L1920 760 L1920 1080 Z" fill="#4A3F5C"/>
+  <path d="M0 1080 L0 830 L280 700 L480 830 L715 650 L930 840 L1190 760 L1500 860 L1920 800 L1920 1080 Z" fill="#2D2A38"/>
+  <rect x="941" y="180" width="883" height="720" rx="28" fill="#24211F" fill-opacity="0.62"
+        stroke="#E6B7A6" stroke-opacity="0.25" stroke-width="2"/>
+</svg>
