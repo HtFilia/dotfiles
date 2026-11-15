@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Repository-wide checks: workflow lint, secret scan, ShellCheck on the
-# repository scripts and on the package scripts rendered for every machine,
+# Repository-wide checks: workflow lint, secret scan, ShellCheck and shfmt on
+# the repository scripts, ShellCheck and on the package scripts rendered for every machine,
 # and zsh syntax of each rendered .zshrc. tests/container.sh runs it on
 # Fedora, where chezmoi installs actionlint, gitleaks and ShellCheck.
 set -euo pipefail
@@ -15,7 +15,9 @@ step 'Secret scan of the whole history'
 gitleaks git --redact --no-banner
 
 step 'Repository scripts'
-shellcheck scripts/*.sh tests/*.sh
+shellcheck scripts/*.sh scripts/boot-art/*.sh tests/*.sh
+# Formatting follows .editorconfig (two spaces, indented case branches).
+shfmt -d scripts tests
 
 step 'Templates rendered for each machine'
 machines=(
@@ -40,9 +42,12 @@ done
 
 step 'Local override files cannot be committed'
 for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/private_config.local \
-    home/dot_config/kitty/kitty.d/screen.conf home/dot_config/nvim/lua/config/local.lua \
-    home/dot_config/nvim/lua/plugins/local.lua; do
-  git check-ignore -q "$path" || { printf 'not ignored: %s\n' "$path"; exit 1; }
+  home/dot_config/kitty/kitty.d/screen.conf home/dot_config/nvim/lua/config/local.lua \
+  home/dot_config/nvim/lua/plugins/local.lua; do
+  git check-ignore -q "$path" || {
+    printf 'not ignored: %s\n' "$path"
+    exit 1
+  }
 done
 echo 'ok - .gitignore covers every local override file'
 
@@ -50,7 +55,7 @@ step 'Dropped platforms are gone'
 # .chezmoiremove names the files those platforms left behind, and GitHub's
 # Linux runners are called ubuntu-latest.
 if git grep -nIiE 'ghostty|ubuntu|wsl|windows terminal|debian 12|macos|darwin|homebrew' -- . \
-    ':!docs/MIGRATION.md' ':!docs/OVH-EMAIL.md' ':!home/.chezmoiremove' ':!.github/workflows/ci.yml' ':!tests/repo.sh'; then
+  ':!docs/MIGRATION.md' ':!docs/OVH-EMAIL.md' ':!home/.chezmoiremove' ':!.github/workflows/ci.yml' ':!tests/repo.sh'; then
   exit 1
 fi
 echo 'ok - no references outside the documented exceptions'

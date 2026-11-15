@@ -76,4 +76,4 @@ mv "$htoprc.orig" "$htoprc"
 
 check 'chezmoi diff stays empty with local overrides' '' "$(chezmoi diff --no-pager)"
 check 'git status of the source checkout is unchanged' "$source_status" "$(git -C "$source_dir" status --porcelain)"
-(( failures == 0 ))
+((failures == 0))

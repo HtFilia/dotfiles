@@ -8,7 +8,10 @@
 #   --keep      leave the container running for inspection
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-usage() { sed -n '4,8s/^# \{0,1\}//p' "$0" >&2; exit 2; }
+usage() {
+  sed -n '4,8s/^# \{0,1\}//p' "$0" >&2
+  exit 2
+}
 worktree=0
 keep=0
 while [[ "${1:-}" == --* ]]; do
@@ -23,16 +26,20 @@ scenario="${1:-}"
 case "$scenario" in
   fedora-perso)
     base=registry.fedoraproject.org/fedora:44 os=fedora
-    answers=(--promptChoice 'profile=workstation,context=perso' --promptBool gaming=true) ;;
+    answers=(--promptChoice 'profile=workstation,context=perso' --promptBool gaming=true)
+    ;;
   debian-travail)
     base=docker.io/library/debian:trixie os=debian
-    answers=(--promptChoice 'profile=workstation,context=travail') ;;
+    answers=(--promptChoice 'profile=workstation,context=travail')
+    ;;
   debian-server)
     base=docker.io/library/debian:trixie os=debian
-    answers=(--promptChoice 'profile=server,context=perso' --promptBool systemBaseline=false) ;;
+    answers=(--promptChoice 'profile=server,context=perso' --promptBool systemBaseline=false)
+    ;;
   debian-server-baseline)
     base=docker.io/library/debian:trixie os=debian
-    answers=(--promptChoice 'profile=server,context=perso' --promptBool systemBaseline=true) ;;
+    answers=(--promptChoice 'profile=server,context=perso' --promptBool systemBaseline=true)
+    ;;
   *) usage ;;
 esac
 
@@ -55,7 +62,7 @@ podman build -q -t "$image" "$build" >/dev/null
 rm -rf "$build"
 
 name="dotfiles-$scenario-$$"
-cleanup() { (( keep )) || podman rm -f "$name" >/dev/null 2>&1 || true; }
+cleanup() { ((keep)) || podman rm -f "$name" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 podman run -d --name "$name" --systemd=always --security-opt label=disable \
   -v "$root:/src:ro" "$image" >/dev/null
@@ -66,7 +73,7 @@ as_tester() {
     -e PATH=/home/tester/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin \
     "$name" "$@"
 }
-if (( worktree )); then
+if ((worktree)); then
   install="mkdir -p ~/.local/share && ln -s /src ~/.local/share/chezmoi"$'\n'
   install+="$("$root/tests/readme-install.sh" "$os" "" "${answers[@]}")"
 else
@@ -98,5 +105,5 @@ if [[ "$scenario" == fedora-perso ]]; then
   # shellcheck disable=SC2016
   as_tester bash -c 'exec bash "$(chezmoi source-path)/../tests/repo.sh"'
 fi
-(( keep )) && printf 'Container kept: podman exec -it -u tester %s bash\n' "$name"
+((keep)) && printf 'Container kept: podman exec -it -u tester %s bash\n' "$name"
 printf '== %s passed\n' "$scenario"

@@ -8,7 +8,10 @@ failures=0
 check() {
   local label="$1" detail="$2"
   shift 2
-  if "$@"; then printf 'ok - %s\n' "$label"; else printf 'FAIL - %s (%s)\n' "$label" "$detail"; failures=$((failures + 1)); fi
+  if "$@"; then printf 'ok - %s\n' "$label"; else
+    printf 'FAIL - %s (%s)\n' "$label" "$detail"
+    failures=$((failures + 1))
+  fi
 }
 
 # Print a function definition from the deployed ~/.zshrc.
@@ -49,10 +52,10 @@ check 'git mergetool quotes file names' "nvim received $arguments" \
 repository
 hidden=()
 for path in Cargo.lock .python-version .vscode/tasks.json vendor/code.go target/debug/app \
-    build.log coverage/index.html env/bin/python lib.so a.out; do
+  build.log coverage/index.html env/bin/python lib.so a.out; do
   git -C "$work/repo" check-ignore -q "$path" && hidden+=("$path")
 done
 check 'the global ignore leaves project files, build output and logs to each project' "hidden: ${hidden[*]:-}" \
   test "${#hidden[@]}" -eq 0
 
-(( failures == 0 ))
+((failures == 0))

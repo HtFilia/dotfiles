@@ -4,16 +4,25 @@
 # recorded for it. Exits nonzero when a required tool or file is missing.
 set -uo pipefail
 case "${1:-}" in
-  -h|--help) printf 'Usage: %s\nChecks the tools and files that chezmoi manages on this machine.\n' "$0"; exit 0 ;;
+  -h | --help)
+    printf 'Usage: %s\nChecks the tools and files that chezmoi manages on this machine.\n' "$0"
+    exit 0
+    ;;
   '') ;;
-  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 1 ;;
+  *)
+    printf 'Unknown argument: %s\n' "$1" >&2
+    exit 1
+    ;;
 esac
 
 PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export PATH
 
 answers="$(chezmoi execute-template '{{ includeTemplate "osid" . }} {{ .profile }} {{ .context }} {{ .gaming }} {{ .systemBaseline }}' 2>/dev/null)" ||
-  { printf 'chezmoi has no answers for this machine; run chezmoi init first.\n' >&2; exit 1; }
+  {
+    printf 'chezmoi has no answers for this machine; run chezmoi init first.\n' >&2
+    exit 1
+  }
 read -r osid profile context gaming baseline <<<"$answers"
 printf 'Machine: %s, %s, %s, gaming=%s, systemBaseline=%s\n' "$osid" "$profile" "$context" "$gaming" "$baseline"
 
@@ -113,4 +122,4 @@ if [[ "$baseline" == true ]]; then
 fi
 
 printf '%s verification failure(s).\n' "$failures"
-(( failures == 0 ))
+((failures == 0))
