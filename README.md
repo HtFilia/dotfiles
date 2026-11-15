@@ -2,7 +2,7 @@
 
 ![Project overview — Lucas Lebihan, Quantitative Engineer](docs/assets/project-header.png)
 
-[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
+[![CI](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/HtFilia/dotfiles/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Shell, Git, SSH, tmux, Kitty, Plasma colours, Neovim and VS Code configuration for three

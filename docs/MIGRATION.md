@@ -26,7 +26,9 @@ tar -chzf "$backup/home.tar.gz" -T "$backup/paths.txt"
 ```sh
 git -C "$old" status --short          # must print nothing
 git -C "$old" remote set-url origin https://github.com/HtFilia/dotfiles.git
-git -C "$old" switch master && git -C "$old" pull --ff-only
+git -C "$old" fetch origin
+git -C "$old" switch master && git -C "$old" branch -m main   # the default branch was renamed
+git -C "$old" branch -u origin/main && git -C "$old" pull --ff-only
 mkdir -p ~/.local/share && mv "$old" ~/.local/share/chezmoi
 chezmoi init                          # answers: see below
 chezmoi diff                          # review everything before applying

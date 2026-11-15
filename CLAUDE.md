@@ -14,7 +14,7 @@ workstation, Debian 13 server); the source root is `home/`
   `[ ] { } | \ ~` (see Decisions).
 - Content in English; Conventional Commits (`feat:`, `fix:`, `docs:`,
   `test:`, `refactor:`, `chore:`).
-- Default branch `master`. Merge, push and `chezmoi apply` only when the user
+- Default branch `main`. Merge, push and `chezmoi apply` only when the user
   asks. Every CI job must pass.
 
 ## Decisions
@@ -23,7 +23,7 @@ workstation, Debian 13 server); the source root is `home/`
 |---|---|---|
 | 2026-11-15 | Bindings are AZERTY-compatible in every tool, installed now or later; broken ones are fixed, and `tests/repo.sh` lints for them. "No digit row" means the digits only: `(`, `)`, `-`, `=` and `"` are unshifted and allowed. `(` and `)` replace the `[` / `]` prefixes in Neovim and LazyGit. Scope: what the repository binds, the defaults `docs/KEYBINDINGS.md` teaches, and core actions with no other key; not Vim's own grammar. | The digits need Shift and the brackets AltGr on the author's keyboard. |
 | 2026-11-15 | No advice to put a passphrase on SSH keys. | The author does not want one yet. |
-| 2026-11-15 | The default branch becomes `main` here and in webfolio. | Coherent with `init.defaultBranch` and `git cleanup`. |
+| 2026-11-15 | The default branch is `main` here and in webfolio (renamed from `master`). | Coherent with `init.defaultBranch` and `git cleanup`. |
 | 2026-11-15 | atuin and direnv are removed; fzf's Ctrl-R searches the history. | Unused: no sync server, no `.envrc` in any project. |
 | 2026-11-15 | Language servers are installed by uv, rustup, npm and the package manager, pinned; Mason and `scripts/setup-editor.sh` go. Python uses Pyrefly and Ruff. | One pinned install path instead of an unpinned registry. |
 | 2026-11-15 | gitleaks runs in a pre-commit hook of this repository only (`.githooks`), enabled by `chezmoi apply`; never a global hook. | Catch a secret before it is pushed, without touching other repositories. |

@@ -60,7 +60,7 @@ Run the container test for every machine the change touches.
 
 - Branch per change, Conventional Commits (`feat:`, `fix:`, `docs:`,
   `test:`, …).
-- Only when the user asks: merge into `master`, push, then watch CI with
+- Only when the user asks: merge into `main`, push, then watch CI with
   `gh run watch`; every scenario must pass.
 - Then `chezmoi apply` on the current machine (it rewrites files in `~`
   without backups, so show `chezmoi diff` first) and `scripts/verify.sh`.
