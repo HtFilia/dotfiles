@@ -6,9 +6,29 @@ workstation, Debian 13 server); the source root is `home/`
 `.claude/`, are never deployed. `README.md` and `docs/` explain each part.
 
 - Changes: follow the `dotfiles-change` skill (`.claude/skills/`).
-- The repository is public: no secrets, host names or personal details, even
-  in templates. `tests/repo.sh` runs gitleaks over the history.
+- The repository is public: no secrets, host names or employer details, even
+  in templates. The author's name and site in the README header are
+  deliberate. `tests/repo.sh` runs gitleaks over the history.
+- Every key binding the repository configures, in any tool, must be typable
+  on a French AZERTY keyboard without the digit row and without
+  `[ ] { } | \ ~` (see Decisions).
 - Content in English; Conventional Commits (`feat:`, `fix:`, `docs:`,
   `test:`, `refactor:`, `chore:`).
 - Default branch `master`. Merge, push and `chezmoi apply` only when the user
   asks. Every CI job must pass.
+
+## Decisions
+
+| Date | Decision | Reason |
+|---|---|---|
+| 2026-11-15 | Bindings are AZERTY-compatible in every tool, installed now or later; broken ones are fixed, and `tests/repo.sh` lints for them. | The digits need Shift and the brackets AltGr on the author's keyboard. |
+| 2026-11-15 | No advice to put a passphrase on SSH keys. | The author does not want one yet. |
+| 2026-11-15 | The default branch becomes `main` here and in webfolio. | Coherent with `init.defaultBranch` and `git cleanup`. |
+| 2026-11-15 | atuin and direnv are removed; fzf's Ctrl-R searches the history. | Unused: no sync server, no `.envrc` in any project. |
+| 2026-11-15 | Language servers are installed by uv, rustup, npm and the package manager, pinned; Mason and `scripts/setup-editor.sh` go. Python uses Pyrefly and Ruff. | One pinned install path instead of an unpinned registry. |
+| 2026-11-15 | gitleaks runs in a pre-commit hook of this repository only (`.githooks`), enabled by `chezmoi apply`; never a global hook. | Catch a secret before it is pushed, without touching other repositories. |
+| 2026-11-15 | Dependabot updates GitHub Actions only; `just outdated` reports stale pinned binaries. | Dependabot cannot recompute the pinned checksums. |
+| 2026-11-15 | Machine-specific tools (nvtop…) and the Podman quadlets stay out: local installs, and the private homelab repository. | Not common to the three machines; the quadlets carry home-network details. |
+| 2026-11-15 | The Alpenglow & Dusk palette stays in the private homelab repository (`palette/tokens.toml`, `just palette`), which writes the generated files here. | One palette for the homelab apps and the desktop. |
+| 2026-11-15 | The server is managed by chezmoi like the other machines: a daily timer applies file changes, `just vps-update` runs the package scripts that need sudo. | The server was still on the former scripts. |
+| 2026-11-15 | `dotfiles-tools.md.tmpl` is the single reference for tools and aliases; `docs/ALIASES.md` merges into it. | A tool change touched seven files. |

@@ -21,8 +21,12 @@ gaming). Decide first which machines a change targets; ask if unclear
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
 | Colours (Plasma, Kitty, nvim) | generated from the Alpenglow & Dusk palette: `Dusk.colors`, `kitty/dusk.conf`, `nvim/lua/dusk_palette.lua` are overwritten by the palette build, so change the palette; tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand |
 
-The repository is public: no secrets, host names or personal details, even
+The repository is public: no secrets, host names or employer details, even
 in templates.
+
+Key bindings, in any tool: typable on a French AZERTY keyboard, so no digit
+row and none of `[ ] { } | \ ~`. Check a new tool's default bindings too and
+rebind the ones that break the rule.
 
 ## 2. Everything that describes the change
 
