@@ -9,7 +9,7 @@ set -euo pipefail
 source_dir="$HOME/.local/share/boot-theme/grub"
 theme_dir=/boot/grub2/themes/dusk-ridge
 
-if [[ ! -d /sys/firmware/efi ]] || ! command -v grub2-mkfont >/dev/null 2>&1; then
+if [[ ! -d /sys/firmware/efi || ! -f /etc/default/grub ]] || ! command -v grub2-mkfont >/dev/null 2>&1; then
   echo "GRUB theme: needs a UEFI Fedora with grub2-tools; skipped."
   exit 0
 fi

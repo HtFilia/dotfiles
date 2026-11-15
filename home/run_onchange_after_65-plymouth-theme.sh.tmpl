@@ -16,6 +16,11 @@ if ! command -v plymouth-set-default-theme >/dev/null 2>&1 || [[ ! -e /usr/lib64
   echo "Plymouth theme: plymouth or plymouth-plugin-script is missing; skipped."
   exit 0
 fi
+# A container has no boot files of its own to rebuild.
+if [[ ! -e "/boot/initramfs-$(uname -r).img" ]]; then
+  echo "Plymouth theme: no initramfs for this kernel (a container?); skipped."
+  exit 0
+fi
 
 echo "sudo: install the theme into $theme_dir"
 sudo rm -rf "$theme_dir"
