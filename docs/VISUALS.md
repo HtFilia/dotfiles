@@ -28,6 +28,34 @@ If apply ran outside Plasma, for example over SSH, choose Dusk in System
 Settings > Colours & Themes > Colours. Choosing another scheme there is kept
 until the managed scheme changes.
 
+## Boot (GRUB and Plymouth)
+
+On the Fedora workstation the boot loader menu and the boot splash share one
+scene, Dusk Ridge: a plum-to-peach dusk sky behind two ridges. GRUB shows it
+with a translucent menu panel on the right; Plymouth shows it with a glow that
+rises as the system boots, a thin progress line and twinkling stars.
+
+The sources are in `scripts/boot-art/` (`scene.svg`, `sky.svg`, `ridges.svg`,
+`glow.svg`); `scripts/boot-art/build.sh` renders them to the PNGs under
+`home/dot_local/share/boot-theme/`, which are committed, so `chezmoi apply`
+needs no image tools. Colours are the Dusk values carried by hand, plus the
+sunset gradient. `chezmoi apply` deploys the files to
+`~/.local/share/boot-theme/`; two scripts then copy them with sudo:
+
+- `run_onchange_after_60-grub-theme.sh.tmpl` installs the theme into
+  `/boot/grub2/themes/dusk-ridge`, generates the Inter fonts, sets `gfxterm`,
+  `GRUB_THEME` and a 1080p `GRUB_GFXMODE` in `/etc/default/grub`, and runs
+  `grub2-mkconfig`.
+- `run_onchange_after_65-plymouth-theme.sh.tmpl` installs the Plymouth theme
+  into `/usr/share/plymouth/themes/dusk-ridge`, makes it the default and
+  rebuilds the initramfs (about a minute), then checks the theme is inside it.
+  It needs `plymouth-plugin-script`, which the package script installs.
+
+Both show at the next boot. To go back to the stock look, remove the
+`GRUB_THEME` line and set `GRUB_TERMINAL_OUTPUT="console"` in
+`/etc/default/grub`, run `sudo grub2-mkconfig -o /boot/grub2/grub.cfg`, and run
+`sudo plymouth-set-default-theme -R bgrt`.
+
 ## Neovim
 
 Neovim draws its colours with `mini.base16` from the sixteen base16 slots in
