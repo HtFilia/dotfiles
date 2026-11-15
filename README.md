@@ -123,8 +123,7 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 [Neovim and VS Code](docs/EDITORS.md) · [Runtimes](docs/RUNTIMES.md) ·
 [Keybindings](docs/KEYBINDINGS.md) · [Appearance](docs/VISUALS.md) ·
 [Home folders](docs/HOME-LAYOUT.md) ·
-[Supply chain](docs/SUPPLY-CHAIN.md) · [Debian VPS](docs/VPS-SERVER.md) ·
-[VPS email alerts](docs/OVH-EMAIL.md)
+[Supply chain](docs/SUPPLY-CHAIN.md) · [Debian VPS](docs/VPS-SERVER.md)
 
 ## Check the repository
 
@@ -134,6 +133,7 @@ tests/container.sh fedora-perso    # also debian-travail, debian-server, debian-
 
 Each run installs one machine from scratch in a Podman container with the
 commands above, checks it, applies again and expects no change; `--worktree`
-tests uncommitted changes. CI runs the four containers.
+tests uncommitted changes. CI runs three of them; `debian-server-baseline`
+covers `debian-server`.
 
 MIT licensed.

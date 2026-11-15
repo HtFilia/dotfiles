@@ -13,8 +13,7 @@ The key depends on the machine's context:
 | `perso` | `~/.ssh/github` |
 | `travail` | `~/.ssh/github_work` |
 
-Protect the key with a passphrase. `AddKeysToAgent yes` adds it to the session
-agent on first use, so the passphrase is asked once per session:
+`AddKeysToAgent yes` adds the key to the session agent on first use:
 
 - Fedora KDE starts an agent and sets `SSH_AUTH_SOCK` for the session.
 - Debian starts `ssh-agent` for graphical sessions through systemd.

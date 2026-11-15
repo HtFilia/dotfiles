@@ -39,7 +39,7 @@ check() {
 }
 available() { command -v "$1"; }
 
-commands=(zsh git tmux nvim starship lazygit fzf rg fd bat eza zoxide atuin direnv delta jq just
+commands=(zsh git tmux nvim starship lazygit fzf rg fd bat eza zoxide delta jq just
   htop tldr shellcheck shfmt gitleaks actionlint chezmoi node npm)
 if [[ "$profile" == workstation ]]; then
   commands+=(kitty gh fastfetch hyperfine dust uv uvx yq rustup)

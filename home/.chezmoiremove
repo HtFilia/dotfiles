@@ -38,6 +38,9 @@
 .local/share/dotfiles/workbooks/lessons.json
 .config/btop/btop.conf
 
+# atuin, removed: fzf's Ctrl-R searches the history.
+.config/atuin/config.toml
+
 # Former locally built tmux and the wrapper commands replaced by chezmoi.
 .local/bin/tmux
 .local/bin/dotfiles-update

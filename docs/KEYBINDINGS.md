@@ -95,7 +95,7 @@ followed by `h/j/k/l`, or add your preferred navigation plugin explicitly.
 | Fuzzy file search, with bat preview | `Ctrl-t` (fzf) |
 | Fuzzy cd into dir, with tree preview | `Alt-c` (fzf) |
 | Hide or show the fzf preview | `Ctrl-/` |
-| History search | `Ctrl-r` (atuin when installed, fzf otherwise) |
+| History search | `Ctrl-r` (fzf) |
 | Accept autosuggestion | `→` (right arrow) or `End` |
 | Move back / forward one word | `Ctrl-←` / `Ctrl-→`, `Alt-←` / `Alt-→`, `Alt-b` / `Alt-f` |
 | Completion in fzf, with preview (Fedora) | `Tab` (fzf-tab) |

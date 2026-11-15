@@ -4,27 +4,14 @@ Aliases are interactive conveniences. Run `alias` for the active list and
 `functions NAME` to inspect a helper. Many aliases exist only when their tool is
 installed. `cc` remains the compiler command.
 
-## Git aliases
+## Git helpers
 
-| Alias | Action |
-|---|---|
-| `g`, `gs` | Git; short status |
-| `ga`, `gaa` | Add selected paths; add all |
-| `gc`, `gcm`, `gca` | Commit; commit with message; amend |
-| `gco`, `gcb`, `gb` | Checkout; create branch; branches |
-| `gp`, `gpl` | Push; pull with configured rebase behavior |
-| `gl`, `gll` | Graph log; graph including all branches |
-| `gd`, `gds` | Unstaged; staged diff |
-| `gst`, `gstp`, `gstl` | Stash; pop; list |
-| `gf`, `gfa` | Fetch; fetch all with branch pruning |
-| `grb`, `grbi`, `gcp` | Rebase; interactive rebase; cherry-pick |
-| `grs`, `grss`, `grt` | Restore; unstage; print root |
-| `lg` | LazyGit |
+`lg` opens LazyGit. Git's own aliases (`git s`, `git lg`, `git cleanup`, …) are
+documented in [Git](GIT.md).
 
 `gwip` stages all changes and creates a timestamped WIP commit. `gunwip` only
 resets a last commit with that exact subject format; review status first.
 `groot` enters the repository root; `gclone URL [DIRECTORY]` clones and enters it.
-Git's internal aliases are documented in [Git](GIT.md).
 
 ## Files and navigation
 
@@ -72,13 +59,6 @@ extract dispatch does not automatically install rar/7z utilities.
 | `ai`, `air` | Claude; resume session, when installed |
 | `vi`, `vim`, `top` | Neovim; htop |
 | `s HOST`, `icat FILE`, `kd A B` | Fedora, inside Kitty: `kitten ssh`, `kitten icat`, `kitten diff` |
-
-## Containers
-
-When Docker is installed, `d` is Docker and `dc` is Compose. Docker aliases:
-`dps`/`dpsa` list running/all containers, `di` lists images, `dex` enters a
-container, `dlog` follows logs, and `dprune` runs interactive system pruning
-without volume removal. Volume cleanup is a separate explicit decision.
 
 ## Platform conveniences
 

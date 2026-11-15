@@ -25,10 +25,9 @@ check() {
   fi
 }
 
-write ~/.zshrc.settings 'export STARSHIP_CONFIG=/tmp/local-starship.toml RIPGREP_CONFIG_PATH=/tmp/local-rg ATUIN_CONFIG_DIR=/tmp/local-atuin'
+write ~/.zshrc.settings 'export STARSHIP_CONFIG=/tmp/local-starship.toml RIPGREP_CONFIG_PATH=/tmp/local-rg'
 check 'zsh: ~/.zshrc.settings selects another Starship config' /tmp/local-starship.toml "$(zsh -ic 'print -r -- $STARSHIP_CONFIG' 2>/dev/null)"
 check 'zsh: ~/.zshrc.settings selects another ripgrep config' /tmp/local-rg "$(zsh -ic 'print -r -- $RIPGREP_CONFIG_PATH' 2>/dev/null)"
-check 'zsh: ~/.zshrc.settings selects another atuin config directory' /tmp/local-atuin "$(zsh -ic 'print -r -- $ATUIN_CONFIG_DIR' 2>/dev/null)"
 
 write ~/.zshrc.local "alias overrides-test='echo from-zshrc-local'"
 check 'zsh: ~/.zshrc.local adds an alias' from-zshrc-local "$(zsh -ic 'overrides-test' 2>/dev/null)"

@@ -2,8 +2,8 @@
 # Hosts and identities for this machine come first, so their values win.
 Include ~/.ssh/config.local
 
-# GitHub uses this context's key. Protect it with a passphrase: the first
-# connection adds it to the session's SSH agent, which answers afterwards.
+# GitHub uses this context's key; the first connection adds it to the
+# session's SSH agent.
 Host github.com
     HostName github.com
     User git

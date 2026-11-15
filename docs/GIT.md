@@ -47,8 +47,8 @@ chosen in [SSH](SSH.md). `git remote -v` shows both URLs.
 `git undo` soft-resets one commit; `git amend` amends without editing its message.
 These change local history, so check whether a commit has already been shared.
 
-`git cleanup [BASE]` deletes branches merged into the specified base, default
-`main`, while preserving main/master/develop. Git refuses deletion of checked-out
+`git cleanup [BASE]` deletes branches merged into the specified base, by
+default the remote's default branch (`main` when there is no remote), while preserving main/master/develop. Git refuses deletion of checked-out
 branches. This is an explicit cleanup command, not a background operation.
 
 For temporary side-by-side diffs:

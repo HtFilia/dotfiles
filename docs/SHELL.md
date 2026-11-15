@@ -35,7 +35,7 @@ bat, `grep` → rg, `find` → fd, and `mkdir` → `mkdir -p`. Leave it unset if
 that causes friction. `command NAME` or `\NAME` runs the original command, and
 shell scripts do not inherit aliases.
 
-Point `STARSHIP_CONFIG`, `RIPGREP_CONFIG_PATH` or `ATUIN_CONFIG_DIR` at a
+Point `STARSHIP_CONFIG` or `RIPGREP_CONFIG_PATH` at a
 local copy there to replace a managed configuration on one machine. Use
 `~/.zshrc.local` for final aliases/environment changes and custom widgets.
 Syntax highlighting loads after those widgets. Local files execute shell code;
@@ -48,8 +48,7 @@ work before reloading. `zshconfig` and `nvimconfig` open their respective config
 
 - Starship displays directory, Git status, runtimes and command duration.
 - zoxide provides `z`/`zi`; interactive `cd` aliases to `z`.
-- fzf supplies file/directory/history widgets; atuin takes Ctrl-r when installed.
-- direnv loads approved `.envrc` files; inspect them before `direnv allow`.
+- fzf supplies the file (Ctrl-t), directory (Alt-c) and history (Ctrl-r) widgets.
 
 ## Fedora extras
 
@@ -76,7 +75,7 @@ Fedora machines add these on top; other machines do not get them.
   than 60 columns gets two lines from `~/.local/share/dotfiles/fetch-strip`
   instead, which reads `/proc` and the cached GPU reading.
 - **Starship** adds, on the right: background jobs, the last exit status,
-  direnv, the tmux session, the load average and, on gaming machines, GPU
+  the tmux session, the load average and, on gaming machines, GPU
   memory in use. The GPU reading comes from
   `~/.local/share/dotfiles/starship-vram`, which prints the last
   `nvidia-smi` result and refreshes it in the background at most every 10 s,
@@ -105,11 +104,9 @@ when the path does not exist, and the next command would run there.
 ## History
 
 History is shared between shells, includes timestamps, and ignores commands
-beginning with a space. Do not place secrets directly in command arguments;
-atuin and other integrations have their own history policies.
-The managed Atuin configuration disables synchronization and update checks.
-Ctrl-r returns the selected command to the prompt so you can edit it before
-execution. History remains in Atuin's user data directory on each machine.
+beginning with a space. Do not place secrets directly in command arguments.
+Ctrl-r searches it with fzf and returns the selected command to the prompt,
+so you can edit it before execution.
 
 ## Performance
 

@@ -2,10 +2,10 @@
 
 Dotfiles owns the portable user shell, editor, Git, SSH client, tmux, tools,
 their packages, and the optional Debian 13 base policy for APT,
-journal retention and administrator journal access. The separate, private
-`homelab-infra` repository owns this host's SSH daemon, UFW, Fail2ban, WireGuard, Caddy,
-application services, health checks and backups. Neither repository contains
-credentials or host keys.
+journal retention and administrator journal access. A separate, private
+infrastructure repository owns everything else on the host: the SSH daemon,
+networking, the firewall and the application services. Neither repository
+contains credentials or host keys.
 
 ## New Debian 13 VPS
 
@@ -17,7 +17,7 @@ network changes. Then, as that account, follow the
 `scripts/verify.sh` from `chezmoi cd`.
 
 The server toolset is Zsh/Starship, navigation and search tools, Git/delta/
-LazyGit, tmux, Neovim, Node, local Atuin, ncdu, htop, tealdeer, ShellCheck,
+LazyGit, tmux, Neovim, Node, ncdu, htop, tealdeer, ShellCheck,
 gitleaks, actionlint and Kitty terminfo. It installs no fonts, desktop
 applications or containers. Editor languages stay optional; this host uses
 Python and shell: `"$(chezmoi source-path)/../scripts/setup-editor.sh" python shell`.
@@ -40,14 +40,9 @@ chezmoi update                        # pull, apply, run changed package scripts
 Pinned binaries (chezmoi, Neovim, actionlint) change when their entry in
 `home/.chezmoiexternal.toml.tmpl` changes.
 
-Application and security provisioning follows `homelab-infra` documentation
-after user setup. The dotfiles install requires a working sudo account; it
-clones over HTTPS and needs no GitHub key. The administrator identity, authorized keys, service secrets,
-provider networking and backup destinations remain private inputs.
-Its current offsite backup is intentionally deferred. Local database dumps and
-local copies do not substitute for offsite recovery. Do not enable daily
-Proton Drive backups until a backup, repository check and isolated restore have
-all passed. Review service/backup health manually at least weekly.
+Application and security provisioning follows the infrastructure
+repository's documentation after user setup. The dotfiles install requires a
+working sudo account; it clones over HTTPS and needs no GitHub key.
 
 ## System baseline
 
@@ -74,12 +69,4 @@ restart `systemd-journald` and flush the journal. Remove only the
 supplementary group with `sudo gpasswd -d ACCOUNT systemd-journal` if the
 baseline added it. Installed packages can stay.
 
-Debian package versions follow the Debian mirrors. Mason language tools follow
-Mason's registry, so they are not fully pinned. Offsite backups remain a
-separate, deferred project.
-
-## Email notification setup
-
-Follow [OVH email activation](OVH-EMAIL.md) for the OVH Control Panel, mailbox
-password, VPS configuration, phone delivery test and troubleshooting steps.
-Notification code and private settings remain owned by `homelab-infra`.
+Debian package versions follow the Debian mirrors.

@@ -24,9 +24,7 @@ uv run pytest
 ```
 
 `uvx` runs a command-line tool in a throwaway environment, and `uv tool
-install` keeps one. `activate` enters an existing `.venv` or `venv`. direnv
-loads an approved `.envrc` when you enter a project; read it before
-`direnv allow`.
+install` keeps one. `activate` enters an existing `.venv` or `venv`.
 
 ## Rust
 

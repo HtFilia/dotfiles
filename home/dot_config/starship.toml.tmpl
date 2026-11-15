@@ -4,7 +4,7 @@ add_newline = true
 command_timeout = 500
 format = "[┌─](bold #7C736D)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #7C736D)$character"
 {{- if eq $osid "fedora" }}
-right_format = "$jobs$status$direnv$python$nodejs$rust$golang$cmd_duration${custom.tmux}${custom.load}{{ if .gaming }}${custom.vram}{{ end }}"
+right_format = "$jobs$status$python$nodejs$rust$golang$cmd_duration${custom.tmux}${custom.load}{{ if .gaming }}${custom.vram}{{ end }}"
 {{- else }}
 right_format = "$python$nodejs$rust$golang$cmd_duration"
 {{- end }}
@@ -82,17 +82,6 @@ disabled = false
 format = "[$symbol$status]($style) "
 symbol = "\u2718 "
 style = "#E08C8C"
-
-[direnv]
-disabled = false
-symbol = "direnv"
-format = "[$symbol$loaded$allowed]($style) "
-loaded_msg = ""
-unloaded_msg = " off"
-allowed_msg = ""
-not_allowed_msg = " blocked"
-denied_msg = " denied"
-style = "#D9B26F"
 
 # Custom modules run through sh rather than STARSHIP_SHELL (zsh), which
 # starts more slowly.

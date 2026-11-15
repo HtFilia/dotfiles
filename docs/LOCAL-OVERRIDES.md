@@ -20,7 +20,7 @@ copied into the repository.
 | tmux | `source-file -q`, last line | `~/.tmux.conf.local` |
 | Kitty | `globinclude kitty.d/*.conf`, last line | `~/.config/kitty/kitty.d/*.conf` |
 | Neovim | LazyVim imports all of `lua/plugins/`; `options.lua` ends with `pcall(require, "config.local")` | `lua/plugins/local.lua`, `lua/config/local.lua` |
-| Starship, atuin, ripgrep | No include: point `STARSHIP_CONFIG`, `ATUIN_CONFIG_DIR` or `RIPGREP_CONFIG_PATH` at a copy, in `~/.zshrc.settings` | Your copy of the file |
+| Starship, ripgrep | No include: point `STARSHIP_CONFIG` or `RIPGREP_CONFIG_PATH` at a copy, in `~/.zshrc.settings` | Your copy of the file |
 | htop | `create_` prefix: deployed once, never overwritten | `~/.config/htop/htoprc` itself |
 | VS Code | None | VS Code profiles, or the project's `.vscode/settings.json` |
 
