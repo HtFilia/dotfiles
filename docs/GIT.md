@@ -66,3 +66,21 @@ syntax-aware diffs that compare code structure rather than lines:
 `git dft [REV]` runs it as a difftool, `git dlg` shows the log with its
 diffs and `git dshow REV` one commit. Plain `git diff` still pages through
 delta. Git skips the include on machines where the file is not deployed.
+
+## Signed commits
+
+Git can sign commits with the SSH key that already authenticates to GitHub.
+The key differs per machine, so the setting goes in `~/.gitconfig.local`:
+
+```ini
+[gpg]
+    format = ssh
+[user]
+    signingkey = ~/.ssh/github.pub
+[commit]
+    gpgsign = true
+```
+
+Add the same public key to GitHub a second time, as a signing key, for the
+"Verified" badge: `gh ssh-key add ~/.ssh/github.pub --type signing` (after
+`gh auth refresh -s admin:ssh_signing_key`).

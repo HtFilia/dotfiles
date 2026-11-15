@@ -15,9 +15,9 @@ step 'Secret scan of the whole history'
 gitleaks git --redact --no-banner
 
 step 'Repository scripts'
-shellcheck scripts/*.sh scripts/boot-art/*.sh tests/*.sh
+shellcheck scripts/*.sh scripts/boot-art/*.sh tests/*.sh .githooks/*
 # Formatting follows .editorconfig (two spaces, indented case branches).
-shfmt -d scripts tests
+shfmt -d scripts tests .githooks
 
 step 'Templates rendered for each machine'
 machines=(

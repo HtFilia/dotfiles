@@ -1,0 +1,8 @@
+# GitHub Actions only: the pinned binaries in home/.chezmoiexternal.toml.tmpl
+# need a new checksum with each version, which `just outdated` reports.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

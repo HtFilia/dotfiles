@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Refuse a commit whose staged changes contain a secret. `chezmoi apply`
+# enables this directory as this repository's hooks path; no other repository
+# is affected. `git commit --no-verify` skips it.
+set -euo pipefail
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo 'pre-commit: gitleaks is not installed; staged changes were not scanned.' >&2
+  exit 0
+fi
+# gitleaks 8.19 replaced `protect --staged` with `git --pre-commit --staged`.
+if gitleaks git --help >/dev/null 2>&1; then
+  exec gitleaks git --pre-commit --staged --redact --no-banner
+fi
+exec gitleaks protect --staged --redact --no-banner

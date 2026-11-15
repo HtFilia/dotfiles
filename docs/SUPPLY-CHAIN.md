@@ -33,7 +33,9 @@ Each entry in [`.chezmoiexternal.toml.tmpl`](../home/.chezmoiexternal.toml.tmpl)
 has the release URL and the archive's SHA256; chezmoi refuses an archive whose
 checksum differs. The README's Debian install pins the same chezmoi archive.
 
-To upgrade one:
+`just outdated` lists the pins that are behind their project's latest
+release. Dependabot proposes updates for the GitHub Actions only, since it
+cannot compute these checksums. To upgrade one:
 
 1. Download the new archive into an empty directory and run `sha256sum` on it.
 2. Compare the result with the project's published checksums: chezmoi's
@@ -57,6 +59,8 @@ To upgrade one:
 
 ## Secrets
 
+`chezmoi apply` enables `.githooks` in its own checkout (and nowhere else), so
+gitleaks scans the staged changes before every commit to this repository.
 `tests/repo.sh` runs gitleaks over the whole history. `.gitleaks.toml` has two
 narrow exceptions: a VS Code keyboard shortcut that looks like a key, and
 SHA256 digests of old `keybindings.json` contents in a deleted file.

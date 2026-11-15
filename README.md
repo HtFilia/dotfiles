@@ -73,7 +73,7 @@ nonfree repository, which this repository does not add: enable RPM Fusion, then 
 | `chezmoi edit FILE` | Edit the source of a deployed file |
 | `chezmoi cd` | Open a shell in the source checkout |
 | `chezmoi data` | Show this machine's answers and facts |
-| `scripts/verify.sh` | Check this machine's tools and files (run from `chezmoi cd`) |
+| `just verify` | Check this machine's tools and files (run from `chezmoi cd`; `just` lists the other recipes) |
 
 Files are deployed as copies, so applications that rewrite their settings
 (VS Code, htop, lazy.nvim) change only the deployed file. To change an answer,
@@ -111,7 +111,8 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 | `home/.chezmoidata/packages.yaml` | Packages and VS Code extensions per platform |
 | `home/.chezmoiexternal.toml.tmpl` | Pinned release binaries |
 | `home/.chezmoiignore`, `.chezmoiremove` | Files skipped on a machine; old files to delete |
-| `scripts/` | `verify.sh`; `setup-editor.sh` for Neovim language tools |
+| `scripts/` | `verify.sh`; `outdated.sh`; `setup-editor.sh` for Neovim language tools |
+| `justfile`, `.githooks/` | Repository tasks; the gitleaks pre-commit hook |
 | `tests/` | Installs in Podman containers and machine checks |
 
 ## Guides
@@ -128,12 +129,14 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 ## Check the repository
 
 ```sh
-tests/container.sh fedora-perso    # also debian-travail, debian-server, debian-server-baseline
+just check                 # lint, format and secret scan
+just test fedora-perso     # also debian-travail, debian-server, debian-server-baseline
+just outdated              # pinned releases that have a newer version
 ```
 
-Each run installs one machine from scratch in a Podman container with the
-commands above, checks it, applies again and expects no change; `--worktree`
-tests uncommitted changes. CI runs three of them; `debian-server-baseline`
+`just test` installs one machine from scratch in a Podman container with the
+commands above, from the working tree, checks it, applies again and expects
+no change; `tests/container.sh SCENARIO` installs the committed HEAD instead. CI runs three of them; `debian-server-baseline`
 covers `debian-server`.
 
 MIT licensed.

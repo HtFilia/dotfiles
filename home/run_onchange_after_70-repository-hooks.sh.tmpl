@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Enable this repository's own Git hooks (.githooks: gitleaks before each
+# commit) in chezmoi's checkout. The setting lives in that checkout's
+# .git/config, so no other repository is affected. No sudo.
+set -euo pipefail
+tree={{ .chezmoi.workingTree | quote }}
+# A checkout mounted read-only (the container tests) keeps its configuration.
+if [[ -d "$tree/.githooks" && -w "$tree/.git/config" ]]; then
+  git -C "$tree" config core.hooksPath .githooks
+fi

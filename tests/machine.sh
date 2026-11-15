@@ -51,6 +51,28 @@ else
     exit 1
   }
   echo 'chezmoi re-add updated the source; the test change was reverted.'
+
+  step 'The pre-commit hook refuses a staged secret'
+  [[ "$(git -C "$source_dir" config core.hooksPath)" == .githooks ]] || {
+    echo 'chezmoi apply did not enable .githooks'
+    exit 1
+  }
+  # A random token in GitHub's format, made here so that none is committed.
+  token="ghp_$(head -c 200 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | cut -c1-36)"
+  printf 'token = "%s"\n' "$token" >"$source_dir/leak-test.toml"
+  git -C "$source_dir" add leak-test.toml
+  if git -C "$source_dir" hook run pre-commit >/dev/null 2>&1; then
+    refused=0
+  else
+    refused=1
+  fi
+  git -C "$source_dir" rm -q -f --cached leak-test.toml
+  rm -f "$source_dir/leak-test.toml"
+  ((refused)) || {
+    echo 'the pre-commit hook accepted a staged token'
+    exit 1
+  }
+  echo 'The hook refused the commit.'
 fi
 
 step 'Scripts rendered for this machine pass ShellCheck'

@@ -42,10 +42,9 @@ rebind the ones that break the rule.
 ## 3. Check
 
 ```sh
-chezmoi diff                                  # only the expected files change
-shellcheck <changed scripts>; shfmt -d <changed scripts>
-tests/repo.sh                                 # includes gitleaks over the history
-tests/container.sh --worktree fedora-perso    # or the scenario the change targets
+just diff                  # only the expected files change
+just check                 # ShellCheck, shfmt, gitleaks over the history, rendered templates
+just test fedora-perso     # or the scenario the change targets; `just test-all` for all
 ```
 
 Run the container test for every machine the change touches.
