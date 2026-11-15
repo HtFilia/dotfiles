@@ -22,7 +22,12 @@ installed="$(code --list-extensions | tr '[:upper:]' '[:lower:]')"
 for extension in "${extensions[@]}"; do
   lower="$(printf '%s' "$extension" | tr '[:upper:]' '[:lower:]')"
   if ! grep -qxF "$lower" <<<"$installed"; then
-    code --install-extension "$extension"
+    # The marketplace answers 503 now and then: three attempts.
+    for attempt in 1 2 3; do
+      code --install-extension "$extension" && break
+      ((attempt < 3)) || exit 1
+      sleep 10
+    done
   fi
 done
 {{ end -}}
