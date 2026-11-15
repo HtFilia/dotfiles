@@ -1,4 +1,4 @@
--- Generated from the Alpenglow & Dusk palette (homelab palette/tokens.toml); do not edit.
+-- Generated from the Alpenglow & Dusk palette; do not edit.
 return {
   base00 = "#24211F",
   base01 = "#2D2A28",

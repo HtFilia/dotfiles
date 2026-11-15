@@ -116,11 +116,11 @@ if command -v fzf &>/dev/null; then
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
   fi
-  # Ctrl-t previews files, Alt-c previews directories; Ctrl-/ hides the preview.
+  # Ctrl-t previews files, Alt-c previews directories; Alt-p hides the preview.
   command -v bat &>/dev/null &&
-    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 -- {}' --bind 'ctrl-/:toggle-preview'"
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 -- {}' --bind 'alt-p:toggle-preview'"
   command -v eza &>/dev/null &&
-    export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons=always -- {}' --bind 'ctrl-/:toggle-preview'"
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons=always -- {}' --bind 'alt-p:toggle-preview'"
 fi
 {{- if eq $osid "fedora" }}
 # Ctrl+G opens navi's cheat sheets, or completes the command being typed.

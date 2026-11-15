@@ -8,10 +8,9 @@ half of the Alpenglow & Dusk palette, whose day half (Alpenglow) colours the
 author's web apps; every text colour passes WCAG AA. There is no theme
 switcher: the desktop stays dark.
 
-The palette lives in the author's private homelab repository
-(`palette/tokens.toml`); `just palette` there regenerates every consumer,
-this repository included. Three files here are generated from it and should
-not be edited by hand:
+The palette's source and its generator are kept outside this repository.
+Three files here are the generator's output, committed as they are, and
+should not be edited by hand:
 `home/dot_local/share/color-schemes/Dusk.colors` (Plasma),
 `home/dot_config/kitty/dusk.conf` (Kitty) and
 `home/dot_config/nvim/lua/dusk_palette.lua` (Neovim's base16 colours). tmux,

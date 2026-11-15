@@ -42,4 +42,19 @@ if [[ "$osid" == fedora && "$context" == perso ]]; then
   printf 'int main() { return 0; }\n' >"$work/sample.cpp"
   check sample.cpp clangd
 fi
+# ( and ) reach the mappings under [ and ] (AZERTY has no unshifted bracket).
+# LazyVim loads config/keymaps.lua on VeryLazy, which a headless start never
+# fires.
+remapped="$(nvim --headless \
+  '+lua vim.api.nvim_exec_autocmds("User", { pattern = "VeryLazy" })' \
+  '+lua vim.keymap.set("n", "[z", function() io.write("prev,") end)' \
+  '+lua vim.keymap.set("n", "]z", function() io.write("next") end)' \
+  '+lua vim.api.nvim_feedkeys("(z)z", "mx", false)' +qa 2>&1)"
+if [[ "$remapped" == prev,next ]]; then
+  echo 'ok - ( and ) stand in for [ and ]'
+else
+  printf 'FAIL - ( and ) do not reach the [ and ] mappings: %s\n' "$remapped"
+  failures=$((failures + 1))
+fi
+
 ((failures == 0))

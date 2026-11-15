@@ -46,7 +46,9 @@ defaults. `Ctrl-Shift-e`, the default for URLs, opens a split here.
 
 ## tmux
 
-Prefix and split keys are the defaults (Ctrl-b, `"` and `%`). New panes/windows use
+The prefix is the default (Ctrl-b). `prefix s` and `prefix v` split, and
+Shift-Left and Shift-Right change window, so that no binding needs a digit or
+a bracket on an AZERTY keyboard ([key bindings](KEYBINDINGS.md)). New panes/windows use
 the current pane's directory. Indices start at one, windows renumber, mouse and
 focus events are enabled, and copy mode uses vi bindings.
 

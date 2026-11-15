@@ -74,6 +74,38 @@ if [[ -n "$strangers" ]]; then
 fi
 echo 'ok - every hex colour is in the palette or a listed tint'
 
+step 'Configured key bindings are typable on AZERTY'
+# The keys each configuration binds: no digit (F1…F12 excepted), none of
+# [ ] { } | \ ~. Lines are printed as file:key.
+bound_keys() {
+  # tmux: the first word after bind and its options.
+  sed -nE 's/^bind(-key)?( +-[nr]| +-T +[^ ]+)* +([^ ]+).*/tmux:\3/p' home/dot_tmux.conf
+  sed -nE 's/^map +([^ ]+).*/kitty:\1/p' home/dot_config/kitty/kitty.conf.tmpl
+  grep -oE 'on *= *("[^"]+"|\[[^]]*\])' home/dot_config/yazi/keymap.toml |
+    grep -oE '"[^"]+"' | sed 's/^/yazi:/'
+  sed -nE 's/^ +[A-Za-z0-9-]+: +(.+)$/lazygit:\1/p' home/dot_config/lazygit/config.yml
+  sed -nE 's/^ *"key": *"([^"]+)".*/vscode:\1/p' home/dot_config/Code/User/keybindings.json
+  sed -nE 's/^map\((\{[^}]*\}|"[^"]*"), *"([^"]+)".*/nvim:\2/p' home/dot_config/nvim/lua/config/keymaps.lua
+  sed -nE 's/^vim\.g\.map(local)?leader *= *"(.*)"$/nvim:\2/p' home/dot_config/nvim/init.lua
+  grep -oE -e "--bind '[^':]+" home/dot_zshrc.tmpl | sed "s/--bind '/fzf:/"
+}
+keys="$(bound_keys)"
+untypable="$(sed -E 's/[Ff][0-9]+//g' <<<"$keys" | grep -nE ':.*[][{}|\\~0-9]' || true)"
+if [[ -n "$untypable" ]]; then
+  printf 'not typable on AZERTY:\n'
+  while IFS=: read -r line _; do sed -n "${line}p" <<<"$keys"; done <<<"$untypable"
+  exit 1
+fi
+echo "ok - $(wc -l <<<"$keys") bound keys"
+
+step 'The repository stands alone'
+# It is public: nothing names the private repositories around it, such as the
+# one that generates the palette files.
+if git grep -nIi 'homelab' -- . ':!tests/repo.sh'; then
+  exit 1
+fi
+echo 'ok - no reference to a private repository'
+
 step 'Dropped platforms are gone'
 # .chezmoiremove names the files those platforms left behind, and GitHub's
 # Linux runners are called ubuntu-latest.

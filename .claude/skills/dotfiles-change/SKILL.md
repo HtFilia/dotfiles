@@ -19,7 +19,7 @@ gaming). Decide first which machines a change targets; ask if unclear
 | Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum and a comment giving the reason |
 | Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables) |
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
-| Colours (Plasma, Kitty, nvim) | generated from the Alpenglow & Dusk palette in the private homelab repository (`~/homelab/palette/tokens.toml`, then `just palette` there): `Dusk.colors`, `kitty/dusk.conf`, `nvim/lua/dusk_palette.lua` are overwritten by that build, so change the palette; tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand, and `tests/repo.sh` refuses a hex value that is not in the palette |
+| Colours (Plasma, Kitty, nvim) | `Dusk.colors`, `kitty/dusk.conf` and `nvim/lua/dusk_palette.lua` are the output of a palette generator kept outside this repository (the user's private instructions say where): never edit them by hand, change the palette and regenerate. tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand, and `tests/repo.sh` refuses a hex value that is not in the palette |
 
 The repository is public: no secrets, host names or employer details, even
 in templates.

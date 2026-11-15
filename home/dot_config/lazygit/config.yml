@@ -1,0 +1,14 @@
+# lazygit keys for a French AZERTY keyboard: the defaults put these actions on
+# brackets, braces, @ and the backtick. Panels are still reached with h / l or
+# Tab instead of the digits.
+keybinding:
+  universal:
+    prevTab: (
+    nextTab: )
+    decreaseContextInDiffView: <c-x>
+    increaseContextInDiffView: <c-a>
+    decreaseRenameSimilarityThreshold: ;
+    increaseRenameSimilarityThreshold: '!'
+    extrasMenu: <c-g>
+  files:
+    toggleTreeView: <c-v>

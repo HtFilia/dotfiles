@@ -21,14 +21,14 @@ workstation, Debian 13 server); the source root is `home/`
 
 | Date | Decision | Reason |
 |---|---|---|
-| 2026-11-15 | Bindings are AZERTY-compatible in every tool, installed now or later; broken ones are fixed, and `tests/repo.sh` lints for them. | The digits need Shift and the brackets AltGr on the author's keyboard. |
+| 2026-11-15 | Bindings are AZERTY-compatible in every tool, installed now or later; broken ones are fixed, and `tests/repo.sh` lints for them. "No digit row" means the digits only: `(`, `)`, `-`, `=` and `"` are unshifted and allowed. `(` and `)` replace the `[` / `]` prefixes in Neovim and LazyGit. Scope: what the repository binds, the defaults `docs/KEYBINDINGS.md` teaches, and core actions with no other key; not Vim's own grammar. | The digits need Shift and the brackets AltGr on the author's keyboard. |
 | 2026-11-15 | No advice to put a passphrase on SSH keys. | The author does not want one yet. |
 | 2026-11-15 | The default branch becomes `main` here and in webfolio. | Coherent with `init.defaultBranch` and `git cleanup`. |
 | 2026-11-15 | atuin and direnv are removed; fzf's Ctrl-R searches the history. | Unused: no sync server, no `.envrc` in any project. |
 | 2026-11-15 | Language servers are installed by uv, rustup, npm and the package manager, pinned; Mason and `scripts/setup-editor.sh` go. Python uses Pyrefly and Ruff. | One pinned install path instead of an unpinned registry. |
 | 2026-11-15 | gitleaks runs in a pre-commit hook of this repository only (`.githooks`), enabled by `chezmoi apply`; never a global hook. | Catch a secret before it is pushed, without touching other repositories. |
 | 2026-11-15 | Dependabot updates GitHub Actions only; `just outdated` reports stale pinned binaries. | Dependabot cannot recompute the pinned checksums. |
-| 2026-11-15 | Machine-specific tools (nvtop…) and the Podman quadlets stay out: local installs, and the private homelab repository. | Not common to the three machines; the quadlets carry home-network details. |
-| 2026-11-15 | The Alpenglow & Dusk palette stays in the private homelab repository (`palette/tokens.toml`, `just palette`), which writes the generated files here. | One palette for the homelab apps and the desktop. |
+| 2026-11-15 | Machine-specific tools (nvtop…) and the Podman quadlets stay out of this repository. | Not common to the three machines; the quadlets carry home-network details. |
+| 2026-11-15 | The palette source and generator live outside this repository, which never names where. Their output (`Dusk.colors`, `kitty/dusk.conf`, `dusk_palette.lua`) is committed here as plain files, and `tests/repo.sh` checks the hand-written colours against them. | This repository is public and stands alone; the palette also serves private projects. |
 | 2026-11-15 | The server is managed by chezmoi like the other machines: a daily timer applies file changes, `just vps-update` runs the package scripts that need sudo. | The server was still on the former scripts. |
 | 2026-11-15 | `dotfiles-tools.md.tmpl` is the single reference for tools and aliases; `docs/ALIASES.md` merges into it. | A tool change touched seven files. |
