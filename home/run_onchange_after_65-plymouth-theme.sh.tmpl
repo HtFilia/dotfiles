@@ -31,7 +31,10 @@ echo "sudo: make it the default theme and rebuild the initramfs (about a minute)
 sudo plymouth-set-default-theme -R dusk-ridge
 
 initramfs="/boot/initramfs-$(uname -r).img"
-if sudo lsinitrd "$initramfs" 2>/dev/null | grep -q 'plymouth/themes/dusk-ridge/dusk-ridge.script'; then
+# Read the whole listing first: with pipefail, grep -q closing the pipe early
+# makes lsinitrd fail and the check report a false negative.
+contents="$(sudo lsinitrd "$initramfs" 2>/dev/null || true)"
+if grep -q 'plymouth/themes/dusk-ridge/dusk-ridge.script' <<<"$contents"; then
   echo "Plymouth theme installed and found in $initramfs; it shows at the next boot."
 else
   echo "Warning: the theme is not in $initramfs; do not reboot before checking." >&2
