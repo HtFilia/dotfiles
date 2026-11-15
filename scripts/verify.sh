@@ -82,10 +82,9 @@ if [[ "$profile" == workstation ]]; then
   check 'Kitty opens zsh' kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; from kitty.utils import resolved_shell; import os, sys; shell = resolved_shell(load_config(os.path.join(config_dir, "kitty.conf"))); sys.exit(os.path.basename(shell[0]) != "zsh")'
   check 'Plasma colour scheme deployed' test -f "$HOME/.local/share/color-schemes/Dusk.colors"
   if [[ "$osid" == fedora ]]; then
-    check 'Boot theme files deployed' test -f "$HOME/.local/share/boot-theme/grub/theme.txt" -a -f "$HOME/.local/share/boot-theme/plymouth/dusk-ridge.script"
-    # Skipped in a container, where there is no boot loader.
-    if [[ -f /etc/default/grub ]]; then
-      check 'GRUB uses the Dusk Ridge theme' grep -q '^GRUB_THEME=.*dusk-ridge' /etc/default/grub
+    check 'Boot splash files deployed' test -f "$HOME/.local/share/boot-theme/plymouth/dusk-ridge.script"
+    # Skipped in a container, where there is no boot setup.
+    if [[ -e "/boot/initramfs-$(uname -r).img" ]]; then
       check 'Plymouth default theme is Dusk Ridge' bash -c '[[ "$(plymouth-set-default-theme)" == dusk-ridge ]]'
     fi
   fi
