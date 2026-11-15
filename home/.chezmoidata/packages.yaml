@@ -60,6 +60,8 @@ packages:
       - navi
       - difftastic
       - procs
+      # Builds the Treesitter parsers listed under `editor` below.
+      - tree-sitter-cli
       # From Microsoft's repository, which the Fedora script configures.
       - code
     perso:
@@ -139,6 +141,43 @@ packages:
       - bind9-dnsutils
       - iputils-ping
       - procps
+
+# Language servers and Treesitter parsers for Neovim, installed by
+# run_onchange_after_45-editor-tools. Versions are pinned here; `just outdated`
+# reports newer ones. Lists are named like the package lists above (common,
+# then the profile). clangd comes from the system packages.
+editor:
+  # uv tool install: Pyrefly (types, navigation) and Ruff (lint, format).
+  uv:
+    common:
+      - pyrefly==1.4.1
+      - ruff==0.17.5
+  # npm install --global --prefix ~/.local. typescript stays on 6.x:
+  # typescript-language-server drives tsserver, which TypeScript 7 no longer ships.
+  npm:
+    common:
+      - bash-language-server@5.8.1
+    workstation:
+      - typescript-language-server@6.1.0
+      - typescript@6.0.3
+  # rustup component add, with the stable toolchain.
+  rustup:
+    workstation:
+      - rust-analyzer
+  # Fedora only: nvim-treesitter needs tree-sitter-cli 0.26, and Debian 13
+  # ships 0.22. Neovim bundles the C, Lua, Markdown and Vim parsers.
+  parsers:
+    - bash
+    - python
+    - rust
+    - javascript
+    - typescript
+    - tsx
+    - json
+    - toml
+    - yaml
+    - cpp
+    - cmake
 
 # VS Code extensions, installed where VS Code is: always on Fedora,
 # and on a Debian workstation once someone has installed `code`.

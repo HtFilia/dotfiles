@@ -111,7 +111,7 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 | `home/.chezmoidata/packages.yaml` | Packages and VS Code extensions per platform |
 | `home/.chezmoiexternal.toml.tmpl` | Pinned release binaries |
 | `home/.chezmoiignore`, `.chezmoiremove` | Files skipped on a machine; old files to delete |
-| `scripts/` | `verify.sh`; `outdated.sh`; `setup-editor.sh` for Neovim language tools |
+| `scripts/` | `verify.sh`; `outdated.sh` |
 | `justfile`, `.githooks/` | Repository tasks; the gitleaks pre-commit hook |
 | `tests/` | Installs in Podman containers and machine checks |
 

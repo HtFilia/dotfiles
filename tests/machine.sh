@@ -88,3 +88,6 @@ bash "$root/tests/shell-functions.sh"
 
 step 'Local overrides'
 bash "$root/tests/overrides.sh"
+
+step 'Neovim language servers'
+bash "$root/tests/editor.sh"

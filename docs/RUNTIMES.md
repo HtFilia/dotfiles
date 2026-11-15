@@ -5,7 +5,7 @@ Projects that need a specific version declare it in version-controlled files.
 
 | Runtime | Fedora | Debian 13 | Project control |
 |---|---|---|---|
-| Python | system `python3`, uv | `python3`; uv on the work workstation | `pyproject.toml`, `uv.lock`, `.python-version` |
+| Python | system `python3`, uv | `python3`, uv (pinned release) | `pyproject.toml`, `uv.lock`, `.python-version` |
 | Node | `nodejs24` | `nodejs` 20 and `npm` | lockfile, `engines`, `packageManager` |
 | Go | `golang` | not installed | `go.mod`, including its `toolchain` line |
 | Rust | rustup, stable toolchain | rustup, stable toolchain (work workstation) | `rust-toolchain.toml`, `Cargo.lock` |

@@ -1,0 +1,57 @@
+{{- $osid := includeTemplate "osid" . -}}
+{{- $editor := .editor -}}
+#!/usr/bin/env bash
+# Install the language servers Neovim uses, at the versions pinned under
+# `editor` in .chezmoidata/packages.yaml, and on Fedora the Treesitter
+# parsers. Runs again when those lists change. No sudo: everything goes to
+# ~/.local, ~/.cargo or Neovim's data directory.
+set -euo pipefail
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+uv_tools=(
+{{- range $list := list "common" .profile }}
+{{-   if hasKey $editor.uv $list }}
+{{-     range index $editor.uv $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+npm_tools=(
+{{- range $list := list "common" .profile }}
+{{-   if hasKey $editor.npm $list }}
+{{-     range index $editor.npm $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+rustup_components=(
+{{- range $list := list "common" .profile }}
+{{-   if hasKey $editor.rustup $list }}
+{{-     range index $editor.rustup $list }}
+  {{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+)
+
+for tool in "${uv_tools[@]}"; do
+  uv tool install --quiet "$tool"
+done
+npm install --global --prefix "$HOME/.local" --no-fund --no-audit --loglevel=error "${npm_tools[@]}"
+for component in ${rustup_components[@]+"${rustup_components[@]}"}; do
+  rustup component add "$component"
+done
+{{- if eq $osid "fedora" }}
+
+# Treesitter parsers, built by nvim-treesitter at the revisions its locked
+# commit names. The plugins must be present first. A failure here (no network,
+# no compiler) leaves the editor usable, so it only warns.
+parsers='{{ $editor.parsers | join " " }}'
+if ! { nvim --headless '+Lazy! restore' +qa &&
+  PARSERS="$parsers" nvim --headless \
+    '+lua local ok = require("nvim-treesitter").install(vim.split(vim.env.PARSERS, " ")):wait(600000); if not ok then vim.cmd("cquit 1") end' +qa; } >/dev/null 2>&1; then
+  echo "Warning: Treesitter parsers were not all installed; run chezmoi apply again later." >&2
+fi
+{{- end }}

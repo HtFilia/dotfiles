@@ -19,8 +19,8 @@ network changes. Then, as that account, follow the
 The server toolset is Zsh/Starship, navigation and search tools, Git/delta/
 LazyGit, tmux, Neovim, Node, ncdu, htop, tealdeer, ShellCheck,
 gitleaks, actionlint and Kitty terminfo. It installs no fonts, desktop
-applications or containers. Editor languages stay optional; this host uses
-Python and shell: `"$(chezmoi source-path)/../scripts/setup-editor.sh" python shell`.
+applications or containers. Neovim gets the Python and shell language servers
+([editors](EDITORS.md#language-servers)).
 
 Answer `systemBaseline` with `true` to apply the system baseline described
 below. It does not manage SSH, networking, the firewall or application services.

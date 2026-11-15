@@ -21,9 +21,9 @@
     stripComponents = 1
     exact = true
     checksum.sha256 = "474430d53e6264f6d6dd18db42d6dc9df3a1b56ca9e88a325bbf860e1a811d87"
-{{-   if eq .profile "workstation" }}
 
-# uv is not packaged in Debian 13.
+# uv is not packaged in Debian 13. Every machine uses it, at least to install
+# the Python language servers for Neovim.
 [".local/bin/uv"]
     type = "archive-file"
     url = "https://github.com/astral-sh/uv/releases/download/0.13.6/uv-x86_64-unknown-linux-gnu.tar.gz"
@@ -37,6 +37,7 @@
     path = "uv-x86_64-unknown-linux-gnu/uvx"
     executable = true
     checksum.sha256 = "f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645"
+{{-   if eq .profile "workstation" }}
 
 # Debian's yq package is a different tool: a jq wrapper written in Python.
 [".local/bin/yq"]

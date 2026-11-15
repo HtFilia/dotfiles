@@ -17,25 +17,18 @@ return {
       end,
     },
   },
-  {
-    "mason-org/mason.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = {}
-    end,
-  },
-  {
-    "mason-org/mason-lspconfig.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = {}
-    end,
-  },
+  -- Language servers come from uv, rustup, npm and the system packages, at
+  -- the versions pinned in the dotfiles (.chezmoidata/packages.yaml), so
+  -- Mason is not loaded.
+  { "mason-org/mason.nvim", enabled = false },
+  { "mason-org/mason-lspconfig.nvim", enabled = false },
   {
     "neovim/nvim-lspconfig",
     opts = function(_, opts)
       opts.servers = opts.servers or {}
       local servers = {
         lua_ls = "lua-language-server",
-        basedpyright = "basedpyright-langserver",
+        pyrefly = "pyrefly",
         ruff = "ruff",
         gopls = "gopls",
         rust_analyzer = "rust-analyzer",
@@ -44,8 +37,8 @@ return {
         clangd = "clangd",
       }
       for server, binary in pairs(servers) do
+        -- A server starts only on a machine where its binary is installed.
         opts.servers[server] = vim.tbl_deep_extend("force", opts.servers[server] or {}, {
-          mason = false,
           enabled = vim.fn.executable(binary) == 1,
         })
       end

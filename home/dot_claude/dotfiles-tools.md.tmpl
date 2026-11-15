@@ -2,7 +2,7 @@
 {{- $fedora := eq $osid "fedora" -}}
 {{- $debian := eq $osid "debian" -}}
 {{- $workstation := eq .profile "workstation" -}}
-{{- /* gh, dust, hyperfine, yq, uv and rustup: everywhere but the Debian server. */ -}}
+{{- /* gh, dust, hyperfine and yq: everywhere but the Debian server. */ -}}
 {{- $dev := or (not $debian) $workstation -}}
 {{- $native := and (eq .context "perso") (not $debian) -}}
 {{- $vscode := and $workstation (or (not $debian) (lookPath "code")) -}}
@@ -73,12 +73,11 @@ not this file.
 {{- end }}
 
 ## Languages and builds
-{{ if $dev }}
+
 - Python: `uv` and `uvx`{{ if $debian }} (pinned releases in `~/.local/bin`){{ end }}. Use `uv run`, `uv add`
   and `uv venv`; do not `pip install` into the system Python.
+{{- if $workstation }}
 - Rust: rustup's stable toolchain in `~/.cargo` (`cargo`, `rustc`).
-{{- else }}
-- Python: the system `python3` with `venv`; uv is not installed here.
 {{- end }}
 - Node.js: `node` and `npm`{{ if $fedora }} (Node 24){{ end }}.
 {{- if $native }}
@@ -97,6 +96,9 @@ not this file.
 ## Editors and terminal
 
 - Neovim with LazyVim is `$EDITOR`{{ if $debian }} (pinned release in `~/.local/opt/nvim`){{ end }}.
+  Its language servers are on PATH: `pyrefly`, `ruff`, `bash-language-server`{{ if $workstation }},
+  `typescript-language-server`, `rust-analyzer`{{ end }}{{ if $native }}, `clangd`{{ end }}; versions are pinned
+  under `editor` in the dotfiles' `packages.yaml`.
 {{- if $vscode }}
 - VS Code: `code`.
 {{- end }}

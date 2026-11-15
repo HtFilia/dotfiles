@@ -40,11 +40,12 @@ check() {
 available() { command -v "$1"; }
 
 commands=(zsh git tmux nvim starship lazygit fzf rg fd bat eza zoxide delta jq just
-  htop tldr shellcheck shfmt gitleaks actionlint chezmoi node npm)
+  htop tldr shellcheck shfmt gitleaks actionlint chezmoi node npm uv uvx
+  pyrefly ruff bash-language-server)
 if [[ "$profile" == workstation ]]; then
-  commands+=(kitty gh fastfetch hyperfine dust uv uvx yq rustup)
+  commands+=(kitty gh fastfetch hyperfine dust yq rustup rust-analyzer typescript-language-server)
   case "$osid" in
-    fedora) commands+=(podman podman-compose code yazi ya navi difft gping procs) ;;
+    fedora) commands+=(podman podman-compose code yazi ya navi difft gping procs tree-sitter) ;;
     debian) commands+=(podman podman-compose) ;;
   esac
   if [[ "$context" == perso && "$osid" != debian ]]; then

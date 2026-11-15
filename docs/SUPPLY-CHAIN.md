@@ -22,7 +22,7 @@ lists package names; versions follow the repositories.
 |---|---|---|---|
 | chezmoi | 2.73.3 | Debian | Not packaged in Debian 13 |
 | Neovim | 0.12.6 | Debian | Debian ships 0.10.4; the pinned LazyVim needs 0.11.2 |
-| uv, uvx | 0.13.6 | Debian workstation | Not packaged in Debian 13 |
+| uv, uvx | 0.13.6 | Debian | Not packaged in Debian 13 |
 | yq | 4.54.1 | Debian workstation | Debian's `yq` is a different tool |
 | actionlint | 1.7.12 | Fedora, Debian | Packaged in neither |
 | yazi, ya (and their zsh completions) | 26.9.1 | Fedora | Not packaged in Fedora 44 |
@@ -53,8 +53,11 @@ cannot compute these checksums. To upgrade one:
 - The stable Rust toolchain: rustup downloads it once and checks it against
   its release manifest.
 - Neovim plugins: `init.lua` pins lazy.nvim and refuses a different checkout;
-  `lazy-lock.json` pins every plugin commit. Mason language tools, installed
-  only by `scripts/setup-editor.sh`, follow Mason's registry and are not pinned.
+  `lazy-lock.json` pins every plugin commit, and with it the revision of
+  each Treesitter parser.
+- Neovim's language servers: PyPI (uv), npm and rustup install the versions
+  pinned under `editor` in `packages.yaml`. Each registry checks its own
+  package hashes; the repository pins versions, not hashes.
 - VS Code extensions come from the marketplace and update through VS Code.
 
 ## Secrets
