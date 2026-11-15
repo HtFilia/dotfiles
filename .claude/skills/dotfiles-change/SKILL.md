@@ -16,10 +16,10 @@ gaming). Decide first which machines a change targets; ask if unclear
 | Change | Where |
 |---|---|
 | Package from dnf, APT or COPR | `home/.chezmoidata/packages.yaml`, in the list for the right OS and profile/context/gaming |
-| Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum; add a row to `docs/SUPPLY-CHAIN.md` |
+| Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum and a comment giving the reason |
 | Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables) |
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
-| Colours (Plasma, Kitty, nvim) | generated from the Alpenglow & Dusk palette: `Dusk.colors`, `kitty/dusk.conf`, `nvim/lua/dusk_palette.lua` are overwritten by the palette build, so change the palette; tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand |
+| Colours (Plasma, Kitty, nvim) | generated from the Alpenglow & Dusk palette in the private homelab repository (`~/homelab/palette/tokens.toml`, then `just palette` there): `Dusk.colors`, `kitty/dusk.conf`, `nvim/lua/dusk_palette.lua` are overwritten by that build, so change the palette; tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand, and `tests/repo.sh` refuses a hex value that is not in the palette |
 
 The repository is public: no secrets, host names or employer details, even
 in templates.
@@ -30,14 +30,21 @@ rebind the ones that break the rule.
 
 ## 2. Everything that describes the change
 
-- `home/dot_claude/dotfiles-tools.md.tmpl`: what Claude Code is told about
-  the tools (table rows, interactive tools that must not be started, aliases).
-- `docs/`: the matching guide (`SHELL.md`, `ALIASES.md`, `GIT.md`,
-  `TERMINALS.md`, `VISUALS.md`, …) and the README if the install steps change.
-- navi cheat sheets: `home/dot_local/share/navi/cheats/dotfiles/*.cheat`.
+Three places, no more:
+
+- The source itself (step 1). The comment beside a pinned binary in
+  `.chezmoiexternal.toml.tmpl` is its documentation.
+- `home/dot_claude/dotfiles-tools.md.tmpl`: the one reference for tools,
+  aliases and helpers, read by Claude Code and linked from the README. The
+  container test fails when the zshrc defines an alias or helper that this
+  file does not name.
 - `scripts/verify.sh`: add new commands to the right machine's list.
-- `tests/`: extend the checks that cover the change (`tests/machine.sh`,
-  `tests/shell-functions.sh`, `tests/overrides.sh`).
+
+Touch a guide in `docs/` only when the change alters what it explains
+(`SHELL.md`, `GIT.md`, `TERMINALS.md`, `VISUALS.md`, `EDITORS.md`, …), the
+README only when the install steps change, and a navi cheat sheet
+(`home/dot_local/share/navi/cheats/dotfiles/*.cheat`) only for a command
+worth recalling with Ctrl+G. Extend `tests/` when the change adds behaviour.
 
 ## 3. Check
 

@@ -51,6 +51,29 @@ for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/pr
 done
 echo 'ok - .gitignore covers every local override file'
 
+step 'Hand-written colours belong to the Dusk palette'
+# The palette is what the three generated files contain; Dusk.colors writes
+# its colours as r,g,b.
+generated=(home/dot_config/kitty/dusk.conf home/dot_config/nvim/lua/dusk_palette.lua
+  home/dot_local/share/color-schemes/Dusk.colors)
+palette="$({
+  grep -ohiE '#[0-9a-f]{6}' "${generated[@]}"
+  grep -oE '=[0-9]+,[0-9]+,[0-9]+$' "${generated[2]}" | tr -d '=' |
+    while IFS=, read -r red green blue; do printf '#%02X%02X%02X\n' "$red" "$green" "$blue"; done
+} | tr 'a-f' 'A-F' | sort -u)"
+# Tints mixed by hand: delta's four diff backgrounds, then the background and
+# selection of a Kitty window connected over SSH.
+tints=('#2F3A32' '#3D5040' '#45302E' '#5E3B39' '#2E2322' '#4A3534')
+strangers="$(grep -noiE '#[0-9a-f]{6}' home/dot_tmux.conf home/dot_config/starship.toml.tmpl \
+  home/dot_config/yazi/theme.toml home/dot_zshrc.tmpl home/dot_gitconfig \
+  home/dot_config/fastfetch/config.jsonc.tmpl home/dot_config/kitty/ssh-remote.conf |
+  tr 'a-f' 'A-F' | grep -vF -f <(printf '%s\n' "$palette" "${tints[@]}") || true)"
+if [[ -n "$strangers" ]]; then
+  printf 'not in the palette:\n%s\n' "$strangers"
+  exit 1
+fi
+echo 'ok - every hex colour is in the palette or a listed tint'
+
 step 'Dropped platforms are gone'
 # .chezmoiremove names the files those platforms left behind, and GitHub's
 # Linux runners are called ubuntu-latest.

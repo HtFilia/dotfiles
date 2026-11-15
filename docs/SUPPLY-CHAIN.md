@@ -18,19 +18,9 @@ lists package names; versions follow the repositories.
 
 ## Pinned binaries
 
-| Binary | Version | Machines | Reason |
-|---|---|---|---|
-| chezmoi | 2.73.3 | Debian | Not packaged in Debian 13 |
-| Neovim | 0.12.6 | Debian | Debian ships 0.10.4; the pinned LazyVim needs 0.11.2 |
-| uv, uvx | 0.13.6 | Debian | Not packaged in Debian 13 |
-| yq | 4.54.1 | Debian workstation | Debian's `yq` is a different tool |
-| actionlint | 1.7.12 | Fedora, Debian | Packaged in neither |
-| yazi, ya (and their zsh completions) | 26.9.1 | Fedora | Not packaged in Fedora 44 |
-| gping | 1.21.0 | Fedora | Not packaged in Fedora 44 |
-| fzf-tab (zsh plugin) | 1.3.0 | Fedora | Packaged nowhere; the tag's source archive |
-
-Each entry in [`.chezmoiexternal.toml.tmpl`](../home/.chezmoiexternal.toml.tmpl)
-has the release URL and the archive's SHA256; chezmoi refuses an archive whose
+[`.chezmoiexternal.toml.tmpl`](../home/.chezmoiexternal.toml.tmpl) is the
+list: each entry has a comment giving the machines and the reason, the
+release URL and the archive's SHA256; chezmoi refuses an archive whose
 checksum differs. The README's Debian install pins the same chezmoi archive.
 
 `just outdated` lists the pins that are behind their project's latest

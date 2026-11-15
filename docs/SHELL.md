@@ -30,7 +30,7 @@ export DOTFILES_ENABLE_COMMAND_OVERRIDES=1
 
 Replacements that accept the original command's everyday arguments are always
 on: `ls`/`tree` → eza, `cat` → bat, `vi`/`vim` → Neovim and `top` → htop; see
-[aliases](ALIASES.md). The flag adds those whose arguments differ: `less` →
+the [tools and aliases reference](../home/dot_claude/dotfiles-tools.md.tmpl). The flag adds those whose arguments differ: `less` →
 bat, `grep` → rg, `find` → fd, and `mkdir` → `mkdir -p`. Leave it unset if
 that causes friction. `command NAME` or `\NAME` runs the original command, and
 shell scripts do not inherit aliases.

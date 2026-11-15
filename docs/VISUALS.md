@@ -8,12 +8,17 @@ half of the Alpenglow & Dusk palette, whose day half (Alpenglow) colours the
 author's web apps; every text colour passes WCAG AA. There is no theme
 switcher: the desktop stays dark.
 
-Three files are generated from that palette and should not be edited by hand:
+The palette lives in the author's private homelab repository
+(`palette/tokens.toml`); `just palette` there regenerates every consumer,
+this repository included. Three files here are generated from it and should
+not be edited by hand:
 `home/dot_local/share/color-schemes/Dusk.colors` (Plasma),
 `home/dot_config/kitty/dusk.conf` (Kitty) and
 `home/dot_config/nvim/lua/dusk_palette.lua` (Neovim's base16 colours). tmux,
 Starship, yazi, fzf, zsh suggestions and fastfetch carry the same hex values
-in their own configuration files. bat and delta highlight syntax with the
+in their own configuration files; `tests/repo.sh` refuses a hex colour there
+that is not in the generated files, apart from the diff and SSH tints it
+lists. bat and delta highlight syntax with the
 terminal's ANSI colours (their `ansi` theme), so they follow Dusk too. VS Code
 keeps Gruvbox Material.
 

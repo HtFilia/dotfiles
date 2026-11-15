@@ -148,20 +148,32 @@ not this file.
   `~/.gitconfig.local`, `~/.ssh/config.local`, `~/.tmux.conf.local` and
   `~/.config/kitty/kitty.d/*.conf`.
 
-## Aliases in the user's terminal
+## Aliases and helpers in the user's terminal
+
+This section is the reference for every alias and helper the managed
+`~/.zshrc` defines; `tests/machine.sh` fails when one is missing here. Many
+exist only when their tool is installed. `command NAME` or `\NAME` runs the
+original command.
 
 | Typed | Runs |
 |---|---|
 | `ls`, `ll`, `la` | eza with icons and directories first; `ll` and `la` add a header, Git status and ISO dates |
 | `tree`, `lt`, `ltt` | `eza --tree`, at any depth, two or three levels |
-| `cat` | `bat --paging=never --style=plain` |
+| `cat` | `bat --paging=never --style=plain`: highlighted, and unchanged when piped |
 | `cd` | zoxide's `z` |
+| `..`, `...`, `....`, `-` | parent directories; the previous directory |
+| `mkd`, `mkcd DIR` | `mkdir -p`; create a directory and enter it |
 | `vi`, `vim` | `nvim` |
 | `top` | `htop` |
 | `fd` | `fd --hidden --exclude .git` |
 | `grep`, `diff`, `ip` | the same command with colour |
 | `df`, `du`, `free` | human-readable sizes |
+| `open` | `xdg-open` |
+| `helpme` | `tldr` |
 | `lg`, `ai`, `air` | LazyGit; Claude; Claude resuming a session |
+| `uvr`, `uvs`, `uva`, `uvp`, `pyi`, `pyls` | `uv run`, `sync`, `add`, `pip`, `pip install`, `pip list` |
+| `sc`, `scu`, `jcf`, `jcu`, `jcb` | `systemctl`, `systemctl --user`, `journalctl -fu`, `-u`, `-b` |
+| `reload`, `zshconfig`, `nvimconfig`, `dotfiles` | `exec zsh`; edit `~/.zshrc`; edit `~/.config/nvim`; `chezmoi cd` |
 {{- if $fedora }}
 | `y` | yazi; quitting with `q` moves the shell to yazi's last directory |
 | `s`, `icat`, `kd` | Inside Kitty only: `kitten ssh`, `kitten icat`, `kitten diff` |
@@ -175,7 +187,22 @@ not this file.
 {{- end }}
 
 `DOTFILES_ENABLE_COMMAND_OVERRIDES=1` in `~/.zshrc.settings` also maps `less`
-to bat, `grep` to rg, `find` to fd and `mkdir` to `mkdir -p`. Shell helpers:
-`fe`, `fcd`, `frg`, `fga`, `fh`, `fkill`, `groot`, `gclone`, `gwip`, `gunwip`,
-`mkcd`, `extract`, `serve`, `psg`, `activate`, `tm`. All of them are described
-in `~/.local/share/chezmoi/docs/ALIASES.md`.
+to bat, `grep` to rg, `find` to fd and `mkdir` to `mkdir -p`.
+
+| Helper | Does |
+|---|---|
+| `fe`, `fcd` | pick a file with fzf and edit it; pick a directory and enter it |
+| `frg PATTERN` | search contents with ripgrep, pick a match, open `$EDITOR` at that line |
+| `fga` | pick changed or untracked files, with a diff preview, and stage them |
+| `fh [QUERY]` | pick a history line and put it on the prompt for editing |
+| `fkill [SIGNAL]` | pick processes and signal them, TERM by default |
+| `psg QUERY` | search the running processes |
+| `groot`, `gclone URL [DIR]` | enter the repository root; clone and enter |
+| `gwip`, `gunwip` | commit everything as a timestamped WIP; undo only such a commit |
+| `tm [NAME]` | create or attach a tmux session, named after the directory by default |
+| `extract ARCHIVE` | unpack with the matching tool (rar and 7z need theirs installed) |
+| `serve [PORT] [ADDRESS]` | `python3 -m http.server`, on localhost:8000 by default |
+| `activate` | source `.venv` or `venv` |
+
+The file pickers pass names NUL-delimited, so spaces and colons are safe.
+`fe` and `frg` expect `$EDITOR` to name a program, not a command with flags.

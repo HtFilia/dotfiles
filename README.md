@@ -119,7 +119,8 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 
 [Local overrides](docs/LOCAL-OVERRIDES.md) ·
 [Migration from the former scripts](docs/MIGRATION.md) ·
-[Shell](docs/SHELL.md) · [Aliases](docs/ALIASES.md) · [Git](docs/GIT.md) ·
+[Shell](docs/SHELL.md) ·
+[Tools and aliases](home/dot_claude/dotfiles-tools.md.tmpl) · [Git](docs/GIT.md) ·
 [SSH](docs/SSH.md) · [Kitty and tmux](docs/TERMINALS.md) ·
 [Neovim and VS Code](docs/EDITORS.md) · [Runtimes](docs/RUNTIMES.md) ·
 [Keybindings](docs/KEYBINDINGS.md) · [Appearance](docs/VISUALS.md) ·

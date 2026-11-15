@@ -11,7 +11,7 @@ border_style   = { fg = "#3D3936" }
 
 [tabs]
 active   = { fg = "#24211F", bg = "#AE9FDB", bold = true }
-inactive = { fg = "#7C736D", bg = "#1D1B19" }
+inactive = { fg = "#7C736D", bg = "#1E1B19" }
 
 [mode]
 normal_main = { fg = "#24211F", bg = "#AE9FDB", bold = true }

@@ -86,6 +86,30 @@ done
 step 'zsh helpers'
 bash "$root/tests/shell-functions.sh"
 
+step 'The tools reference names every alias and helper'
+# The aliases that ~/.zshrc adds to those of a zsh without it (the system's
+# and zsh's own), and the functions it defines (a leading _ marks an
+# internal one).
+empty="$(mktemp -d)"
+# shellcheck disable=SC2016
+list_aliases='print -l -- ${(ko)aliases}'
+names="$({
+  comm -23 <(env -u CLAUDECODE zsh -ic "$list_aliases" 2>/dev/null | sort -u) \
+    <(ZDOTDIR="$empty" zsh -ic "$list_aliases" 2>/dev/null | sort -u)
+  sed -nE 's/^([a-z][a-z0-9_-]*)\(\) \{.*/\1/p' "$HOME/.zshrc"
+} | sort -u)"
+rmdir "$empty"
+missing=()
+while IFS= read -r name; do
+  # Named alone, or followed by its arguments: `fh` or `fh [QUERY]`.
+  grep -qF -e "\`$name\`" -e "\`$name " "$HOME/.claude/dotfiles-tools.md" || missing+=("$name")
+done <<<"$names"
+((${#missing[@]} == 0)) || {
+  printf 'not in dotfiles-tools.md: %s\n' "${missing[*]}"
+  exit 1
+}
+echo "ok - $(wc -l <<<"$names") aliases and helpers are documented"
+
 step 'Local overrides'
 bash "$root/tests/overrides.sh"
 
