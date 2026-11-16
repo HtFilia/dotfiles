@@ -19,8 +19,7 @@ the few pinned binaries a platform lacks.
 ## Install
 
 Run the commands as your regular user. The package scripts print what they
-install and say so before each command that uses sudo. A machine set up with
-the former Bash scripts follows the [migration guide](docs/MIGRATION.md) once.
+install and say so before each command that uses sudo.
 
 ### Fedora
 
@@ -118,7 +117,6 @@ The package manager upgrades packaged tools (`dnf upgrade`,
 ## Guides
 
 [Local overrides](docs/LOCAL-OVERRIDES.md) ·
-[Migration from the former scripts](docs/MIGRATION.md) ·
 [Shell](docs/SHELL.md) ·
 [Tools and aliases](home/dot_claude/dotfiles-tools.md.tmpl) · [Git](docs/GIT.md) ·
 [SSH](docs/SSH.md) · [Kitty and tmux](docs/TERMINALS.md) ·

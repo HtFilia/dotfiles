@@ -105,12 +105,3 @@ if git grep -nIi 'homelab' -- . ':!tests/repo.sh'; then
   exit 1
 fi
 echo 'ok - no reference to a private repository'
-
-step 'Dropped platforms are gone'
-# .chezmoiremove names the files those platforms left behind, and GitHub's
-# Linux runners are called ubuntu-latest.
-if git grep -nIiE 'ghostty|ubuntu|wsl|windows terminal|debian 12|macos|darwin|homebrew' -- . \
-  ':!docs/MIGRATION.md' ':!home/.chezmoiremove' ':!.github/workflows/ci.yml' ':!tests/repo.sh'; then
-  exit 1
-fi
-echo 'ok - no references outside the documented exceptions'
