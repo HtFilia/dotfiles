@@ -143,6 +143,11 @@ not this file.
   `~/.local/share/chezmoi/home` (`.tmpl` files are templates), check with
   `chezmoi diff`, deploy with `chezmoi apply`. `scripts/verify.sh` in that
   checkout checks the machine.
+{{- if eq .profile "server" }}
+- A daily user timer (`dotfiles-update.timer`) pulls and applies file
+  changes without the scripts; `just vps-update` in the checkout runs those,
+  with sudo.
+{{- end }}
 - Settings for this machine only go in the local files, which chezmoi leaves
   alone: `~/.zshrc.settings`, `~/.zshrc.local`, `~/.zshenv.local`,
   `~/.gitconfig.local`, `~/.ssh/config.local`, `~/.tmux.conf.local` and

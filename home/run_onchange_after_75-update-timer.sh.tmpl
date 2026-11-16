@@ -1,0 +1,17 @@
+{{- if eq .profile "server" -}}
+#!/usr/bin/env bash
+# Enable the daily dotfiles update on the server. No sudo.
+# Units: {{ include "dot_config/systemd/user/dotfiles-update.service" | sha256sum }} {{ include "dot_config/systemd/user/dotfiles-update.timer" | sha256sum }}
+set -euo pipefail
+
+if ! systemctl --user show-environment >/dev/null 2>&1; then
+  echo "No systemd user manager here: enable the timer later with" \
+    "systemctl --user enable --now dotfiles-update.timer"
+  exit 0
+fi
+systemctl --user daemon-reload
+systemctl --user enable --now dotfiles-update.timer
+if [[ "$(loginctl show-user "$USER" --property=Linger --value 2>/dev/null)" != yes ]]; then
+  echo "The update timer runs only during a login session until: sudo loginctl enable-linger $USER"
+fi
+{{ end -}}

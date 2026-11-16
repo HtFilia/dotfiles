@@ -20,6 +20,10 @@
 {{- if or (ne $osid "fedora") (not .gaming) }}
 .local/share/dotfiles/starship-vram
 {{- end }}
+{{- if ne .profile "server" }}
+.config/systemd/user/dotfiles-update.service
+.config/systemd/user/dotfiles-update.timer
+{{- end }}
 {{- if eq .profile "server" }}
 .config/user-dirs.dirs
 .config/user-dirs.conf

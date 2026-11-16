@@ -31,10 +31,16 @@ pull alone does not activate new configuration.
 
 ## Changes and recovery
 
+A daily user timer, `dotfiles-update.timer`, pulls this repository and applies
+its file changes (`chezmoi update --exclude=scripts`). It never runs the
+scripts, which need sudo, and it stops instead of overwriting a managed file
+that was edited on the server. `sudo loginctl enable-linger $USER` lets it run
+without an open session; `journalctl --user -u dotfiles-update` shows its runs.
+
 ```sh
 sudo apt update && sudo apt upgrade   # packages
 chezmoi diff                          # preview configuration changes
-chezmoi update                        # pull, apply, run changed package scripts
+just vps-update                       # from `chezmoi cd`: pull, apply, run changed scripts with sudo, verify
 ```
 
 Pinned binaries (chezmoi, Neovim, actionlint) change when their entry in

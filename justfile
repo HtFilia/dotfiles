@@ -28,6 +28,11 @@ apply:
     chezmoi apply
     scripts/verify.sh
 
+# Pull and apply everything, package and baseline scripts included (sudo); the daily timer on the server skips those
+vps-update:
+    chezmoi update
+    scripts/verify.sh
+
 # Check this machine's tools and files
 verify:
     scripts/verify.sh

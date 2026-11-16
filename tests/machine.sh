@@ -110,6 +110,17 @@ done <<<"$names"
 }
 echo "ok - $(wc -l <<<"$names") aliases and helpers are documented"
 
+if [[ "$(chezmoi execute-template '{{ .profile }}')" == server ]]; then
+  step 'The daily update units are deployed'
+  for unit in dotfiles-update.service dotfiles-update.timer; do
+    [[ -f "$HOME/.config/systemd/user/$unit" ]] || {
+      printf 'missing: %s\n' "$unit"
+      exit 1
+    }
+  done
+  echo 'ok - dotfiles-update.service and dotfiles-update.timer'
+fi
+
 step 'Local overrides'
 bash "$root/tests/overrides.sh"
 

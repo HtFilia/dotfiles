@@ -1,0 +1,11 @@
+# Pulls the dotfiles and applies their file changes, without the scripts:
+# those need sudo and run with `just vps-update`. A file edited in place
+# since the last apply makes the run fail instead of being overwritten.
+[Unit]
+Description=Apply the dotfiles' file changes
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/chezmoi update --no-tty --exclude=scripts
