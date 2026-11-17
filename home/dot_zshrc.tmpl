@@ -97,7 +97,9 @@ fi
 
 if _dotfiles_safe_source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
   ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#7C736D"
+  # A palette index, not a hex colour: zsh 5.9 does not redraw an accepted
+  # suggestion whose highlight is 24-bit. Dusk sets colour 8 to #7C736D.
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"
 fi
 
 export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"
