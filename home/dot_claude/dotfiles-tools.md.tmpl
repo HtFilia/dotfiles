@@ -150,10 +150,15 @@ not this file.
   changes without the scripts; `just vps-update` in the checkout runs those,
   with sudo.
 {{- end }}
-- Settings for this machine only go in the local files, which chezmoi leaves
-  alone: `~/.zshrc.settings`, `~/.zshrc.local`, `~/.zshenv.local`,
-  `~/.gitconfig.local`, `~/.ssh/config.local`, `~/.tmux.conf.local` and
-  `~/.config/kitty/kitty.d/*.conf`.
+- Settings for this machine only go in local files, which chezmoi never
+  writes: `~/.zshrc.settings`, `~/.zshrc.local`, `~/.zshenv.local`,
+  `~/.gitconfig` or `~/.gitconfig.local`, `~/.ssh/config.local`,
+  `~/.tmux.conf.local`, `~/.config/kitty/kitty.d/*.conf`,
+  `~/.config/lazygit/config.local.yml`, and `NAME.local.EXT` beside the
+  Starship, ripgrep, yazi, navi, tealdeer, fastfetch and VS Code configs.
+  `chezmoi apply` merges the last group, so run it after editing one. Never
+  edit a managed file for a machine-only change: the next apply reverts it.
+  The full table is in `docs/LOCAL-OVERRIDES.md` of the dotfiles.
 
 ## Aliases and helpers in the user's terminal
 

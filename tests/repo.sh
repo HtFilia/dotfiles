@@ -62,6 +62,30 @@ for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/pr
 done
 echo 'ok - .gitignore covers every local override file'
 
+step 'Every managed config has a machine-local override'
+# Each deployed config, under ~/.config or directly in ~, needs a row in
+# docs/LOCAL-OVERRIDES.md naming its path. ~/.local and ~/.claude hold data
+# and generated references, not settings.
+target_name() { sed -E 's/(^|\/)(create_|private_|executable_|modify_|empty_)+/\1/g; s/(^|\/)dot_/\1./g; s/\.tmpl$//' <<<"$1"; }
+missing=()
+for source in home/dot_config/* home/dot_* home/private_dot_* home/create_dot_*; do
+  [[ -e "$source" ]] || continue
+  case "$source" in home/dot_config | home/dot_local | home/dot_claude) continue ;; esac
+  target="$(target_name "${source#home/}")"
+  [[ "$target" == .ssh ]] && target=.ssh/config
+  # A single file under ~/.config matches its local file too (starship.toml,
+  # starship.local.toml).
+  [[ "$target" == .config/*.* ]] && target="${target%.*}"
+  tilde='~'
+  documented="$tilde/$target"
+  grep -qF "$documented" docs/LOCAL-OVERRIDES.md || missing+=("$documented")
+done
+if ((${#missing[@]})); then
+  printf 'no row in docs/LOCAL-OVERRIDES.md for: %s\n' "${missing[@]}"
+  exit 1
+fi
+echo 'ok - docs/LOCAL-OVERRIDES.md covers every managed config'
+
 step 'Hand-written colours belong to the Dusk palette'
 # The palette is what the three generated files contain; Dusk.colors writes
 # its colours as r,g,b.

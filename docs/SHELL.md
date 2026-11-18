@@ -35,8 +35,9 @@ bat, `grep` → rg, `find` → fd, and `mkdir` → `mkdir -p`. Leave it unset if
 that causes friction. `command NAME` or `\NAME` runs the original command, and
 shell scripts do not inherit aliases.
 
-Point `STARSHIP_CONFIG` or `RIPGREP_CONFIG_PATH` at a
-local copy there to replace a managed configuration on one machine. Use
+Starship and ripgrep settings for one machine go in
+`~/.config/starship.local.toml` and `~/.config/ripgrep/config.local`, merged by
+`chezmoi apply` ([local overrides](LOCAL-OVERRIDES.md)). Use
 `~/.zshrc.local` for final aliases/environment changes and custom widgets.
 Syntax highlighting loads after those widgets. Local files execute shell code;
 keep them private and review copied content.

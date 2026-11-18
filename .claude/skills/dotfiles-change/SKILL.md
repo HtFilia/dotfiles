@@ -17,7 +17,7 @@ gaming). Decide first which machines a change targets; ask if unclear
 |---|---|
 | Package from dnf, APT or COPR | `home/.chezmoidata/packages.yaml`, in the list for the right OS and profile/context/gaming |
 | Binary not packaged (pinned GitHub release) | `home/.chezmoiexternal.toml.tmpl`, with a checksum and a comment giving the reason |
-| Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables) |
+| Config file | the matching path under `home/` (`dot_` = `.`, `.tmpl` = template, guard with the machine's variables), plus its machine-local override: the tool's own include of a local file if it has one, otherwise the managed text in `home/.chezmoitemplates/managed/` and a wrapper calling `local-merge`. Add its row to `docs/LOCAL-OVERRIDES.md`; `tests/repo.sh` fails without it. A file the tool writes itself (like `~/.gitconfig`) is `create_` or merged by a `modify_` script, never plainly managed |
 | Alias or shell helper | the zsh files under `home/`; aliases that replace standard commands stay off when `CLAUDECODE=1` |
 | Colours (Plasma, Kitty, nvim) | `Dusk.colors`, `kitty/dusk.conf` and `nvim/lua/dusk_palette.lua` are the output of a palette generator kept outside this repository (the user's private instructions say where): never edit them by hand, change the palette and regenerate. tmux, Starship, yazi, fzf and fastfetch carry Dusk hex values by hand, and `tests/repo.sh` refuses a hex value that is not in the palette |
 
