@@ -46,10 +46,15 @@ bash tests/git-migration.sh
 step 'VS Code merges keep the UI and the local files'
 bash tests/vscode-merge.sh
 
+step 'Configs merged with a local file at apply time'
+bash tests/local-merge.sh
+
 step 'Local override files cannot be committed'
 for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/private_config.local \
   home/dot_config/kitty/kitty.d/screen.conf home/dot_config/nvim/lua/config/local.lua \
-  home/dot_config/nvim/lua/plugins/local.lua home/dot_config/Code/User/settings.local.json; do
+  home/dot_config/nvim/lua/plugins/local.lua home/dot_config/Code/User/settings.local.json \
+  home/dot_config/starship.local.toml home/dot_config/ripgrep/config.local \
+  home/dot_config/lazygit/config.local.yml home/dot_config/fastfetch/config.local.jsonc; do
   git check-ignore -q "$path" || {
     printf 'not ignored: %s\n' "$path"
     exit 1
@@ -70,9 +75,9 @@ palette="$({
 # Tints mixed by hand: delta's four diff backgrounds, then the background and
 # selection of a Kitty window connected over SSH.
 tints=('#2F3A32' '#3D5040' '#45302E' '#5E3B39' '#2E2322' '#4A3534')
-strangers="$(grep -noiE '#[0-9a-f]{6}' home/dot_tmux.conf home/dot_config/starship.toml.tmpl \
-  home/dot_config/yazi/theme.toml home/dot_zshrc.tmpl home/dot_config/git/config \
-  home/dot_config/fastfetch/config.jsonc.tmpl home/dot_config/kitty/ssh-remote.conf |
+strangers="$(grep -noiE '#[0-9a-f]{6}' home/dot_tmux.conf home/.chezmoitemplates/managed/starship.toml \
+  home/.chezmoitemplates/managed/yazi-theme.toml home/dot_zshrc.tmpl home/dot_config/git/config \
+  home/.chezmoitemplates/managed/fastfetch.jsonc home/dot_config/kitty/ssh-remote.conf |
   tr 'a-f' 'A-F' | grep -vF -f <(printf '%s\n' "$palette" "${tints[@]}") || true)"
 if [[ -n "$strangers" ]]; then
   printf 'not in the palette:\n%s\n' "$strangers"
@@ -87,7 +92,7 @@ bound_keys() {
   # tmux: the first word after bind and its options.
   sed -nE 's/^bind(-key)?( +-[nr]| +-T +[^ ]+)* +([^ ]+).*/tmux:\3/p' home/dot_tmux.conf
   sed -nE 's/^map +([^ ]+).*/kitty:\1/p' home/dot_config/kitty/kitty.conf.tmpl
-  grep -oE 'on *= *("[^"]+"|\[[^]]*\])' home/dot_config/yazi/keymap.toml |
+  grep -oE 'on *= *("[^"]+"|\[[^]]*\])' home/.chezmoitemplates/managed/yazi-keymap.toml |
     grep -oE '"[^"]+"' | sed 's/^/yazi:/'
   sed -nE 's/^ +[A-Za-z0-9-]+: +(.+)$/lazygit:\1/p' home/dot_config/lazygit/config.yml
   sed -nE 's/^ *"key": *"([^"]+)".*/vscode:\1/p' home/.chezmoitemplates/vscode/keybindings.jsonc

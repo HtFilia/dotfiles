@@ -1,0 +1,110 @@
+{{- $osid := includeTemplate "osid" . -}}
+# A compact two-line prompt in the Dusk palette, matching Kitty and tmux.
+add_newline = true
+command_timeout = 500
+format = "[┌─](bold #7C736D)$username$hostname$directory$git_branch$git_status$line_break[└─](bold #7C736D)$character"
+{{- if eq $osid "fedora" }}
+right_format = "$jobs$status$python$nodejs$rust$golang$cmd_duration${custom.tmux}${custom.load}{{ if .gaming }}${custom.vram}{{ end }}"
+{{- else }}
+right_format = "$python$nodejs$rust$golang$cmd_duration"
+{{- end }}
+
+[username]
+show_always = false
+format = "[$user]($style)@"
+style_user = "#C9C0B8"
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) "
+style = "#8FAFD3"
+
+[directory]
+format = "[ $path]($style)[$read_only]($read_only_style) "
+style = "bold #AE9FDB"
+read_only = " "
+read_only_style = "#D9B26F"
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = "…/"
+
+[git_branch]
+format = "[│ $branch]($style) "
+style = "#86B8B4"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "#D9B26F"
+conflicted = "=${count}"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[cmd_duration]
+min_time = 2_000
+format = "[· $duration]($style) "
+style = "#C9C0B8"
+
+[python]
+format = "[py $version]($style) "
+style = "#D9B26F"
+
+[nodejs]
+format = "[node $version]($style) "
+style = "#8FB39A"
+
+[rust]
+format = "[rs $version]($style) "
+style = "#E08C8C"
+
+[golang]
+format = "[go $version]($style) "
+style = "#86B8B4"
+
+[character]
+success_symbol = "[❯](bold #8FB39A)"
+error_symbol = "[✗](bold #E08C8C)"
+vimcmd_symbol = "[❮](bold #8FAFD3)"
+{{- if eq $osid "fedora" }}
+
+[jobs]
+symbol = "\uf013 "
+format = "[$symbol$number]($style) "
+style = "#D9A0A0"
+
+[status]
+disabled = false
+format = "[$symbol$status]($style) "
+symbol = "\u2718 "
+style = "#E08C8C"
+
+# Custom modules run through sh rather than STARSHIP_SHELL (zsh), which
+# starts more slowly.
+[custom.tmux]
+when = 'test -n "$TMUX"'
+command = "tmux display-message -p '#S'"
+shell = ["sh"]
+format = "[\uebc8 $output]($style) "
+style = "#86B8B4"
+
+[custom.load]
+when = true
+command = "cut -d' ' -f1 /proc/loadavg"
+shell = ["sh"]
+format = "[\uf4bc $output]($style) "
+style = "#7C736D"
+{{-   if .gaming }}
+
+[custom.vram]
+when = true
+command = "~/.local/share/dotfiles/starship-vram"
+shell = ["sh"]
+format = "[\U000F08AE $output]($style) "
+style = "#8FB39A"
+{{-   end }}
+{{- end }}

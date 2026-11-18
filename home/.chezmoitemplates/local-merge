@@ -1,0 +1,59 @@
+{{- /*
+  Merges a machine-local file into a managed config at apply time, for tools
+  that cannot include a second file themselves. Without the local file the
+  managed text is deployed unchanged, comments included.
+
+  Arguments (a dict):
+    text     the managed config, already rendered
+    local    absolute path of the local file
+    format   "toml", "yaml" or "jsonc": deep merge, the local file wins and
+             replaces lists; "append": the local lines follow the managed ones
+    replace  optional top-level keys the local file replaces as a whole
+    prepend  optional: in each section, a list the local file sets is put
+             before the managed list instead of replacing it (yazi keymaps,
+             where the first match wins)
+
+  A merged file loses the managed comments and key order, and a change to
+  the local file needs `chezmoi apply`.
+*/ -}}
+{{- $comment := "#" -}}
+{{- if eq .format "jsonc" }}{{ $comment = "//" }}{{ end -}}
+{{- $header := printf "%s Written by chezmoi: the dotfiles' config merged with %s.\n%s Edit that file, then run chezmoi apply.\n" $comment .local $comment -}}
+{{- if not (stat .local) -}}
+{{-   .text -}}
+{{- else if eq .format "append" -}}
+{{-   .text }}
+{{ printf "%s From %s, appended by chezmoi apply." $comment .local }}
+{{ include .local -}}
+{{- else if eq (trim .text) "" -}}
+{{-   include .local -}}
+{{- else -}}
+{{-   $managed := dict -}}
+{{-   $original := dict -}}
+{{-   $local := dict -}}
+{{-   if eq .format "toml" -}}
+{{-     $managed = fromToml .text }}{{ $original = fromToml .text }}{{ $local = include .local | fromToml -}}
+{{-   else if eq .format "yaml" -}}
+{{-     $managed = fromYaml .text }}{{ $original = fromYaml .text }}{{ $local = include .local | fromYaml -}}
+{{-   else -}}
+{{-     $managed = fromJsonc .text }}{{ $original = fromJsonc .text }}{{ $local = include .local | fromJsonc -}}
+{{-   end -}}
+{{-   $merged := mergeOverwrite $managed $local -}}
+{{-   range (get . "replace" | default list) -}}
+{{-     if hasKey $local . }}{{ $_ := set $merged . (get $local .) }}{{ end -}}
+{{-   end -}}
+{{-   if get . "prepend" -}}
+{{-     range $section, $values := $local -}}
+{{-       if and (kindIs "map" $values) (hasKey $original $section) -}}
+{{-         $managedSection := get $original $section -}}
+{{-         range $key, $value := $values -}}
+{{-           if and (kindIs "slice" $value) (kindIs "map" $managedSection) (hasKey $managedSection $key) -}}
+{{-             $_ := set (get $merged $section) $key (concat $value (get $managedSection $key)) -}}
+{{-           end -}}
+{{-         end -}}
+{{-       end -}}
+{{-     end -}}
+{{-   end -}}
+{{-   $header -}}
+{{-   if eq .format "toml" }}{{ toToml $merged }}{{ else if eq .format "yaml" }}{{ toYaml $merged }}{{ else }}{{ toPrettyJson $merged }}{{ "\n" }}{{ end -}}
+{{- end -}}

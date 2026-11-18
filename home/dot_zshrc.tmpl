@@ -4,9 +4,9 @@
 # shellcheck disable=all
 {{- $osid := includeTemplate "osid" . }}
 
-# Inputs read before the integrations below: command-override flags, or
-# STARSHIP_CONFIG and RIPGREP_CONFIG_PATH pointing at a local copy of a
-# managed configuration.
+# Inputs read before the integrations below, such as command-override flags.
+# Starship and ripgrep settings for this machine go in starship.local.toml
+# and ripgrep/config.local instead, merged by chezmoi apply.
 [[ -f "$HOME/.zshrc.settings" ]] && source "$HOME/.zshrc.settings"
 
 typeset -U path PATH fpath

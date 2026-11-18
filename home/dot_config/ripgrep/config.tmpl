@@ -1,0 +1,1 @@
+{{- includeTemplate "local-merge" (dict "text" (includeTemplate "managed/ripgrep" .) "local" (joinPath .chezmoi.homeDir ".config/ripgrep/config.local") "format" "append") -}}

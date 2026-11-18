@@ -79,6 +79,20 @@ if [[ "$profile" == workstation ]]; then
     "$(kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; print(load_config(os.path.join(config_dir, "kitty.conf")).font_size)')"
 fi
 
+# Merged by chezmoi apply; removed again before the final diff.
+write ~/.config/starship.local.toml $'[character]\nsuccess_symbol = "[>](bold green)"'
+write ~/.config/ripgrep/config.local '--max-columns=150'
+chezmoi apply --no-tty
+check 'Starship: starship.local.toml is merged on apply' '[>](bold green)' \
+  "$(starship print-config character.success_symbol 2>/dev/null | sed -n 's/^success_symbol = "\(.*\)"$/\1/p')"
+check 'ripgrep: ripgrep/config.local is appended on apply' --max-columns=150 "$(tail -1 ~/.config/ripgrep/config)"
+rm ~/.config/starship.local.toml ~/.config/ripgrep/config.local
+chezmoi apply --no-tty
+
+write ~/.config/lazygit/config.local.yml 'gui: { showFileTree: false }'
+check 'LazyGit: config.local.yml is read after the managed config' \
+  "$HOME/.config/lazygit/config.yml,$HOME/.config/lazygit/config.local.yml" "$(zsh -c 'print -r -- $LG_CONFIG_FILE')"
+
 if [[ "$profile" == workstation && -f ~/.config/Code/User/settings.json ]]; then
   vscode=~/.config/Code/User
   cp "$vscode/settings.json" "$vscode/settings.json.orig"
