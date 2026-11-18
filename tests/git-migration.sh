@@ -57,9 +57,9 @@ HOME="$home" bash "$script" >/dev/null
 check 'a second run changes nothing' "$after" "$(cat "$home/.gitconfig")"
 
 # A new machine: ~/.gitconfig is the create_ stub, which has no managed value.
-cp "$root/home/create_dot_gitconfig" "$home/.gitconfig"
+cp "$root/home/create_empty_dot_gitconfig" "$home/.gitconfig"
 rm "$home/.gitconfig.before-xdg"
 HOME="$home" bash "$script" >/dev/null
-check 'a new machine keeps its stub and gets no copy' "$(cat "$root/home/create_dot_gitconfig")|absent" \
+check 'a new machine keeps its stub and gets no copy' "$(cat "$root/home/create_empty_dot_gitconfig")|absent" \
   "$(cat "$home/.gitconfig")|$([[ -e "$home/.gitconfig.before-xdg" ]] && echo present || echo absent)"
 ((failures == 0))

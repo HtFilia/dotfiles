@@ -3,7 +3,9 @@
 # ~/.config/git/config, so that ~/.gitconfig belongs to the machine. This
 # removes from ~/.gitconfig each value the dotfiles set to exactly the same
 # thing, and keeps everything else: identities, work settings, changed values.
-# tests/git-migration.sh runs it with HOME pointing at a test directory.
+# The file may end up empty, which chezmoi keeps only because the source is
+# create_empty_dot_gitconfig. tests/git-migration.sh runs this script with
+# HOME pointing at a test directory.
 set -euo pipefail
 user_file="$HOME/.gitconfig"
 managed_file="$HOME/.config/git/config"

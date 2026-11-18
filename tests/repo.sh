@@ -68,7 +68,7 @@ step 'Every managed config has a machine-local override'
 # and generated references, not settings.
 target_name() { sed -E 's/(^|\/)(create_|private_|executable_|modify_|empty_)+/\1/g; s/(^|\/)dot_/\1./g; s/\.tmpl$//' <<<"$1"; }
 missing=()
-for source in home/dot_config/* home/dot_* home/private_dot_* home/create_dot_*; do
+for source in home/dot_config/* home/dot_* home/private_dot_* home/create_*dot_*; do
   [[ -e "$source" ]] || continue
   case "$source" in home/dot_config | home/dot_local | home/dot_claude) continue ;; esac
   target="$(target_name "${source#home/}")"
