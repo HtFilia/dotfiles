@@ -43,10 +43,13 @@ done
 step 'The Git settings move keeps what the machine set'
 bash tests/git-migration.sh
 
+step 'VS Code merges keep the UI and the local files'
+bash tests/vscode-merge.sh
+
 step 'Local override files cannot be committed'
 for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/private_config.local \
   home/dot_config/kitty/kitty.d/screen.conf home/dot_config/nvim/lua/config/local.lua \
-  home/dot_config/nvim/lua/plugins/local.lua; do
+  home/dot_config/nvim/lua/plugins/local.lua home/dot_config/Code/User/settings.local.json; do
   git check-ignore -q "$path" || {
     printf 'not ignored: %s\n' "$path"
     exit 1
@@ -87,7 +90,7 @@ bound_keys() {
   grep -oE 'on *= *("[^"]+"|\[[^]]*\])' home/dot_config/yazi/keymap.toml |
     grep -oE '"[^"]+"' | sed 's/^/yazi:/'
   sed -nE 's/^ +[A-Za-z0-9-]+: +(.+)$/lazygit:\1/p' home/dot_config/lazygit/config.yml
-  sed -nE 's/^ *"key": *"([^"]+)".*/vscode:\1/p' home/dot_config/Code/User/keybindings.json
+  sed -nE 's/^ *"key": *"([^"]+)".*/vscode:\1/p' home/.chezmoitemplates/vscode/keybindings.jsonc
   sed -nE 's/^map\((\{[^}]*\}|"[^"]*"), *"([^"]+)".*/nvim:\2/p' home/dot_config/nvim/lua/config/keymaps.lua
   sed -nE 's/^vim\.g\.map(local)?leader *= *"(.*)"$/nvim:\2/p' home/dot_config/nvim/init.lua
   grep -oE -e "--bind '[^':]+" home/dot_zshrc.tmpl | sed "s/--bind '/fzf:/"

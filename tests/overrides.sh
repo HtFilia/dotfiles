@@ -79,6 +79,19 @@ if [[ "$profile" == workstation ]]; then
     "$(kitty +runpy 'from kitty.config import load_config; from kitty.constants import config_dir; import os; print(load_config(os.path.join(config_dir, "kitty.conf")).font_size)')"
 fi
 
+if [[ "$profile" == workstation && -f ~/.config/Code/User/settings.json ]]; then
+  vscode=~/.config/Code/User
+  cp "$vscode/settings.json" "$vscode/settings.json.orig"
+  write "$vscode/settings.local.json" '{ "editor.fontSize": 19 }'
+  sed -i 's/^{$/{\n  "overrides.ui": "kept",/' "$vscode/settings.json"
+  chezmoi apply --no-tty
+  check 'VS Code: settings.local.json wins and keys added in the UI stay' '2' \
+    "$(grep -cE '"editor.fontSize": 19|"overrides.ui": "kept"' "$vscode/settings.json")"
+  # The merge depends on the local file: remove it before the final diff.
+  rm "$vscode/settings.local.json"
+  mv "$vscode/settings.json.orig" "$vscode/settings.json"
+fi
+
 htoprc=~/.config/htop/htoprc
 cp "$htoprc" "$htoprc.orig"
 printf 'delay=20\n' >>"$htoprc"

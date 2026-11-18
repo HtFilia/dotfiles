@@ -1,0 +1,12 @@
+#!/bin/sh
+# Merges the dotfiles' VS Code settings with the ones written in VS Code and
+# ~/.config/Code/User/settings.local.json (see vscode/merge.js). A shell wrapper:
+# chezmoi names the script settings.json, which node would load as JSON.
+script=$(
+  cat <<'NODE'
+const kind = "settings";
+const managedText = {{ includeTemplate "vscode/settings.jsonc" . | toJson }};
+{{ includeTemplate "vscode/merge.js" . }}
+NODE
+)
+exec node -e "$script"

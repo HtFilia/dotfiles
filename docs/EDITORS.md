@@ -43,11 +43,18 @@ highlighting for the rest.
 
 ## VS Code
 
-`settings.json` and `keybindings.json` are deployed to `~/.config/Code/User`. The repository installs
-VS Code on Fedora; on the Debian work workstation it deploys the
-settings only once `code` is on PATH. A setting changed in VS Code's UI changes
-the deployed copy: `chezmoi diff` shows it, and you `chezmoi re-add` it
-or keep it in a VS Code profile.
+The repository installs VS Code on Fedora; on the Debian work workstation it
+deploys the settings only once `code` is on PATH. chezmoi does not copy
+`~/.config/Code/User/settings.json` and `keybindings.json` but merges them on
+each apply (`home/.chezmoitemplates/vscode/`):
+
+- the dotfiles' settings win over the same keys changed in VS Code's UI;
+- settings and keybindings added in the UI stay;
+- `settings.local.json` and `keybindings.local.json`, next to them, win over
+  both. Run `chezmoi apply` after editing them.
+
+Comments in the deployed files are not kept. A key removed from the dotfiles
+or from a local file stays in `settings.json` until you remove it in VS Code.
 
 The extensions listed under `vscode` in `packages.yaml` are installed when the
 list changes. The AI extension (Claude Code) is listed for the `perso`

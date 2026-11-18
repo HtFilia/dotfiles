@@ -1,0 +1,12 @@
+#!/bin/sh
+# Merges the dotfiles' VS Code keybindings with the ones written in VS Code and
+# ~/.config/Code/User/keybindings.local.json (see vscode/merge.js). A shell wrapper:
+# chezmoi names the script keybindings.json, which node would load as JSON.
+script=$(
+  cat <<'NODE'
+const kind = "keybindings";
+const managedText = {{ includeTemplate "vscode/keybindings.jsonc" . | toJson }};
+{{ includeTemplate "vscode/merge.js" . }}
+NODE
+)
+exec node -e "$script"

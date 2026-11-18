@@ -14,6 +14,7 @@
 # repository (including copies made with `chezmoi add`).
 # ============================================================================
 *.local
+*.local.*
 *zshrc.settings
 kitty.d/
 **/nvim/lua/config/local.lua

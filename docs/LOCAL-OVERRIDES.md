@@ -22,7 +22,7 @@ copied into the repository.
 | Neovim | LazyVim imports all of `lua/plugins/`; `options.lua` ends with `pcall(require, "config.local")` | `lua/plugins/local.lua`, `lua/config/local.lua` |
 | Starship, ripgrep | No include: point `STARSHIP_CONFIG` or `RIPGREP_CONFIG_PATH` at a copy, in `~/.zshrc.settings` | Your copy of the file |
 | htop | `create_` prefix: deployed once, never overwritten | `~/.config/htop/htoprc` itself |
-| VS Code | None | VS Code profiles, or the project's `.vscode/settings.json` |
+| VS Code | chezmoi merges the local files on apply; keys added in the UI stay | `~/.config/Code/User/settings.local.json`, `keybindings.local.json` |
 
 `tests/overrides.sh` checks each row on every test machine.
 
