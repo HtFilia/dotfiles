@@ -25,8 +25,8 @@ applications or containers. Neovim gets the Python and shell language servers
 Answer `systemBaseline` with `true` to apply the system baseline described
 below. It does not manage SSH, networking, the firewall or application services.
 
-chezmoi keeps local identities and SSH hosts in `.gitconfig.local` and
-`.ssh/config.local` untouched. Server files are independent copies, so a Git
+chezmoi keeps local identities and SSH hosts in `.gitconfig`,
+`.gitconfig.local` and `.ssh/config.local` untouched. Server files are independent copies, so a Git
 pull alone does not activate new configuration.
 
 ## Changes and recovery

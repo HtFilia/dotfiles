@@ -15,7 +15,7 @@ copied into the repository.
 |---|---|---|
 | zsh | Sourced before the integrations, and at the end of `.zshrc` | `~/.zshrc.settings`, `~/.zshrc.local` |
 | zsh (non-interactive) | Sourced at the end of `.zshenv` | `~/.zshenv.local` |
-| Git | `[include]`, last in `.gitconfig` | `~/.gitconfig.local` |
+| Git | `[include]`, last in `~/.config/git/config`; Git then reads `~/.gitconfig`, which chezmoi creates once and never changes | `~/.gitconfig.local`, `~/.gitconfig` (`git config --global`) |
 | SSH | `Include` at the top; the first value wins | `~/.ssh/config.local` |
 | tmux | `source-file -q`, last line | `~/.tmux.conf.local` |
 | Kitty | `globinclude kitty.d/*.conf`, last line | `~/.config/kitty/kitty.d/*.conf` |

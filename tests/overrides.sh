@@ -35,8 +35,21 @@ check 'zsh: ~/.zshrc.local adds an alias' from-zshrc-local "$(zsh -ic 'overrides
 write ~/.zshenv.local 'export OVERRIDES_TEST=from-zshenv-local'
 check 'zsh: ~/.zshenv.local reaches non-interactive shells' from-zshenv-local "$(zsh -c 'print -r -- $OVERRIDES_TEST')"
 
+# Outside any repository, so only the user's files count.
+gitcfg() { (cd / && git config "$@"); }
 write ~/.gitconfig.local $'[user]\n\tname = Local Person'
-check 'Git: ~/.gitconfig.local sets the identity' 'Local Person' "$(git config --global --includes user.name)"
+check 'Git: ~/.gitconfig.local sets the identity' 'Local Person' "$(gitcfg user.name)"
+write ~/.gitconfig.local $'[pull]\n\trebase = false'
+check 'Git: ~/.gitconfig.local wins over the dotfiles' false "$(gitcfg pull.rebase)"
+# ~/.gitconfig belongs to the machine: what `git config --global` writes
+# there wins over ~/.gitconfig.local and survives chezmoi apply.
+cp ~/.gitconfig ~/.gitconfig.orig
+git config --global pull.rebase merges
+git config --global overrides.test from-global
+chezmoi apply --no-tty
+check 'Git: git config --global survives chezmoi apply' from-global "$(gitcfg overrides.test)"
+check 'Git: ~/.gitconfig wins over ~/.gitconfig.local' merges "$(gitcfg pull.rebase)"
+mv ~/.gitconfig.orig ~/.gitconfig
 
 write ~/.ssh/config.local $'Host overrides-test\n  HostName 192.0.2.10\n  User someone'
 check 'SSH: ~/.ssh/config.local defines a host alias' 192.0.2.10 "$(ssh -G overrides-test 2>/dev/null | awk '$1 == "hostname" { print $2 }')"

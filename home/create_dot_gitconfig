@@ -1,0 +1,3 @@
+# Settings for this machine only. `git config --global` writes here, and
+# values here win over the dotfiles (~/.config/git/config) and over
+# ~/.gitconfig.local. chezmoi created this file once and never changes it.

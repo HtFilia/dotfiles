@@ -1,6 +1,6 @@
 # Syntax-aware diffs with difftastic, beside delta (the pager for plain git
-# diff). Included from ~/.gitconfig; git skips the include where this file
-# is not deployed.
+# diff). Included from ~/.config/git/config; git skips the include where
+# this file is not deployed.
 [difftool "difftastic"]
     cmd = difft "$LOCAL" "$REMOTE"
 

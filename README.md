@@ -55,8 +55,8 @@ mkdir -p ~/.local/bin && tar -xzf "$archive" -C ~/.local/bin chezmoi
 (`workstation` or `server`) and `context` (`perso` or `travail`), then
 `gaming` on the Fedora personal workstation or `systemBaseline` on a Debian
 server ([VPS](docs/VPS-SERVER.md#system-baseline)). Afterwards, run
-`chsh -s "$(command -v zsh)"` and put your Git identity in
-`~/.gitconfig.local` ([Git](docs/GIT.md)).
+`chsh -s "$(command -v zsh)"` and set your Git identity with
+`git config --global` ([Git](docs/GIT.md)).
 
 With `gaming = true`, Fedora also gets GameMode. Steam comes from RPM Fusion's
 nonfree repository, which this repository does not add: enable RPM Fusion, then `sudo dnf install steam`.

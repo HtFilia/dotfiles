@@ -24,13 +24,27 @@ virtual environments and `.env` files stay visible until a repository's own
 
 ## Identity and authentication
 
-`~/.gitconfig.local` is included last; chezmoi never creates or changes it.
-Values in the local file take precedence over the managed configuration.
+The shared settings live in `~/.config/git/config`. Git reads three user
+files, and for the same key the last one wins:
+
+1. `~/.config/git/config`: the dotfiles.
+2. `~/.gitconfig.local`, included at the end of that file: overrides you
+   write by hand. chezmoi never creates or changes it.
+3. `~/.gitconfig`: the machine's own file, where `git config --global` and
+   setup tools (such as an employer's) write. chezmoi creates it once with a
+   comment and never changes it again.
 
 ```sh
-git config --file ~/.gitconfig.local user.name 'Your Name'
-git config --file ~/.gitconfig.local user.email 'you@example.com'
+git config --global user.name 'Your Name'
+git config --global user.email 'you@example.com'
 ```
+
+Before this layout, chezmoi owned `~/.gitconfig` and each apply reverted what
+`git config --global` had written. On the first apply after the change,
+`run_once_after_15-git-config-move.sh` removes from `~/.gitconfig` only the
+values identical to the dotfiles' and keeps the former file as
+`~/.gitconfig.before-xdg`. The server's daily timer skips scripts, so there the
+move happens at the next `just vps-update`.
 
 Use conditional includes in that file for work and personal identities; see
 [local overrides](LOCAL-OVERRIDES.md#git-a-work-identity-for-work-repositories).

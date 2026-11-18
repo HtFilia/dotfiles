@@ -44,7 +44,7 @@ opened="$(tr '\n' '|' <"$work/arguments")"
 check 'frg opens the file at the matching line' "editor received $opened" \
   test "$opened" = '+1|--|./space:name.txt|'
 
-command="$(git config --file "$HOME/.gitconfig" mergetool.nvim.cmd)"
+command="$(git config --file "$HOME/.config/git/config" mergetool.nvim.cmd)"
 arguments="$(LOCAL='local file' REMOTE='remote file' MERGED='merged file' sh -c "nvim() { printf '%s\n' \"\$@\"; }; $command" | head -4 | tr '\n' '|')"
 check 'git mergetool quotes file names' "nvim received $arguments" \
   test "$arguments" = '-d|local file|remote file|merged file|'

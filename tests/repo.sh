@@ -15,7 +15,7 @@ step 'Secret scan of the whole history'
 gitleaks git --redact --no-banner
 
 step 'Repository scripts'
-shellcheck scripts/*.sh scripts/boot-art/*.sh tests/*.sh .githooks/*
+shellcheck scripts/*.sh scripts/boot-art/*.sh tests/*.sh home/run_*.sh .githooks/*
 # Formatting follows .editorconfig (two spaces, indented case branches).
 shfmt -d scripts tests .githooks
 
@@ -39,6 +39,9 @@ for machine in "${machines[@]}"; do
   render home/dot_zshrc.tmpl | zsh -n
   printf 'ok - %s\n' "$machine"
 done
+
+step 'The Git settings move keeps what the machine set'
+bash tests/git-migration.sh
 
 step 'Local override files cannot be committed'
 for path in home/dot_zshrc.local home/dot_zshrc.settings home/private_dot_ssh/private_config.local \
@@ -65,7 +68,7 @@ palette="$({
 # selection of a Kitty window connected over SSH.
 tints=('#2F3A32' '#3D5040' '#45302E' '#5E3B39' '#2E2322' '#4A3534')
 strangers="$(grep -noiE '#[0-9a-f]{6}' home/dot_tmux.conf home/dot_config/starship.toml.tmpl \
-  home/dot_config/yazi/theme.toml home/dot_zshrc.tmpl home/dot_gitconfig \
+  home/dot_config/yazi/theme.toml home/dot_zshrc.tmpl home/dot_config/git/config \
   home/dot_config/fastfetch/config.jsonc.tmpl home/dot_config/kitty/ssh-remote.conf |
   tr 'a-f' 'A-F' | grep -vF -f <(printf '%s\n' "$palette" "${tints[@]}") || true)"
 if [[ -n "$strangers" ]]; then

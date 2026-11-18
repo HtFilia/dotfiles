@@ -66,7 +66,9 @@ not this file.
 - Remotes are fetched over HTTPS and pushed over SSH (`url.pushInsteadOf`),
   with the key that `~/.ssh/config` selects.
 - `git lg` draws the graph, `git cleanup [BASE]` deletes branches merged into
-  BASE (default `main`). The identity lives in `~/.gitconfig.local`.
+  BASE (default `main`). The shared settings are in
+  `~/.config/git/config`; `~/.gitconfig` belongs to the machine (identity,
+  `git config --global`) and chezmoi never changes it.
 {{- if $fedora }}
 - difftastic: `git dft`, `git dlg` and `git dshow` show diffs by syntax
   (`~/.config/git/difftastic`); plain `git diff` still goes through delta.

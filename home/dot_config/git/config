@@ -1,3 +1,7 @@
+# Git settings shared by every machine. Git reads this file before
+# ~/.gitconfig, so ~/.gitconfig (where `git config --global` writes) wins,
+# and ~/.gitconfig.local, included at the end, wins over this file.
+
 [init]
     defaultBranch = main
 
