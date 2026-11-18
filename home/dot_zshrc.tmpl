@@ -85,6 +85,10 @@ if _dotfiles_safe_source "$HOME/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.
   zstyle ':completion:*:descriptions' format '[%d]'
   zstyle ':completion:*:git-checkout:*' sort false
   zstyle ':fzf-tab:*' use-fzf-default-opts yes
+  # fzf-tab sizes fzf to the candidate count plus fzf-pad rows (default 2:
+  # prompt and info). The rounded border in FZF_DEFAULT_OPTS takes 2 more,
+  # which otherwise hides all but one or two candidates.
+  zstyle ':fzf-tab:*' fzf-pad 4
   # < and > sit unshifted and shifted left of W on an AZERTY keyboard.
   zstyle ':fzf-tab:*' switch-group '<' '>'
   zstyle ':fzf-tab:complete:(cd|pushd|z|ls|eza|y|yazi):*' fzf-preview 'eza -1 --color=always --icons=always --group-directories-first -- $realpath'
