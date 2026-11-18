@@ -40,10 +40,12 @@
 {{-   if eq .profile "workstation" }}
 
 # Debian's yq package is a different tool: a jq wrapper written in Python.
+# The archive stores the binary as ./yq_linux_amd64; chezmoi before 2.73.3
+# matches the path literally, so keep the ./ for machines on an older one.
 [".local/bin/yq"]
     type = "archive-file"
     url = "https://github.com/mikefarah/yq/releases/download/v4.54.1/yq_linux_amd64.tar.gz"
-    path = "yq_linux_amd64"
+    path = "./yq_linux_amd64"
     executable = true
     checksum.sha256 = "e68a456f90c577af3fe4960184b3a3cf5c461e0348407c10f107da3a5fec8972"
 {{-   end }}
